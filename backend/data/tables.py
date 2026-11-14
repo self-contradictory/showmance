@@ -136,3 +136,10 @@ class ChatRow(Base):
     viewer_id: Mapped[int] = mapped_column(ForeignKey("viewers.id"))
     name: Mapped[str]
     text: Mapped[str]
+
+
+class AgentVoiceRow(Base):
+    __tablename__ = "agent_voices"
+
+    agent_id: Mapped[int] = mapped_column(ForeignKey("agents.id"), primary_key=True)
+    voice: Mapped[str]

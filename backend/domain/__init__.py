@@ -28,18 +28,21 @@ from domain.polls import (
 from domain.reactions import FeelingChange, Reaction
 from domain.relationships import Relationship, RelationshipChange
 from domain.scenes import Line, LineKind, Scene, ScriptedFeeling
+from domain.speech import SPOKEN_KINDS, Audio, Speech
 from domain.twists import NewTwist, Twist, TwistSource, TwistStatus
 from domain.viewers import CoinReason, Viewer
 from domain.worlds import NewWorld, World
 
 __all__ = [
     "OPTION_COUNTS",
+    "SPOKEN_KINDS",
     "YES_NO_LABELS",
     "Action",
     "Agent",
     "AgentContext",
     "Announce",
     "Arrive",
+    "Audio",
     "ChatMessage",
     "CoinReason",
     "Confess",
@@ -78,6 +81,7 @@ __all__ = [
     "Scene",
     "SceneContext",
     "ScriptedFeeling",
+    "Speech",
     "Twist",
     "TwistPlan",
     "TwistSource",

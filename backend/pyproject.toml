@@ -10,6 +10,7 @@ requires-python = ">=3.14"
 dependencies = [
     "aiosqlite>=0.22.1",
     "fastapi>=0.162.7",
+    "kokoro-onnx>=0.6.1",
     "pydantic>=2.14.3",
     "pydantic-ai-slim[google,openai]>=2.68.0",
     "pydantic-settings>=2.16.3",

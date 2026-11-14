@@ -16,6 +16,7 @@ class AgentSpec(Model):
     name: str
     persona: str
     location: str
+    voice: str | None = None
 
 
 class WorldSpec(Model):

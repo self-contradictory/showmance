@@ -10,6 +10,7 @@ from data import Store
 from engine import Engine
 from engine.casts import build_cast
 from memory import SqlMemoryStore
+from voice import AudioCache, Narrator, build_voice
 
 
 @dataclass
@@ -17,6 +18,7 @@ class Services:
     store: Store
     engine: Engine
     runners: Runners
+    narrator: Narrator
     presence: Presence = field(default_factory=Presence)
 
 
@@ -26,4 +28,9 @@ def build_services(db: AsyncEngine) -> Services:
     roles = llm_roles()
     cast = build_cast(settings.cast, roles, store, memory)
     engine = Engine(store, memory, roles.director, cast)
-    return Services(store=store, engine=engine, runners=Runners(engine))
+    narrator = Narrator(
+        store, build_voice(settings.tts), AudioCache(settings.audio_dir)
+    )
+    return Services(
+        store=store, engine=engine, runners=Runners(engine), narrator=narrator
+    )

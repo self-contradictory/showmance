@@ -1,6 +1,7 @@
 from sqlalchemy import select
 
 from data.db import Repository
+from data.errors import NotFound
 from data.tables import EventRow
 from domain import Event, NewEvent
 
@@ -10,6 +11,13 @@ class EventRepository(Repository):
         row = EventRow(**event.model_dump())
         async with self._session.begin() as s:
             s.add(row)
+        return Event.model_validate(row)
+
+    async def get(self, event_id: int) -> Event:
+        async with self._session() as s:
+            row = await s.get(EventRow, event_id)
+        if row is None:
+            raise NotFound(f"event {event_id}")
         return Event.model_validate(row)
 
     async def get_all(self, world_id: int, after_id: int = 0) -> list[Event]:

@@ -8,6 +8,7 @@ from data.polls import PollRepository
 from data.relationships import RelationshipRepository
 from data.twists import TwistRepository
 from data.viewers import ViewerRepository
+from data.voices import VoiceRepository
 from data.wallets import WalletRepository
 from data.worlds import WorldRepository
 
@@ -24,3 +25,4 @@ class Store:
         self.viewers = ViewerRepository(engine)
         self.wallets = WalletRepository(engine)
         self.chat = ChatRepository(engine)
+        self.voices = VoiceRepository(engine)

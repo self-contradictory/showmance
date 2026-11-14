@@ -14,6 +14,7 @@ from domain import (
     Action,
     Agent,
     AgentContext,
+    Audio,
     DirectorContext,
     Event,
     Location,
@@ -28,6 +29,7 @@ from domain import (
     Relationship,
     Scene,
     SceneContext,
+    Speech,
     Twist,
     TwistPlan,
     Wait,
@@ -37,6 +39,7 @@ from engine import Engine
 from engine.casts import AgentsCast, WriterCast
 from engine.state import WorldState
 from memory import SqlMemoryStore
+from voice import AudioCache, Narrator
 
 
 class ScriptedDecider:
@@ -103,6 +106,22 @@ class ScriptedWriter:
         if isinstance(scene, Exception):
             raise scene
         return scene
+
+
+class FakeVoice:
+    name = "fake"
+    media_type = "audio/wav"
+
+    def __init__(self) -> None:
+        self.spoken: list[Speech] = []
+
+    async def voices(self) -> list[str]:
+        return ["v1", "v2", "v3"]
+
+    async def speak(self, speech: Speech) -> Audio:
+        self.spoken.append(speech)
+        content = f"{speech.voice}|{speech.text}|{speech.emotion}".encode()
+        return Audio(content=content, media_type=self.media_type)
 
 
 @pytest.fixture
@@ -232,10 +251,12 @@ def fake_model():
 
 
 @pytest.fixture
-def client(store):
+def client(store, narrator):
     def build(engine):
         app = create_app()
-        services = Services(store=store, engine=engine, runners=Runners(engine))
+        services = Services(
+            store=store, engine=engine, runners=Runners(engine), narrator=narrator
+        )
         app.dependency_overrides[get_services] = lambda: services
         return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
@@ -253,3 +274,13 @@ def twist():
         outcome=None,
         tick=None,
     )
+
+
+@pytest.fixture
+def fake_voice():
+    return FakeVoice()
+
+
+@pytest.fixture
+def narrator(store, fake_voice, tmp_path):
+    return Narrator(store, fake_voice, AudioCache(tmp_path / "audio"))

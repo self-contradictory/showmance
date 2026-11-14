@@ -36,7 +36,7 @@ async def create_world(spec: WorldSpec, services: ServicesDep) -> World:
         )
         location_ids[saved.name] = saved.id
     for agent in spec.agents:
-        await store.agents.add(
+        saved = await store.agents.add(
             NewAgent(
                 world_id=world.id,
                 name=agent.name,
@@ -44,6 +44,8 @@ async def create_world(spec: WorldSpec, services: ServicesDep) -> World:
                 location_id=location_ids[agent.location],
             )
         )
+        if agent.voice is not None:
+            await store.voices.assign(saved.id, agent.voice)
     return world
 
 

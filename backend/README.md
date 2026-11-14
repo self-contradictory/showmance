@@ -28,6 +28,18 @@ The director (polls and twists) is the same either way. `CAST` picks how the con
 
 Both keep the same state (places, moods, feelings, memories, events), so you can switch a running villa by restarting with the other `CAST`.
 
+## Voices
+
+Lines are voiced only when a player asks for them, once per line, and cached in `AUDIO_DIR`, so nobody watching costs nothing. `TTS` picks the provider behind the `Voice` interface in `voice/`. Each contestant keeps one voice: set `voice` per agent in the world spec, or one that no one else uses is picked and saved the first time they speak.
+
+`TTS=kokoro` (the default) runs locally and is free. Download the model once:
+
+```bash
+mkdir -p models && cd models
+curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.onnx
+curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin
+```
+
 ## Start the villa
 
 ```bash
@@ -47,6 +59,7 @@ curl -N localhost:8000/worlds/1/stream
 | `GET` | `/worlds/{id}/stream?after_id=` | one SSE connection per viewer: world events (unnamed, with ids, resume from `Last-Event-ID`), `chat` events with new messages, `viewers` events when the count changes |
 | `GET` | `/worlds/{id}/chat` | the last `CHAT_HISTORY` chat messages, oldest first |
 | `POST` | `/worlds/{id}/chat` | send `{text}` to everyone watching 🔑 |
+| `GET` | `/worlds/{id}/events/{event_id}/audio` | the voiced line of a `say` or `confess` event (`audio/wav`), made on the first request and cached for everyone |
 | `POST` | `/worlds/{id}/step` | run one tick |
 | `POST` | `/worlds/{id}/start` | tick every `TICK_INTERVAL` seconds |
 | `POST` | `/worlds/{id}/stop` | stop after the current tick |

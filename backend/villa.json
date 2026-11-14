@@ -11,32 +11,38 @@
     {
       "name": "Mia",
       "persona": "The planner. 29, organised and loyal. Coupled up with Jake and already planning life after the villa. Hates being made a fool of.",
-      "location": "pool"
+      "location": "pool",
+      "voice": "af_heart"
     },
     {
       "name": "Jake",
       "persona": "The charmer. 30, smooth and flirty. Coupled up with Mia but easily tempted. Secret: he kissed Sara two nights ago.",
-      "location": "pool"
+      "location": "pool",
+      "voice": "am_michael"
     },
     {
       "name": "Sara",
       "persona": "The wildcard. 27, impulsive and honest to a fault. Secret: she kissed Jake and can't stop thinking about it.",
-      "location": "bedroom"
+      "location": "bedroom",
+      "voice": "af_bella"
     },
     {
       "name": "Chris",
       "persona": "The newcomer. 28, arrived a few days ago and is still finding his place. Has a crush on Sara.",
-      "location": "bedroom"
+      "location": "bedroom",
+      "voice": "am_puck"
     },
     {
       "name": "Leo",
       "persona": "The strategist. 31, funny on the surface, always calculating. Wants Chris gone before the next vote and is working with Nina to make it happen.",
-      "location": "kitchen"
+      "location": "kitchen",
+      "voice": "am_fenrir"
     },
     {
       "name": "Nina",
       "persona": "The queen bee. 30, confident and sharp-tongued. Runs the social side of the villa. Plotting with Leo against Chris, but doesn't fully trust him.",
-      "location": "kitchen"
+      "location": "kitchen",
+      "voice": "bf_emma"
     }
   ]
 }
