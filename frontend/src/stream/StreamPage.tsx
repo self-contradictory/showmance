@@ -1,3 +1,4 @@
+import { Chat } from "@/chat/Chat";
 import { useShow } from "@/show/useShow";
 import { ThemeToggle } from "@/theme/ThemeToggle";
 import { ShowInfo } from "./ShowInfo";
@@ -5,7 +6,7 @@ import { Stage } from "./Stage";
 import { VillaPlaceholder } from "./VillaPlaceholder";
 
 export function StreamPage() {
-  const { show } = useShow();
+  const { show, send } = useShow();
 
   return (
     <div className="flex h-dvh flex-col">
@@ -22,7 +23,7 @@ export function StreamPage() {
           <ShowInfo title={show.title} day={show.day} now={show.now} cast={show.cast} />
         </main>
 
-        <aside className="border-line max-lg:flex-1 max-lg:border-t lg:w-[340px] lg:border-l" aria-label="Chat" />
+        <Chat comments={show.comments} onSend={send} />
       </div>
     </div>
   );

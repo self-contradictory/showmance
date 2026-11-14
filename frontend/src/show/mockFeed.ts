@@ -1,5 +1,5 @@
 import { reduceShow } from "./reduce";
-import type { CastMember, Feed, FeedEvent, Show } from "./types";
+import { MAX_MESSAGE_LENGTH, type CastMember, type Feed, type FeedEvent, type Show } from "./types";
 
 // Stands in for the backend so the page can be built without a server.
 // It plays scripted scenes through the same Feed interface a WebSocket
@@ -54,8 +54,30 @@ const SCENES: Scene[] = [
   },
 ];
 
+// Dev only: fake viewers so the chat has traffic while there is no backend.
+// The real feed carries real viewers only.
+const FAKE_VIEWERS = ["jess_k", "mike88", "tina", "sam_r", "dee", "carlos.v", "priya", "ben_t"];
+const FAKE_MESSAGES = [
+  "he's done lol",
+  "NINA PLANNED THIS",
+  "Chris deserves better",
+  "leo is so shady",
+  "mia is too good for him",
+  "sara really is the wildcard",
+  "this villa is chaos",
+  "jake has no idea what's coming",
+  "someone send the tempter",
+  "I need a date like that",
+  "the pool scene was everything",
+  "who else is voting Chris",
+];
+
 const LINE_MS = 3600;
 const GAP_MS = 700;
+
+function pick<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)]!;
+}
 
 export function createMockFeed(): Feed {
   let state: Show = {
@@ -65,6 +87,7 @@ export function createMockFeed(): Feed {
     cast: CAST,
     viewers: 412,
     caption: null,
+    comments: [],
   };
 
   const listeners = new Set<(event: FeedEvent) => void>();
@@ -110,9 +133,19 @@ export function createMockFeed(): Feed {
     later(5000, driftViewers);
   }
 
+  function postMessage(author: string, text: string) {
+    emit({ type: "comment", comment: { kind: "message", id: nextId("comment"), at: Date.now(), author, text } });
+  }
+
+  function fakeChatter() {
+    postMessage(pick(FAKE_VIEWERS), pick(FAKE_MESSAGES));
+    later(1200 + Math.random() * 2800, fakeChatter);
+  }
+
   function start() {
     later(800, playNextLine);
     later(5000, driftViewers);
+    later(600, fakeChatter);
   }
 
   function stop() {
@@ -129,6 +162,10 @@ export function createMockFeed(): Feed {
         listeners.delete(listener);
         if (listeners.size === 0) stop();
       };
+    },
+    send(author, text) {
+      const message = text.trim().slice(0, MAX_MESSAGE_LENGTH);
+      if (message) postMessage(author, message);
     },
   };
 }
