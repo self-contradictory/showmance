@@ -12,7 +12,9 @@ router = APIRouter()
 async def send_twist(
     body: TwistRequest, world: WorldDep, services: ServicesDep
 ) -> Twist:
-    return await services.store.twists.add(NewTwist(world_id=world.id, text=body.text))
+    return await services.store.twists.add(
+        NewTwist(world_id=world.id, text=body.text, source="donation")
+    )
 
 
 @router.get("/worlds/{world_id}/twists/{twist_id}")

@@ -8,6 +8,7 @@ from engine.context import ContextBuilder
 from engine.effects import Effects
 from engine.events import to_event
 from engine.parallel import settle
+from engine.polls import Polling
 from engine.reactions import Reactions
 from engine.rules import takes_effect
 from engine.staging import Staging
@@ -23,12 +24,14 @@ class Engine:
         self._effects = Effects(store)
         self._reactions = Reactions(store, memory)
         self._staging = Staging(store, roles.director)
+        self._polling = Polling(store, roles.director)
         self._lock = asyncio.Lock()
 
     async def step(self, world_id: int) -> list[Event]:
         async with self._lock:
             await self._store.worlds.advance_tick(world_id)
             state = await load_state(self._store, world_id)
+            closed = await self._polling.close_due(state)
             staged = await self._staging.run(state)
             if staged.events:
                 await self._react(staged.events, state)
@@ -36,7 +39,8 @@ class Engine:
             decisions = await self._decide(state, staged.directions)
             events = await self._resolve(decisions, state)
             await self._react(events, state)
-            return [*staged.events, *events]
+            opened = await self._polling.open_next(world_id)
+            return [*closed, *staged.events, *events, *opened]
 
     async def _decide(
         self, state: WorldState, directions: dict[int, list[str]]

@@ -21,9 +21,12 @@ from domain import (
     Memory,
     NewAgent,
     NewLocation,
+    PollFormat,
+    Proposal,
     Reaction,
     Rejected,
     Relationship,
+    Twist,
     TwistPlan,
     Wait,
     World,
@@ -58,11 +61,29 @@ class RecordingAppraiser:
 
 
 class ScriptedDirector:
-    def __init__(self, plans: dict[str, TwistPlan | Rejected | Exception]) -> None:
+    def __init__(
+        self,
+        plans: dict[str, TwistPlan | Rejected | Exception],
+        proposal: Proposal | None,
+    ) -> None:
         self._plans = plans
+        self._proposal = proposal
+        self.formats: list[PollFormat] = []
+        self.contexts: list[DirectorContext] = []
 
-    async def stage(self, twist: str, context: DirectorContext) -> TwistPlan | Rejected:
-        plan = self._plans.get(twist, Rejected(reason="unscripted"))
+    async def propose(
+        self, context: DirectorContext, poll_format: PollFormat
+    ) -> Proposal:
+        self.formats.append(poll_format)
+        if self._proposal is None:
+            raise LookupError("no proposal scripted")
+        return self._proposal
+
+    async def stage(
+        self, twist: Twist, context: DirectorContext
+    ) -> TwistPlan | Rejected:
+        self.contexts.append(context)
+        plan = self._plans.get(twist.text, Rejected(reason="unscripted"))
         if isinstance(plan, Exception):
             raise plan
         return plan
@@ -108,16 +129,16 @@ async def villa(store):
 
 @pytest.fixture
 def sim(store, memory):
-    def build(script=None, reactions=None, plans=None):
+    def build(script=None, reactions=None, plans=None, proposal=None):
         decider = ScriptedDecider(script or {})
         appraiser = RecordingAppraiser(reactions or {})
-        roles = Roles(
+        director = ScriptedDirector(plans or {}, proposal)
+        roles = Roles(decider=decider, appraiser=appraiser, director=director)
+        return SimpleNamespace(
+            engine=Engine(store, memory, roles),
             decider=decider,
             appraiser=appraiser,
-            director=ScriptedDirector(plans or {}),
-        )
-        return SimpleNamespace(
-            engine=Engine(store, memory, roles), decider=decider, appraiser=appraiser
+            director=director,
         )
 
     return build
@@ -190,3 +211,16 @@ def client(store):
         return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
     return build
+
+
+@pytest.fixture
+def twist():
+    return Twist(
+        id=1,
+        world_id=1,
+        text="tell Mia about the kiss",
+        source="donation",
+        status="pending",
+        outcome=None,
+        tick=None,
+    )

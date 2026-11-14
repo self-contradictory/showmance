@@ -1,5 +1,10 @@
-from ai.render import render_appraisal, render_context, render_director
-from domain import Event
+from ai.render import (
+    render_appraisal,
+    render_context,
+    render_director,
+    render_proposal,
+)
+from domain import Event, Poll, PollOption
 
 
 def test_context_shows_only_what_the_agent_knows(context):
@@ -44,10 +49,42 @@ def test_appraisal_renders_any_event_kind(context):
     )
 
 
-def test_director_sees_the_whole_villa_and_the_twist(director_context):
-    prompt = render_director(director_context, "tell Mia about the kiss")
+def test_director_sees_the_whole_villa_and_the_twist(director_context, twist):
+    prompt = render_director(director_context, twist)
 
     assert "- Sara (id 3), at kitchen, mood neutral." in prompt
     assert "- Mia → Jake: affection 70, trust 40. flirty" in prompt
     assert "- [tick 2] Jake: hug (to Mia)" in prompt
-    assert prompt.endswith("<twist>\ntell Mia about the kiss\n</twist>")
+    assert prompt.endswith(
+        "A viewer paid for this twist:\n<twist>\ntell Mia about the kiss\n</twist>"
+    )
+
+
+def test_director_sees_what_viewers_are_voting_on(director_context, twist):
+    poll = Poll(
+        id=1,
+        world_id=1,
+        question="Should Jake confess?",
+        options=[
+            PollOption(label="Yes", twist="Jake confesses"),
+            PollOption(label="No", twist="Jake lies"),
+        ],
+        opened_tick=1,
+        closes_tick=10,
+        status="open",
+        winner=None,
+    )
+    voting = director_context.model_copy(update={"poll": poll})
+
+    prompt = render_director(voting, twist)
+
+    assert (
+        "Viewers are voting on: Should Jake confess?\n- Yes: Jake confesses" in prompt
+    )
+
+
+def test_proposal_asks_for_the_chosen_format(director_context):
+    prompt = render_proposal(director_context, "three_options")
+
+    assert "- Mia (id 1), at pool" in prompt
+    assert prompt.endswith("Ask a question with exactly three options.")

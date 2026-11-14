@@ -3,7 +3,7 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from config import TWIST_MAX_LENGTH, VIEWER_NAME_MAX_LENGTH
-from domain import Agent, Location, Relationship, Viewer, World
+from domain import Agent, Location, Poll, Relationship, Viewer, World
 from domain.base import Model
 
 
@@ -51,3 +51,12 @@ class ViewerRequest(Model):
 class ViewerSession(Model):
     viewer: Viewer
     token: str
+
+
+class PollView(Model):
+    poll: Poll
+    votes: list[int]
+
+
+class VoteRequest(Model):
+    option: int = Field(ge=0)

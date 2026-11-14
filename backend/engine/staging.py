@@ -1,9 +1,10 @@
 import logging
 
 from ai import Director
-from config import DIRECTOR_EVENT_LIMIT, TWIST_FAILED_REASON, TWISTS_PER_TICK
+from config import TWIST_FAILED_REASON, TWISTS_PER_TICK
 from data import Store
-from domain import DirectorContext, NewEvent, Rejected, Twist, TwistPlan
+from domain import NewEvent, Rejected, Twist, TwistPlan
+from engine.context import director_context
 from engine.operations import Operations, Staged
 from engine.state import WorldState
 
@@ -42,17 +43,9 @@ class Staging:
         return staged
 
     async def _plan(self, twist: Twist, state: WorldState) -> TwistPlan | Rejected:
-        context = DirectorContext(
-            world=state.world,
-            agents=state.agents,
-            locations=state.locations,
-            relationships=state.relationships,
-            events=await self._store.events.recent(
-                state.world.id, DIRECTOR_EVENT_LIMIT
-            ),
-        )
+        context = await director_context(self._store, state)
         try:
-            return await self._director.stage(twist.text, context)
+            return await self._director.stage(twist, context)
         except Exception:
             logger.exception("director failed on twist %s", twist.id)
             return Rejected(reason=TWIST_FAILED_REASON)

@@ -80,6 +80,10 @@ class TwistRow(Base):
     status: Mapped[str] = mapped_column(index=True)
     outcome: Mapped[str | None]
     tick: Mapped[int | None]
+    source: Mapped[str]
+    viewer_id: Mapped[int | None] = mapped_column(ForeignKey("viewers.id"))
+    poll_id: Mapped[int | None] = mapped_column(ForeignKey("polls.id"))
+    price: Mapped[int]
 
 
 class ViewerRow(Base):
@@ -99,3 +103,24 @@ class CoinEntryRow(Base):
     amount: Mapped[int]
     reason: Mapped[str]
     twist_id: Mapped[int | None] = mapped_column(ForeignKey("twists.id"))
+
+
+class PollRow(Base):
+    __tablename__ = "polls"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    world_id: Mapped[int] = mapped_column(ForeignKey("worlds.id"), index=True)
+    question: Mapped[str]
+    options: Mapped[list[dict[str, str]]] = mapped_column(JSON)
+    opened_tick: Mapped[int]
+    closes_tick: Mapped[int]
+    status: Mapped[str] = mapped_column(index=True)
+    winner: Mapped[int | None]
+
+
+class VoteRow(Base):
+    __tablename__ = "votes"
+
+    poll_id: Mapped[int] = mapped_column(ForeignKey("polls.id"), primary_key=True)
+    viewer_id: Mapped[int] = mapped_column(ForeignKey("viewers.id"), primary_key=True)
+    option: Mapped[int]

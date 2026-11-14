@@ -5,8 +5,11 @@ from domain import (
     AgentContext,
     DirectorContext,
     Event,
+    PollFormat,
+    Proposal,
     Reaction,
     Rejected,
+    Twist,
     TwistPlan,
 )
 
@@ -22,6 +25,10 @@ class Appraiser(Protocol):
 
 
 class Director(Protocol):
+    async def propose(
+        self, context: DirectorContext, poll_format: PollFormat
+    ) -> Proposal: ...
+
     async def stage(
-        self, twist: str, context: DirectorContext
+        self, twist: Twist, context: DirectorContext
     ) -> TwistPlan | Rejected: ...

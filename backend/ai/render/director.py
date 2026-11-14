@@ -1,18 +1,28 @@
+from ai.prompts import POLL_FORMAT_REQUESTS, TWIST_HEADERS
 from ai.render.common import bullets, event_line
-from domain import DirectorContext
+from domain import DirectorContext, Poll, PollFormat, Twist
 
 
-def render_director(context: DirectorContext, twist: str) -> str:
-    return "\n\n".join(
-        [
-            f"Setting: {context.world.setting}\nTick: {context.world.tick}",
-            _places(context),
-            _people(context),
-            _feelings(context),
-            _recent(context),
-            f"The viewer's twist:\n<twist>\n{twist}\n</twist>",
-        ]
-    )
+def render_director(context: DirectorContext, twist: Twist) -> str:
+    sections = _villa(context)
+    if context.poll is not None:
+        sections.append(_poll(context.poll))
+    sections.append(f"{TWIST_HEADERS[twist.source]}:\n<twist>\n{twist.text}\n</twist>")
+    return "\n\n".join(sections)
+
+
+def render_proposal(context: DirectorContext, poll_format: PollFormat) -> str:
+    return "\n\n".join([*_villa(context), POLL_FORMAT_REQUESTS[poll_format]])
+
+
+def _villa(context: DirectorContext) -> list[str]:
+    return [
+        f"Setting: {context.world.setting}\nTick: {context.world.tick}",
+        _places(context),
+        _people(context),
+        _feelings(context),
+        _recent(context),
+    ]
 
 
 def _places(context: DirectorContext) -> str:
@@ -47,6 +57,11 @@ def _recent(context: DirectorContext) -> str:
     names = _names(context)
     lines = (f"[tick {e.tick}] {event_line(e, names)}" for e in context.events)
     return f"Recently:\n{bullets(lines, 'nothing yet')}"
+
+
+def _poll(poll: Poll) -> str:
+    lines = (f"{option.label}: {option.twist}" for option in poll.options)
+    return f"Viewers are voting on: {poll.question}\n{bullets(lines, '')}"
 
 
 def _names(context: DirectorContext) -> dict[int, str]:

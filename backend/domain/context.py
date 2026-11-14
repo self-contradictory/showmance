@@ -5,6 +5,7 @@ from domain.base import Model
 from domain.events import Event
 from domain.locations import Location
 from domain.memories import Memory
+from domain.polls import Poll
 from domain.relationships import Relationship
 from domain.worlds import World
 
@@ -25,3 +26,4 @@ class DirectorContext(Model):
     locations: list[Location]
     relationships: list[Relationship]
     events: list[Event]
+    poll: Poll | None = None

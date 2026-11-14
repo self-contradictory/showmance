@@ -14,7 +14,9 @@ from domain import (
 
 
 async def send(store, villa, text):
-    return await store.twists.add(NewTwist(world_id=villa.world.id, text=text))
+    return await store.twists.add(
+        NewTwist(world_id=villa.world.id, text=text, source="vote")
+    )
 
 
 async def test_reveal_lands_before_anyone_decides(store, villa, sim):
