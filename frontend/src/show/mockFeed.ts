@@ -46,6 +46,7 @@ export function createMockFeed(slug: string): Feed {
     cast: script.cast,
     viewers: script.viewers,
     caption: null,
+    touches: [],
     comments: [],
     vote: null,
     twistPrice: TWIST_PRICE,

@@ -11,6 +11,16 @@ export type CastMember = { id: string; name: string; role: string; locationId: s
 
 export type Touch = "hug" | "kiss";
 
+export type Touching = {
+  id: string;
+  kind: Touch;
+  actorId: string;
+  actor: string;
+  targetId: string;
+  target: string;
+  locationId: string;
+};
+
 export type Caption = {
   id: string;
   speakerId: string;
@@ -42,6 +52,7 @@ export type Show = {
   cast: CastMember[];
   viewers?: number;
   caption: Caption | null;
+  touches: Touching[];
   comments: ChatComment[];
   vote: Vote | null;
   twistPrice: number;

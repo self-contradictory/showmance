@@ -1,14 +1,13 @@
 import { api } from "@/api/client";
 import type { Agent, ChatMessage, Place, WorldEvent } from "@/api/types";
 import type { ChatComment } from "@/chat/comments/types";
-import type { Caption, CastMember, Location, Sky } from "./types";
+import type { BeatPart } from "./beats";
+import type { CastMember, Location, Sky } from "./types";
 
 export type Names = { agents: Map<number, string>; places: Map<number, string> };
 
 export type LiveAction =
-  | { type: "caption"; caption: Caption }
-  | { type: "now"; text: string }
-  | { type: "move"; castId: string; locationId: string }
+  | BeatPart
   | { type: "twist"; twistId: number | null; text: string }
   | { type: "pollOpened" }
   | { type: "pollClosed"; winner: string; winnerIndex: number | null }
@@ -38,7 +37,7 @@ export function actionsFor(event: WorldEvent, names: Names): LiveAction[] {
       if (!event.text || event.actor_id === null) return [];
       return [
         {
-          type: "caption",
+          type: "speech",
           caption: {
             id: `event-${event.id}`,
             speakerId: String(event.actor_id),
@@ -51,44 +50,47 @@ export function actionsFor(event: WorldEvent, names: Names): LiveAction[] {
         },
       ];
     case "move":
-      if (event.actor_id === null || destination === null) return [];
-      return [
-        { type: "move", castId: String(event.actor_id), locationId: String(destination) },
-        { type: "now", text: `${actor ?? "Someone"} heads to the ${names.places.get(destination) ?? "next room"}` },
-      ];
-    case "relocate":
-      if (event.target_id === null || destination === null) return [];
-      return [{ type: "move", castId: String(event.target_id), locationId: String(destination) }];
-    case "hug":
-    case "kiss": {
-      if (!actor || !target || event.actor_id === null || event.target_id === null) return [];
-      const touch = event.kind === "hug" ? "hug" : "kiss";
-      const text = `${touch === "hug" ? "hugs" : "kisses"} ${target}`;
+    case "relocate": {
+      const movedId = event.kind === "move" ? event.actor_id : event.target_id;
+      if (movedId === null || destination === null) return [];
       return [
         {
-          type: "caption",
-          caption: {
-            id: `event-${event.id}`,
-            speakerId: String(event.actor_id),
-            speaker: actor,
-            text,
-            locationId: String(event.location_id ?? ""),
-            targetId: String(event.target_id),
-            touch,
+          type: "move",
+          move: {
+            castId: String(movedId),
+            name: (event.kind === "move" ? actor : target) ?? "Someone",
+            locationId: String(destination),
+            place: names.places.get(destination) ?? "next room",
           },
         },
-        { type: "now", text: `${actor} ${text}` },
       ];
     }
+    case "hug":
+    case "kiss":
+      if (!actor || !target || event.actor_id === null || event.target_id === null) return [];
+      return [
+        {
+          type: "touch",
+          touching: {
+            id: `event-${event.id}`,
+            kind: event.kind,
+            actorId: String(event.actor_id),
+            actor,
+            targetId: String(event.target_id),
+            target,
+            locationId: String(event.location_id ?? ""),
+          },
+        },
+      ];
     case "announce":
-      return event.text ? [{ type: "now", text: event.text }] : [];
+      return event.text ? [{ type: "headline", text: event.text }] : [];
     case "arrive":
-      return [{ type: "castChanged" }, { type: "now", text: "Someone new just walked in" }];
+      return [{ type: "castChanged" }, { type: "headline", text: "Someone new just walked in" }];
     case "twist":
       if (!event.text) return [];
       return [
         { type: "twist", twistId: numberField(event.data, "twist_id"), text: event.text },
-        { type: "now", text: `Twist: ${event.text}` },
+        { type: "headline", text: `Twist: ${event.text}` },
       ];
     case "poll_opened":
       return [{ type: "pollOpened" }];

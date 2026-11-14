@@ -2,6 +2,7 @@ import { Maximize, Minimize, PanelRightOpen, Pause, Play, Volume2, VolumeX } fro
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import type { Caption } from "@/show/types";
+import { CaptionText } from "./CaptionText";
 import { StageButton } from "./StageButton";
 
 type Props = {
@@ -62,16 +63,7 @@ export function Stage({
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="absolute inset-x-0 bottom-12 mx-auto w-fit sm:bottom-16 max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug sm:text-lg"
           >
-            {shownCaption.touch ? (
-              <span className="italic">
-                {shownCaption.touch === "hug" ? "🤗" : "💋"} <span className="font-semibold">{shownCaption.speaker}</span>{" "}
-                {shownCaption.text}
-              </span>
-            ) : (
-              <>
-                <span className="font-semibold">{shownCaption.speaker}:</span> {shownCaption.text}
-              </>
-            )}
+            <CaptionText caption={shownCaption} />
           </motion.p>
         )}
       </AnimatePresence>

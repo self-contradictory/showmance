@@ -5,6 +5,7 @@ import { api, ApiError } from "@/api/client";
 import { TWIST_PRICE } from "@/api/config";
 import { worldIdFromSlug } from "@/api/slug";
 import type { ChatMessage, PollView, WorldEvent } from "@/api/types";
+import { addToBeat, beatCaption, describeBeat, emptyBeat, type Beat } from "./beats";
 import type { ShowHandle, ShowOptions } from "./handle";
 import {
   actionsFor,
@@ -16,8 +17,8 @@ import {
   type LiveAction,
   type Names,
 } from "./liveEvents";
-import type { Show, Vote } from "./types";
-import { useCaptionQueue } from "./useCaptionQueue";
+import type { Show, Touching, Vote } from "./types";
+import { useBeatQueue } from "./useBeatQueue";
 import { useViewer } from "./useViewer";
 
 const HISTORY_SIZE = 40;
@@ -25,6 +26,7 @@ const MAX_COMMENTS = 200;
 const TWIST_CHECK_MS = 2000;
 const TWIST_CHECKS = 30;
 const WORLD_REFRESH_MS = 30_000;
+const NO_TOUCHES: Touching[] = [];
 
 type LiveState = { now: string; moved: Record<string, string>; comments: ChatComment[]; viewers?: number };
 
@@ -82,7 +84,12 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
   });
 
   const [live, update] = useReducer(reduceLive, { now: "", moved: {}, comments: [] });
-  const { caption, push } = useCaptionQueue(sound);
+  const { beat, add } = useBeatQueue(sound, (started: Beat, shown: boolean) => {
+    for (const move of started.moves) update({ type: "move", castId: move.castId, locationId: move.locationId });
+    const text = shown ? describeBeat(started) : null;
+    if (text) update({ type: "now", text });
+  });
+  const caption = useMemo(() => (beat ? beatCaption(beat) : null), [beat]);
   const [ballot, setBallot] = useState<{ pollId: string; optionId: string } | null>(null);
   const myTwists = useRef(new Set<number>());
   const mounted = useRef(true);
@@ -106,17 +113,21 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
   useEffect(() => {
     if (!history.data) return;
 
-    function apply(action: LiveAction, eventId: number, replay: boolean) {
+    function apply(action: LiveAction, event: WorldEvent, replay: boolean) {
+      const eventId = event.id;
       switch (action.type) {
-        case "caption":
-          if (!replay) push(action.caption);
-          return;
-        case "now":
-          update({ type: "now", text: action.text });
-          return;
+        case "speech":
+        case "touch":
         case "move":
-          if (!replay) update({ type: "move", castId: action.castId, locationId: action.locationId });
+        case "headline": {
+          if (!replay) {
+            add(event.tick, action);
+            return;
+          }
+          const text = describeBeat(addToBeat(emptyBeat(event.tick), action));
+          if (text) update({ type: "now", text });
           return;
+        }
         case "twist":
           update({
             type: "comment",
@@ -172,7 +183,7 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
     function handle(event: WorldEvent, replay: boolean) {
       const current = namesRef.current;
       if (!current) return;
-      for (const action of actionsFor(event, current)) apply(action, event.id, replay);
+      for (const action of actionsFor(event, current)) apply(action, event, replay);
     }
 
     for (const event of history.data.slice(-HISTORY_SIZE)) handle(event, true);
@@ -193,7 +204,7 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
         .catch(() => {});
     };
     return () => source.close();
-  }, [history.data, worldId, push, queryClient, namesRef, pollRef, meRef]);
+  }, [history.data, worldId, add, queryClient, namesRef, pollRef, meRef]);
 
   async function watchTwist(twistId: number) {
     for (let check = 0; check < TWIST_CHECKS && mounted.current; check++) {
@@ -259,6 +270,7 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
     cast: data ? castFor(data.agents, live.moved) : [],
     viewers: live.viewers ?? data?.viewers,
     caption,
+    touches: beat?.touches ?? NO_TOUCHES,
     comments: live.comments,
     vote,
     twistPrice: TWIST_PRICE,
