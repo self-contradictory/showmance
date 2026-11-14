@@ -12,6 +12,7 @@ export type LiveAction =
   | { type: "twist"; twistId: number | null; text: string }
   | { type: "pollOpened" }
   | { type: "pollClosed"; winner: string; winnerIndex: number | null }
+  | { type: "pollCancelled" }
   | { type: "castChanged" };
 
 export function namesFor(agents: Agent[], places: Place[]): Names {
@@ -74,6 +75,8 @@ export function actionsFor(event: WorldEvent, names: Names): LiveAction[] {
       ];
     case "poll_opened":
       return [{ type: "pollOpened" }];
+    case "poll_cancelled":
+      return [{ type: "pollCancelled" }];
     case "poll_closed":
       return [{ type: "pollClosed", winner: event.text ?? "", winnerIndex: numberField(event.data, "winner") }];
     default:

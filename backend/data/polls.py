@@ -27,6 +27,10 @@ class PollRepository(Repository):
             row.status = "closed"
             row.winner = winner
 
+    async def cancel(self, poll_id: int) -> None:
+        async with self._session.begin() as s:
+            (await s.get_one(PollRow, poll_id)).status = "closed"
+
     async def vote(self, poll_id: int, viewer_id: int, option: int) -> None:
         async with self._session.begin() as s:
             row = await s.get(VoteRow, (poll_id, viewer_id))

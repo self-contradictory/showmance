@@ -193,8 +193,8 @@ async def test_director_sees_the_open_poll_when_staging(store, villa, sim):
     assert context.poll == poll
 
 
-async def test_paid_twist_that_decides_the_vote_is_refunded(store, villa, sim):
-    await store.polls.open(
+async def paid_twist_during_a_poll(store, villa, text):
+    poll = await store.polls.open(
         NewPoll(
             world_id=villa.world.id,
             question="Should Jake cheat?",
@@ -211,24 +211,45 @@ async def test_paid_twist_that_decides_the_vote_is_refunded(store, villa, sim):
     twist = await store.wallets.buy_twist(
         NewTwist(
             world_id=villa.world.id,
-            text="make Jake cheat",
+            text=text,
             source="donation",
             viewer_id=viewer.id,
             price=50,
         )
     )
-    s = sim(conflicts={"make Jake cheat"})
+    assert twist is not None
+    return poll, viewer, twist
+
+
+async def test_paid_twist_that_decides_the_vote_happens_and_cancels_it(
+    store, villa, sim
+):
+    poll, viewer, twist = await paid_twist_during_a_poll(
+        store, villa, "make Jake cheat"
+    )
+    plan = TwistPlan(
+        summary="Jake cheats", nudges=[Nudge(agent_id=villa.jake.id, text="go")]
+    )
+    s = sim(plans={"make Jake cheat": plan}, conflicts={"make Jake cheat"})
+
+    events = await s.engine.step(villa.world.id)
+
+    assert (await store.twists.get(twist.id)).status == "staged"
+    assert (await store.viewers.get(viewer.id)).coins == 50
+    assert await store.polls.current(villa.world.id) is None
+    [cancelled] = [e for e in events if e.kind == "poll_cancelled"]
+    assert cancelled.data == {"poll_id": poll.id, "twist_id": twist.id}
+
+
+async def test_paid_twist_beside_the_vote_leaves_it_open(store, villa, sim):
+    poll, _, twist = await paid_twist_during_a_poll(store, villa, "Leo sings")
+    s = sim(plans={"Leo sings": TwistPlan(summary="Leo sings")})
 
     await s.engine.step(villa.world.id)
 
-    assert twist is not None
-    rejected = await store.twists.get(twist.id)
-    assert (rejected.status, rejected.outcome) == (
-        "rejected",
-        settings.vote_conflict_reason,
-    )
-    assert (await store.viewers.get(viewer.id)).coins == 100
-    assert s.director.contexts == []
+    assert (await store.twists.get(twist.id)).status == "staged"
+    assert s.director.checked == ["Leo sings"]
+    assert await store.polls.current(villa.world.id) == poll
 
 
 async def test_no_vote_check_without_an_open_poll(store, villa, sim):

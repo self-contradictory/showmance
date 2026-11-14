@@ -150,6 +150,19 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
           if (!replay) void queryClient.invalidateQueries({ queryKey: ["poll", worldId] });
           return;
         }
+        case "pollCancelled":
+          update({
+            type: "comment",
+            comment: {
+              kind: "notice",
+              id: `event-${eventId}`,
+              at: Date.now(),
+              title: "Vote cancelled",
+              text: "A viewer paid to decide it.",
+            },
+          });
+          if (!replay) void queryClient.invalidateQueries({ queryKey: ["poll", worldId] });
+          return;
         case "castChanged":
           if (!replay) void queryClient.invalidateQueries({ queryKey: ["world", worldId] });
           return;
