@@ -5,6 +5,7 @@ VILLA = {
     "name": "Bali Villa",
     "thumbnail_url": "/thumbnails/bali.jpg",
     "setting": "A villa in Bali",
+    "home": "villa",
     "locations": [{"name": "pool"}, {"name": "kitchen"}],
     "agents": [
         {"name": "Mia", "persona": "Bold.", "gender": "female", "location": "pool"},
@@ -34,6 +35,7 @@ async def test_create_world_and_read_it_back(sim, client):
         a["name"]: (places[a["location_id"]], a["gender"]) for a in view["agents"]
     }
     assert agents == {"Mia": ("pool", "female"), "Jake": ("kitchen", "male")}
+    assert view["world"]["home"] == "villa"
     assert view["running"] is False
 
 

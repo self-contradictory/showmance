@@ -15,6 +15,7 @@ class WorldRow(Base):
     name: Mapped[str]
     setting: Mapped[str]
     thumbnail_url: Mapped[str | None]
+    home: Mapped[str | None]
     tick: Mapped[int]
 
 

@@ -74,7 +74,7 @@ curl -N localhost:8000/worlds/1/stream
 | Method | Path | |
 |---|---|---|
 | `GET` | `/worlds` | every world (name, thumbnail, setting, tick, day) with `running` and `viewers`, for the homepage |
-| `POST` | `/worlds` | create a world from a spec like `villa.json`: `name`, `setting`, `thumbnail_url?`, locations, agents (each with `gender`: `female` or `male`) |
+| `POST` | `/worlds` | create a world from a spec like `villa.json`: `name`, `setting`, `thumbnail_url?`, `home?` (the 3D home it plays in: `villa`, `cottage`, `two-story` or `classic`; the frontend uses the villa when it's missing), locations, agents (each with `gender`: `female` or `male`) |
 | `GET` | `/worlds/{id}` | world (with `day`), locations, agents, relationships, `running`, `viewers` |
 | `GET` | `/worlds/{id}/events?after_id=` | event history |
 | `GET` | `/worlds/{id}/stream?after_id=` | one SSE connection per viewer: world events (unnamed, with ids, resume from `Last-Event-ID`), `chat` events with new messages, `viewers` events when the count changes |

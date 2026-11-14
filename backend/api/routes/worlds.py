@@ -23,7 +23,12 @@ async def list_worlds(services: ServicesDep) -> list[WorldSummary]:
 async def create_world(spec: WorldSpec, services: ServicesDep) -> World:
     store = services.store
     world = await store.worlds.create(
-        NewWorld(name=spec.name, setting=spec.setting, thumbnail_url=spec.thumbnail_url)
+        NewWorld(
+            name=spec.name,
+            setting=spec.setting,
+            thumbnail_url=spec.thumbnail_url,
+            home=spec.home,
+        )
     )
     location_ids = {}
     for location in spec.locations:

@@ -24,6 +24,7 @@ class WorldSpec(Model):
     name: str
     setting: str
     thumbnail_url: str | None = None
+    home: str | None = None
     locations: list[LocationSpec]
     agents: list[AgentSpec]
 

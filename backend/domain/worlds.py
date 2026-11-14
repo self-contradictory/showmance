@@ -8,6 +8,7 @@ class NewWorld(Model):
     name: str
     setting: str
     thumbnail_url: str | None = None
+    home: str | None = None
 
 
 class World(NewWorld):

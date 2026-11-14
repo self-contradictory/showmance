@@ -36,3 +36,20 @@ async def test_new_columns_are_added_to_an_existing_database(tmp_path):
     await db.dispose()
 
     assert genders == {"Mia": None, "Jake": "male"}
+
+
+async def test_existing_worlds_get_an_empty_home(tmp_path):
+    url = f"sqlite+aiosqlite:///{tmp_path / 'old.db'}"
+    old = await connect(url)
+    async with old.begin() as conn:
+        await conn.execute(text("ALTER TABLE worlds DROP COLUMN home"))
+        await conn.execute(
+            text("INSERT INTO worlds (name, setting, tick) VALUES ('Villa', '', 0)")
+        )
+    await old.dispose()
+
+    db = await connect(url)
+    worlds = await Store(db).worlds.get_all()
+    await db.dispose()
+
+    assert [(world.name, world.home) for world in worlds] == [("Villa", None)]
