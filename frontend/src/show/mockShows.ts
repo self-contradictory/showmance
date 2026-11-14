@@ -259,3 +259,10 @@ export const SHOWS: ShowScript[] = [
 export function findShow(slug: string): ShowScript | undefined {
   return SHOWS.find((show) => show.slug === slug);
 }
+
+const SCENE_MS = 16_000;
+
+export function sceneIndexNow(script: ShowScript): number {
+  const offset = SHOWS.indexOf(script) * 5_000;
+  return Math.floor((Date.now() + offset) / SCENE_MS) % script.scenes.length;
+}

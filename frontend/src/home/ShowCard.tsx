@@ -1,13 +1,25 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { Link } from "wouter";
 import type { ShowSummary } from "@/show/types";
 import { ShowArt } from "@/ui/ShowArt";
+import { LivePreview } from "./LivePreview";
 
 export function ShowCard({ show }: { show: ShowSummary }) {
+  const [previewing, setPreviewing] = useState(false);
+
   return (
-    <Link href={`/${show.slug}`} className="block rounded-2xl">
+    <Link
+      href={`/${show.slug}`}
+      onPointerEnter={(event) => event.pointerType === "mouse" && setPreviewing(true)}
+      onPointerLeave={() => setPreviewing(false)}
+      onFocus={() => setPreviewing(true)}
+      onBlur={() => setPreviewing(false)}
+      className="block rounded-2xl"
+    >
       <div className="relative aspect-video overflow-hidden rounded-2xl bg-stage text-on-overlay">
         <ShowArt title={show.title} cover={show.cover} />
+        {previewing && <LivePreview slug={show.slug} />}
         <p className="absolute top-3 left-3 rounded-md bg-overlay px-2 py-1 text-xs font-medium tabular-nums">
           {show.viewers.toLocaleString("en-US")} watching
         </p>

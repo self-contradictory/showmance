@@ -1,4 +1,4 @@
-import { FAKE_VIEWERS, findShow, type Scene, type ShowScript } from "./mockShows";
+import { FAKE_VIEWERS, findShow, sceneIndexNow, type Scene, type ShowScript } from "./mockShows";
 import { reduceShow } from "./reduce";
 import { MAX_MESSAGE_LENGTH, MAX_TWIST_LENGTH, type Feed, type FeedEvent, type Show } from "./types";
 
@@ -31,12 +31,13 @@ export function createMockFeed(slug: string): Feed {
   const found = findShow(slug);
   if (!found) throw new Error(`Unknown show: ${slug}`);
   const script: ShowScript = found;
+  let sceneIndex = sceneIndexNow(script);
 
   let state: Show = {
     slug: script.slug,
     title: script.title,
     day: script.day,
-    now: script.scenes[0]!.now,
+    now: script.scenes[sceneIndex]?.now ?? "",
     cover: script.cover,
     cast: script.cast,
     viewers: script.viewers,
@@ -66,7 +67,6 @@ export function createMockFeed(slug: string): Feed {
   }
 
   let queue: Scene["lines"] = [];
-  let sceneIndex = 0;
 
   function playScene(scene: Scene) {
     queue = [...scene.lines];

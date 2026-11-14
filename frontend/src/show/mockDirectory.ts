@@ -1,16 +1,16 @@
-import { SHOWS, type ShowScript } from "./mockShows";
+import { SHOWS, sceneIndexNow, type ShowScript } from "./mockShows";
 import type { Directory, ShowSummary } from "./types";
 
 const TICK_MS = 4000;
 
-type Entry = { script: ShowScript; scene: number; viewers: number };
+type Entry = { script: ShowScript; viewers: number };
 
-function summarize({ script, scene, viewers }: Entry): ShowSummary {
+function summarize({ script, viewers }: Entry): ShowSummary {
   return {
     slug: script.slug,
     title: script.title,
     day: script.day,
-    now: script.scenes[scene]?.now ?? "",
+    now: script.scenes[sceneIndexNow(script)]?.now ?? "",
     viewers,
     cover: script.cover,
   };
@@ -19,7 +19,7 @@ function summarize({ script, scene, viewers }: Entry): ShowSummary {
 export function createMockDirectory(): Directory {
   let entries: Entry[] = [...SHOWS]
     .sort((a, b) => b.viewers - a.viewers)
-    .map((script) => ({ script, scene: 0, viewers: script.viewers }));
+    .map((script) => ({ script, viewers: script.viewers }));
   let shows = entries.map(summarize);
 
   const listeners = new Set<(shows: ShowSummary[]) => void>();
@@ -29,7 +29,6 @@ export function createMockDirectory(): Directory {
     entries = entries.map((entry) => ({
       script: entry.script,
       viewers: Math.max(20, entry.viewers + Math.round((Math.random() - 0.4) * 6)),
-      scene: Math.random() < 0.25 ? (entry.scene + 1) % entry.script.scenes.length : entry.scene,
     }));
     shows = entries.map(summarize);
     for (const listener of listeners) listener(shows);
