@@ -18,7 +18,7 @@ type Props = {
 
 export function Chat({ comments, vote, myVote, twists, balance, onSend, onVote, onBuyTwist }: Props) {
   return (
-    <aside aria-label="Chat" className="flex min-h-0 flex-col max-lg:flex-1 max-lg:px-4 max-lg:pb-3 lg:w-[340px]">
+    <aside aria-label="Chat" className="flex min-h-0 flex-col max-lg:flex-1 max-lg:px-4 max-lg:pb-3 lg:w-[340px] lg:shrink-0">
       <h2 className="pb-3 text-sm font-semibold max-lg:hidden">Chat</h2>
       {vote && <Vote vote={vote} myVote={myVote} onVote={onVote} />}
       <Comments comments={comments} />
