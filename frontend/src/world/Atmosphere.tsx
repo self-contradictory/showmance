@@ -1,7 +1,8 @@
 import type { Sky } from "@/show/types";
 import { SKIES } from "./palette";
 
-export function Atmosphere({ sky, width }: { sky: Sky; width: number }) {
+/** `ground`: the height of the lawn, so a house model sits on it. */
+export function Atmosphere({ sky, width, ground = -0.3 }: { sky: Sky; width: number; ground?: number }) {
   const preset = SKIES[sky];
   const half = width / 2 + 2;
 
@@ -24,7 +25,7 @@ export function Atmosphere({ sky, width }: { sky: Sky; width: number }) {
         shadow-camera-far={60}
         shadow-bias={-0.0005}
       />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.3, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, ground, 0]} receiveShadow>
         <planeGeometry args={[200, 200]} />
         <meshStandardMaterial color={preset.ground} />
       </mesh>

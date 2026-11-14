@@ -3,6 +3,7 @@ export type World = {
   name: string;
   setting: string;
   thumbnail_url: string | null;
+  home: string | null;
   tick: number;
   day: number;
 };

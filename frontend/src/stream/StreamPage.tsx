@@ -6,7 +6,6 @@ import { useMediaQuery } from "@/lib/useMediaQuery";
 import { readStored, writeStored } from "@/lib/storage";
 import { useShow } from "@/show/useShow";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
-import { findSet, nextSet } from "@/world/sets";
 import { Header } from "@/ui/Header";
 import { ShowArt } from "@/ui/ShowArt";
 import { ShowInfo } from "./ShowInfo";
@@ -16,12 +15,10 @@ const WorldScene = lazy(() => import("@/world/WorldScene"));
 
 const CHAT_KEY = "showmance:chat";
 const MUTED_KEY = "showmance:muted";
-const SET_KEY = "showmance:set";
 
 export function StreamPage({ slug }: { slug: string }) {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(() => readStored(MUTED_KEY) === "muted");
-  const [worldSet, setWorldSet] = useState(() => findSet(readStored(SET_KEY)));
   const { show, notFound, myVote, send, vote, dropTwist } = useShow(slug, { sound: !muted && !paused });
   const streamRef = useRef<HTMLDivElement>(null);
   const fullscreen = useFullscreen(streamRef);
@@ -37,12 +34,6 @@ export function StreamPage({ slug }: { slug: string }) {
   function toggleMute() {
     setMuted(!muted);
     writeStored(MUTED_KEY, muted ? "sound" : "muted");
-  }
-
-  function switchSet() {
-    const next = nextSet(worldSet);
-    setWorldSet(next);
-    writeStored(SET_KEY, next.id);
   }
 
   function setChat(open: boolean) {
@@ -74,13 +65,10 @@ export function StreamPage({ slug }: { slug: string }) {
             onToggleMute={toggleMute}
             onToggleFullscreen={fullscreen.toggle}
             onShowChat={chatShown ? undefined : () => setChat(true)}
-            setName={worldSet.name}
-            onSwitchSet={switchSet}
-            credit={worldSet.credit}
           >
             <ErrorBoundary fallback={<ShowArt title={show.title} cover={show.cover} />}>
               <Suspense fallback={<ShowArt title={show.title} cover={show.cover} />}>
-                <WorldScene key={worldSet.id} show={show} paused={paused} set={worldSet} />
+                <WorldScene show={show} paused={paused} />
               </Suspense>
             </ErrorBoundary>
           </Stage>

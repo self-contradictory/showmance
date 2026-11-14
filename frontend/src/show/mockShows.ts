@@ -9,6 +9,7 @@ export type ShowScript = {
   viewers: number;
   cover?: string;
   sky: Sky;
+  home?: string;
   locations: Location[];
   cast: CastMember[];
   scenes: Scene[];
@@ -25,6 +26,7 @@ export const SHOWS: ShowScript[] = [
     day: 3,
     viewers: 412,
     sky: "sunset",
+    home: "villa",
     locations: [{ id: "pool", name: "Pool" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
       { id: "mia", name: "Mia", role: "The planner", gender: "female", locationId: "pool" },
@@ -99,6 +101,7 @@ export const SHOWS: ShowScript[] = [
     day: 1,
     viewers: 268,
     sky: "snow",
+    home: "two-story",
     locations: [{ id: "living", name: "Living room" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
       { id: "ava", name: "Ava", role: "The skeptic", gender: "female", locationId: "living" },
@@ -161,6 +164,7 @@ export const SHOWS: ShowScript[] = [
     day: 2,
     viewers: 183,
     sky: "day",
+    home: "classic",
     locations: [{ id: "beach", name: "Beach" }, { id: "bar", name: "Bar" }, { id: "pool", name: "Pool" }],
     cast: [
       { id: "nora", name: "Nora", role: "The planner", gender: "female", locationId: "beach" },
@@ -222,6 +226,7 @@ export const SHOWS: ShowScript[] = [
     day: 5,
     viewers: 97,
     sky: "night",
+    home: "cottage",
     locations: [{ id: "deck", name: "Deck" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
       { id: "grace", name: "Grace", role: "The one who left", gender: "female", locationId: "kitchen" },

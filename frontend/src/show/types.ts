@@ -57,6 +57,7 @@ export type Show = {
   now: string;
   cover?: string;
   sky: Sky;
+  home?: string;
   locations: Location[];
   cast: CastMember[];
   viewers?: number;

@@ -42,6 +42,7 @@ export function createMockFeed(slug: string): Feed {
     now: script.scenes[sceneIndex]?.now ?? "",
     cover: script.cover,
     sky: script.sky,
+    home: script.home,
     locations: script.locations,
     cast: script.cast,
     viewers: script.viewers,

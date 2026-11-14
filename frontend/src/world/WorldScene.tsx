@@ -4,20 +4,21 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import type { Show, Touch } from "@/show/types";
 import { Atmosphere } from "./Atmosphere";
 import { CameraRig } from "./CameraRig";
-import { besideOf, classicLayout, layoutRooms, spotFor, type Vec3 } from "./layout";
+import { besideOf, classicLayout, gather, layoutRooms, type Vec3 } from "./layout";
 import { ModelWorld } from "./ModelWorld";
 import { SKIES } from "./palette";
 import { Person } from "./Person";
 import { Room } from "./Room";
-import { modelLayout, type WorldSet } from "./sets";
+import { findSet, modelLayout } from "./sets";
 
-type Props = { show: Show; paused: boolean; set: WorldSet };
+type Props = { show: Show; paused: boolean };
 
 function readAccent(): string {
   return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#e3175f";
 }
 
-export default function WorldScene({ show, paused, set }: Props) {
+export default function WorldScene({ show, paused }: Props) {
+  const set = useMemo(() => findSet(show.home), [show.home]);
   const rooms = useMemo(() => (set.kind === "classic" ? layoutRooms(show.locations) : []), [set, show.locations]);
   const layout = useMemo(
     () => (set.kind === "classic" ? classicLayout(rooms) : modelLayout(set, show.locations)),
@@ -36,9 +37,10 @@ export default function WorldScene({ show, paused, set }: Props) {
     const rests = new Map<string, number>();
     for (const place of layout.places) {
       const occupants = show.cast.filter((member) => member.locationId === place.id);
-      occupants.forEach((member, i) => {
-        placed.set(member.id, spotFor(place, i, occupants.length));
-        rests.set(member.id, place.facing);
+      gather(place, occupants.length).forEach(({ spot, facing }, i) => {
+        const member = occupants[i]!;
+        placed.set(member.id, spot);
+        rests.set(member.id, facing);
       });
     }
     return { placed, rests };
@@ -77,7 +79,7 @@ export default function WorldScene({ show, paused, set }: Props) {
         frameloop={paused ? "never" : "always"}
         camera={{ fov: activePlace?.shot.fov ?? 35, near: 0.1, far: 120 }}
       >
-        <Atmosphere sky={show.sky} width={layout.span} />
+        <Atmosphere sky={show.sky} width={layout.span} ground={set.kind === "model" ? set.ground : undefined} />
         <Suspense fallback={null}>
           {set.kind === "classic" ? (
             rooms.map((room) => <Room key={room.id} room={room} lamps={lamps} />)

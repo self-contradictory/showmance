@@ -8,7 +8,10 @@ export type Shot = { position: Vec3; target: Vec3; fov: number };
 /** A cut-away: the model is hidden on the camera's side of the vertical plane through `at`. */
 export type Cut = { at: Vec3; toward: Vec3 };
 
-/** Where one location's people line up, facing the camera that films them. */
+/**
+ * Where one location's people gather, and the camera that films them.
+ * `width` and `depth` cap how far the group spreads, for small rooms.
+ */
 export type Place = {
   id: string;
   center: Vec3;
@@ -17,8 +20,11 @@ export type Place = {
   facing: number;
   shot: Shot;
   cut?: Cut;
-  perRow?: number;
+  width?: number;
+  depth?: number;
 };
+
+export type Standing = { spot: Vec3; facing: number };
 
 /** The points to walk through, or null to appear at the destination. */
 export type Route = (from: Vec3, to: Vec3) => Vec3[] | null;
@@ -75,21 +81,30 @@ export function placeFor(id: string, center: Vec3, shot: Shot, spacing: number, 
   };
 }
 
-const ROW_GAP = 0.8;
+const ALONE_TURN = 0.5;
 
-/** Lines people up side by side; past `perRow`, the rest stand staggered in rows behind. */
-export function spotFor(place: Place, index: number, count: number): Vec3 {
-  const perRow = place.perRow ?? count;
-  const row = Math.floor(index / perRow);
-  const inRow = Math.min(perRow, count - row * perRow);
-  const offset = (index - row * perRow - (inRow - 1) / 2 + (row % 2) / 2) * place.spacing;
-  const back = row * ROW_GAP;
+/**
+ * People gather on a half circle that opens toward the camera, turned toward its middle,
+ * so they talk to each other rather than to the camera. Two people face each other.
+ */
+export function gather(place: Place, count: number): Standing[] {
   const [x, y, z] = place.center;
-  return [
-    x + place.lateral[0] * offset - Math.sin(place.facing) * back,
-    y,
-    z + place.lateral[2] * offset - Math.cos(place.facing) * back,
-  ];
+  if (count === 1) return [{ spot: place.center, facing: place.facing + ALONE_TURN }];
+
+  const [tx, tz] = [Math.sin(place.facing), Math.cos(place.facing)];
+  const [lx, lz] = [place.lateral[0], place.lateral[2]];
+  const ideal = count === 2 ? place.spacing / 2 : Math.max(place.spacing, (place.spacing * (count - 1)) / Math.PI);
+  const radius = Math.min(ideal, (place.width ?? Infinity) / 2);
+  const back = Math.min(count === 2 ? 0 : radius, place.depth ?? Infinity);
+  const [ox, oz] = [x + (tx * back) / 2, z + (tz * back) / 2];
+
+  return Array.from({ length: count }, (_, i) => {
+    const angle = -Math.PI / 2 + (i * Math.PI) / (count - 1);
+    const side = Math.sin(angle) * radius;
+    const behind = Math.cos(angle) * back;
+    const spot: Vec3 = [ox + lx * side - tx * behind, y, oz + lz * side - tz * behind];
+    return { spot, facing: Math.atan2(ox - spot[0], oz - spot[2]) };
+  });
 }
 
 export function walkway(from: Vec3, to: Vec3): Vec3[] {
