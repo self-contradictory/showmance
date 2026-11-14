@@ -5,7 +5,7 @@ from ai.render import (
     render_proposal,
     render_scene,
 )
-from domain import Event, Poll, PollOption, SceneContext
+from domain import Event, Line, Poll, PollOption, SceneContext
 
 
 def test_context_shows_only_what_the_agent_knows(context):
@@ -113,4 +113,18 @@ def test_writer_sees_who_saw_what_and_what_the_producers_need(director_context):
     assert '- [tick 3] twist "Mia gets a text" [viewers only]' in prompt
     assert prompt.endswith(
         "The producers need this to happen now:\n- Jake: Act like nothing happened"
+    )
+
+
+def test_writer_sees_the_lines_already_written(director_context):
+    upcoming = [
+        Line(actor_id=2, kind="move", destination_id=2, emotion="sneaky"),
+        Line(actor_id=1, kind="say", text="Where is he?", emotion="worried"),
+    ]
+    context = SceneContext(**dict(director_context), upcoming=upcoming)
+
+    assert render_scene(context).endswith(
+        "Already written, playing next:\n"
+        "- Jake: move (to kitchen, emotion: sneaky)\n"
+        '- Mia: say "Where is he?" (emotion: worried)'
     )

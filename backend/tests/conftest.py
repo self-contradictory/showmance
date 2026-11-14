@@ -162,8 +162,8 @@ def sim(store, memory):
 
 @pytest.fixture
 def writer_sim(store, memory):
-    def build(scenes, plans=None):
-        writer = ScriptedWriter(scenes)
+    def build(scenes=(), plans=None, writer=None):
+        writer = writer or ScriptedWriter(list(scenes))
         director = ScriptedDirector(plans or {}, None)
         return SimpleNamespace(
             engine=Engine(store, memory, director, WriterCast(store, writer)),

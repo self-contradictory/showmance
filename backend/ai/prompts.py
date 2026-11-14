@@ -51,6 +51,8 @@ Make the options dramatic, believable for these people, and different from each 
 WRITE_INSTRUCTIONS = f"""You write a reality dating show set in a villa.
 Viewers watch it live, one line at a time.
 Write the next scene in about {settings.scene_lines} lines, picking up where the story left off.
+If some lines are already written to play next, don't repeat them: start right after them.
+Places listed for people are from before those lines, so count their moves.
 
 Each line is one thing one person does, with how they feel doing it (emotion).
 Refer to people and places by their id:

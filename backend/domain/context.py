@@ -7,6 +7,7 @@ from domain.locations import Location
 from domain.memories import Memory
 from domain.polls import Poll
 from domain.relationships import Relationship
+from domain.scenes import Line
 from domain.worlds import World
 
 
@@ -31,3 +32,4 @@ class DirectorContext(Model):
 
 class SceneContext(DirectorContext):
     directions: dict[int, list[str]] = Field(default_factory=dict)
+    upcoming: list[Line] = Field(default_factory=list)

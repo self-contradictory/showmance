@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from config import settings
 from data import Store
-from domain import Agent, AgentContext, DirectorContext, SceneContext
+from domain import Agent, AgentContext, DirectorContext, Line, SceneContext
 from engine.state import WorldState
 from memory import MemoryStore
 
@@ -43,7 +43,10 @@ async def director_context(store: Store, state: WorldState) -> DirectorContext:
 
 
 async def scene_context(
-    store: Store, state: WorldState, directions: dict[int, list[str]]
+    store: Store,
+    state: WorldState,
+    directions: dict[int, list[str]],
+    upcoming: Sequence[Line] = (),
 ) -> SceneContext:
     context = await director_context(store, state)
-    return SceneContext(**dict(context), directions=directions)
+    return SceneContext(**dict(context), directions=directions, upcoming=list(upcoming))

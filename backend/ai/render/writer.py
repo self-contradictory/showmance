@@ -1,15 +1,37 @@
 from ai.render.common import bullets
 from ai.render.villa import names, poll_section, recent, villa_sections
-from domain import SceneContext
+from domain import Line, SceneContext
 
 
 def render_scene(context: SceneContext) -> str:
     sections = [*villa_sections(context), recent(context, seen_by=True)]
+    if context.upcoming:
+        sections.append(_upcoming(context))
     if context.poll is not None:
         sections.append(poll_section(context.poll))
     if context.directions:
         sections.append(_directions(context))
     return "\n\n".join(sections)
+
+
+def _upcoming(context: SceneContext) -> str:
+    who = names(context)
+    places = {loc.id: loc.name for loc in context.locations}
+    lines = (_line(line, who, places) for line in context.upcoming)
+    return f"Already written, playing next:\n{bullets(lines, '')}"
+
+
+def _line(line: Line, who: dict[int, str], places: dict[int, str]) -> str:
+    text = f"{who.get(line.actor_id, 'someone')}: {line.kind}"
+    if line.text:
+        text += f' "{line.text}"'
+    details = []
+    if line.target_id is not None:
+        details.append(f"to {who.get(line.target_id, 'someone')}")
+    if line.destination_id is not None:
+        details.append(f"to {places.get(line.destination_id, 'somewhere')}")
+    details.append(f"emotion: {line.emotion}")
+    return f"{text} ({', '.join(details)})"
 
 
 def _directions(context: SceneContext) -> str:
