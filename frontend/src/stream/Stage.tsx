@@ -1,4 +1,5 @@
 import { Maximize, Minimize } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Caption } from "@/show/types";
 
@@ -38,14 +39,20 @@ export function Stage({ viewers, caption, children }: Props) {
         {viewers.toLocaleString("en-US")} watching
       </p>
 
-      {caption && (
-        <p
-          key={caption.id}
-          className="absolute inset-x-0 bottom-[8%] mx-auto w-fit max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug motion-safe:animate-fade-in sm:text-lg"
-        >
-          <span className="font-semibold">{caption.speaker}:</span> {caption.text}
-        </p>
-      )}
+      <AnimatePresence>
+        {caption && (
+          <motion.p
+            key={caption.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="absolute inset-x-0 bottom-[8%] mx-auto w-fit max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug sm:text-lg"
+          >
+            <span className="font-semibold">{caption.speaker}:</span> {caption.text}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       {canFullscreen && (
         <button

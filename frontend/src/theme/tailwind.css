@@ -22,14 +22,7 @@
 }
 
 @theme {
-  --animate-fade-in: fade-in 180ms ease-out;
   --animate-flash: flash 1.2s ease-out;
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-  }
 
   @keyframes flash {
     from {

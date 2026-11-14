@@ -1,10 +1,10 @@
 import { Check } from "lucide-react";
+import { motion } from "motion/react";
 import { useNow } from "@/lib/useNow";
 import type { Vote as VoteData } from "@/show/types";
 
 type Props = {
   vote: VoteData;
-  /** The option this viewer picked, or null if they haven't voted. */
   myVote: string | null;
   onVote: (optionId: string) => void;
 };
@@ -16,7 +16,7 @@ export function Vote({ vote, myVote, onVote }: Props) {
   const total = vote.options.reduce((sum, option) => sum + option.votes, 0);
 
   return (
-    <section aria-label="Vote" className="shrink-0 pb-3">
+    <section aria-label="Vote" className="pb-3">
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <p className="text-sm font-medium">{vote.question}</p>
         <p className="shrink-0 text-xs text-muted tabular-nums">
@@ -35,12 +35,14 @@ export function Vote({ vote, myVote, onVote }: Props) {
                 onClick={() => onVote(option.id)}
                 disabled={myVote !== null || closed}
                 aria-pressed={mine}
-                className="relative flex h-10 w-full items-center justify-between overflow-hidden rounded-full bg-surface px-4 text-sm enabled:hover:ring-1 enabled:hover:ring-muted/50"
+                className="relative flex h-10 w-full items-center justify-between overflow-hidden rounded-full bg-surface px-4 text-sm focus-visible:outline-offset-[-2px] enabled:hover:ring-1 enabled:hover:ring-muted/50 enabled:hover:ring-inset"
               >
-                <span
+                <motion.span
                   aria-hidden
-                  style={{ width: `${pct}%` }}
-                  className={`absolute inset-y-0 left-0 transition-[width] duration-500 motion-reduce:transition-none ${mine ? "bg-accent/30" : "bg-surface-strong"}`}
+                  initial={false}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ type: "spring", stiffness: 140, damping: 22 }}
+                  className={`absolute inset-y-0 left-0 ${mine ? "bg-accent/30" : "bg-surface-strong"}`}
                 />
                 <span className="relative flex items-center gap-1.5 font-medium">
                   {option.label}
