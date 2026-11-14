@@ -1,6 +1,5 @@
 import type { FeedEvent, Show } from "./types";
 
-// Chat keeps only the latest comments so the page stays light.
 const MAX_COMMENTS = 200;
 
 export function reduceShow(show: Show, event: FeedEvent): Show {

@@ -11,7 +11,6 @@ export type VoteResultComment = Base & {
   pct: number;
 };
 
-/** Every kind of row the chat can show. To add a kind, see CommentRow.tsx. */
 export type ChatComment = MessageComment | TwistComment | VoteResultComment;
 
 export type CommentKind = ChatComment["kind"];

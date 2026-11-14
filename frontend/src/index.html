@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
-      // Apply a saved theme before first paint. Same key as theme/useTheme.ts.
       try {
         var saved = localStorage.getItem("showmance:theme");
         if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;

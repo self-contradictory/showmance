@@ -13,7 +13,6 @@ function loadGuestName(): string {
   return fresh;
 }
 
-/** Connects to the show feed and keeps the page state in sync with it. */
 export function useShow() {
   const [feed] = useState(createMockFeed);
   const [me] = useState(loadGuestName);

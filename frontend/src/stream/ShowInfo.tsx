@@ -13,7 +13,6 @@ export function ShowInfo({ title, day, now, cast }: Props) {
         <p className="mt-0.5 text-sm">{now}</p>
       </div>
 
-      {/* Hidden on phones to leave room for chat. */}
       <ul className="flex shrink-0 gap-3 max-lg:hidden" aria-label="Cast">
         {cast.map((member) => (
           <li key={member.id} title={member.role} className="flex flex-col items-center gap-1">
