@@ -78,7 +78,13 @@ export function useCaptionQueue(sound: boolean) {
 
   useEffect(() => {
     soundOn.current = sound;
-    if (!sound) finishLine.current?.();
+    if (!sound) {
+      finishLine.current?.();
+      return;
+    }
+    for (const line of queue.current) {
+      if (line.audio && !clips.current.has(line.id)) clips.current.set(line.id, loadClip(line.audio));
+    }
   }, [sound]);
 
   useEffect(
