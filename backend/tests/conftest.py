@@ -37,7 +37,7 @@ from domain import (
     World,
 )
 from engine import Engine
-from engine.casts import AgentsCast, WriterCast
+from engine.casts import AgentsCast, WriterCast, build_pacing
 from engine.state import WorldState
 from memory import SqlMemoryStore
 from voice import AudioCache, Narrator
@@ -191,11 +191,12 @@ def sim(store, memory):
 
 @pytest.fixture
 def writer_sim(store, memory):
-    def build(scenes=(), plans=None, writer=None):
+    def build(scenes=(), plans=None, writer=None, pacing="parallel"):
         writer = writer or ScriptedWriter(list(scenes))
         director = ScriptedDirector(plans or {}, None)
+        cast = WriterCast(store, writer, build_pacing(pacing))
         return SimpleNamespace(
-            engine=Engine(store, memory, director, WriterCast(store, writer)),
+            engine=Engine(store, memory, director, cast),
             writer=writer,
         )
 

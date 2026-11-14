@@ -119,6 +119,14 @@ def test_writer_sees_who_saw_what_and_what_the_producers_need(director_context):
     )
 
 
+def test_writer_sees_how_beats_play(director_context):
+    context = SceneContext(
+        **dict(director_context), beat_rules=["Each beat has exactly one line."]
+    )
+
+    assert "How beats play:\n- Each beat has exactly one line." in render_scene(context)
+
+
 def test_writer_sees_the_beats_already_written(director_context):
     upcoming = [
         Beat(

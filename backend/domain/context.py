@@ -33,3 +33,4 @@ class DirectorContext(Model):
 class SceneContext(DirectorContext):
     directions: dict[int, list[str]] = Field(default_factory=dict)
     upcoming: list[Beat] = Field(default_factory=list)
+    beat_rules: list[str] = Field(default_factory=list)

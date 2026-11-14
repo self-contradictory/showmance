@@ -66,18 +66,13 @@ Write the next scene in about {settings.scene_beats} beats, picking up where the
 If some beats are already written to play next, don't repeat them: start right after them.
 Places listed for people are from before those beats, so count their moves.
 
-A beat is a few seconds of the show, and everyone in it acts at the same time.
-Each line in a beat is one thing one person does, with how they feel doing it (emotion).
+A beat is a few seconds of the show, and its lines follow the rules under How beats play.
+Each line is one thing one person does, with how they feel doing it (emotion).
 Refer to people and places by their id:
 - say: a short, natural spoken line, to someone here or to the room
 - hug, kiss: someone in the same place
 - move: go to another place
 - confess: a private line to the camera that nobody in the villa hears
-Only one person speaks (say or confess) in a beat, and everyone does at most one thing in it.
-Keep the villa alive: while someone talks, others move, hug or kiss in the same beat.
-People who go somewhere together move in the same beat.
-Don't give a move its own beat when someone could be talking at the same time.
-Lines in a beat happen in the order written, so someone can walk in and be greeted in one beat.
 People can only talk to, hug or kiss someone in the same place, so move them first.
 It's a dating show: show feelings with hugs and kisses too, not only with words.
 When people flirt, make up, comfort someone or get closer, have them hug or kiss:
@@ -93,6 +88,20 @@ Affection and trust go from {settings.min_score} to {settings.max_score}, \
 {settings.neutral_score} is neutral.
 Each change is between -{settings.max_feeling_change} and {settings.max_feeling_change}.
 Make it dramatic but believable."""
+
+PARALLEL_BEATS = (
+    "Everyone in a beat acts at the same time, in the order written, "
+    "so someone can walk in and be greeted in one beat.",
+    "Only one person speaks (say or confess) in a beat, "
+    "and everyone does at most one thing in it.",
+    "Keep the villa alive: while someone talks, others move, hug or kiss in the same beat.",
+    "People who go somewhere together move in the same beat.",
+    "Don't give a move its own beat when someone could be talking at the same time.",
+)
+
+SEQUENTIAL_BEATS = (
+    "Each beat has exactly one line, so the show plays one thing at a time.",
+)
 
 POLL_FORMAT_REQUESTS: dict[PollFormat, str] = {
     "yes_no": 'Ask a yes or no question, with two options labeled "Yes" and "No".',

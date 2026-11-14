@@ -22,7 +22,14 @@ from domain import (
     TwistPlan,
     action_kind,
 )
-from engine.casts import AgentsCast, WriterCast, build_cast
+from engine.casts import (
+    AgentsCast,
+    Parallel,
+    Sequential,
+    WriterCast,
+    build_cast,
+    build_pacing,
+)
 
 
 def say(agent, text, **fields):
@@ -369,6 +376,48 @@ async def test_only_one_person_speaks_in_a_beat(villa, writer_sim):
     assert [e.text for e in second] == ["Two"]
 
 
+async def test_sequential_pacing_plays_one_line_per_tick(villa, writer_sim):
+    v = villa
+    s = writer_sim(
+        [
+            scene(
+                [
+                    say(v.mia, "One"),
+                    Line(
+                        actor_id=v.sara.id,
+                        kind="move",
+                        destination_id=v.pool.id,
+                        emotion="bored",
+                    ),
+                    Line(
+                        actor_id=v.jake.id,
+                        kind="hug",
+                        target_id=v.mia.id,
+                        emotion="warm",
+                    ),
+                ]
+            )
+        ],
+        pacing="sequential",
+    )
+
+    played = [await s.engine.step(v.world.id) for _ in range(3)]
+
+    assert [[(e.kind, e.actor_id) for e in events] for events in played] == [
+        [("say", v.mia.id)],
+        [("move", v.sara.id)],
+        [("hug", v.jake.id)],
+    ]
+
+
+async def test_writer_is_told_how_beats_play(villa, writer_sim):
+    s = writer_sim([scene(say(villa.mia, "Hi"))], pacing="sequential")
+
+    await s.engine.step(villa.world.id)
+
+    assert s.writer.contexts[0].beat_rules == list(Sequential.rules)
+
+
 async def test_failed_writer_call_skips_the_tick(villa, writer_sim):
     s = writer_sim([RuntimeError("model down"), scene(say(villa.mia, "Back"))])
 
@@ -403,6 +452,11 @@ async def test_llm_writer_returns_the_scene(director_context, fake_model):
 
     assert [line.action() for line in written.beats[0].lines] == [Kiss(target_id=2)]
     assert seen["prompt"] == render_scene(context)
+
+
+def test_pacing_setting_picks_how_beats_play():
+    assert isinstance(build_pacing("parallel"), Parallel)
+    assert isinstance(build_pacing("sequential"), Sequential)
 
 
 def test_cast_setting_picks_who_plays_the_contestants(store, memory):

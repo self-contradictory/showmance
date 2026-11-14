@@ -8,7 +8,6 @@ from ai.render import render_memory
 from config import settings
 from data import Store
 from domain import (
-    SPOKEN_KINDS,
     Action,
     Beat,
     Event,
@@ -18,6 +17,7 @@ from domain import (
     SceneContext,
 )
 from engine.casts.base import Cast
+from engine.casts.pacing import Pacing
 from engine.context import scene_context
 from engine.rules import takes_effect
 from engine.state import WorldState
@@ -28,9 +28,10 @@ Playable = list[tuple[Line, Action]]
 
 
 class WriterCast(Cast):
-    def __init__(self, store: Store, writer: Writer) -> None:
+    def __init__(self, store: Store, writer: Writer, pacing: Pacing) -> None:
         self._store = store
         self._writer = writer
+        self._pacing = pacing
         self._scripts: dict[int, deque[Beat]] = {}
         self._next_scene: dict[int, asyncio.Task[None]] = {}
         self._playing: dict[int, list[Line]] = {}
@@ -44,14 +45,18 @@ class WriterCast(Cast):
         script = self._scripts.setdefault(world_id, deque())
         if not script:
             await self._refill(state, directions)
-        playable = _next_playable(script, state)
+        playable = _next_playable(script, state, self._pacing)
         if not playable:
             return {}
         lines = [line for line, _ in playable]
         self._playing[world_id] = lines
         if len(script) <= settings.prefetch_beats and not self._writing(world_id):
             context = await scene_context(
-                self._store, state, {}, upcoming=[Beat(lines=lines), *script]
+                self._store,
+                state,
+                {},
+                upcoming=[Beat(lines=lines), *script],
+                beat_rules=self._pacing.rules,
             )
             self._next_scene[world_id] = asyncio.create_task(self._write(context))
         return {line.actor_id: action for line, action in playable}
@@ -79,7 +84,11 @@ class WriterCast(Cast):
         if next_scene is not None and not next_scene.done():
             await next_scene
             return
-        await self._write(await scene_context(self._store, state, directions))
+        await self._write(
+            await scene_context(
+                self._store, state, directions, beat_rules=self._pacing.rules
+            )
+        )
 
     def _writing(self, world_id: int) -> bool:
         next_scene = self._next_scene.get(world_id)
@@ -94,22 +103,23 @@ class WriterCast(Cast):
         self._scripts[context.world.id].extend(_new_beats(scene.beats, context))
 
 
-def _next_playable(script: deque[Beat], state: WorldState) -> Playable:
+def _next_playable(
+    script: deque[Beat], state: WorldState, pacing: Pacing
+) -> Playable:
     while script:
-        playable = _play(script.popleft(), script, state)
+        playable = _play(script.popleft(), script, state, pacing)
         if playable:
             return playable
     return []
 
 
-def _play(beat: Beat, script: deque[Beat], state: WorldState) -> Playable:
+def _play(
+    beat: Beat, script: deque[Beat], state: WorldState, pacing: Pacing
+) -> Playable:
     after = dataclasses.replace(state)
     playable: Playable = []
-    acting: set[int] = set()
-    spoken = False
     for index, line in enumerate(beat.lines):
-        speaks = line.kind in SPOKEN_KINDS
-        if line.actor_id in acting or (speaks and spoken):
+        if not pacing.joins(line, [played for played, _ in playable]):
             script.appendleft(Beat(lines=beat.lines[index:]))
             break
         action = line.action()
@@ -120,8 +130,6 @@ def _play(beat: Beat, script: deque[Beat], state: WorldState) -> Playable:
         ):
             continue
         playable.append((line, action))
-        acting.add(line.actor_id)
-        spoken = spoken or speaks
         if isinstance(action, Move):
             after.move(line.actor_id, action.destination_id)
     return playable

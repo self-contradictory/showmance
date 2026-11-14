@@ -47,6 +47,12 @@ async def scene_context(
     state: WorldState,
     directions: dict[int, list[str]],
     upcoming: Sequence[Beat] = (),
+    beat_rules: Sequence[str] = (),
 ) -> SceneContext:
     context = await director_context(store, state)
-    return SceneContext(**dict(context), directions=directions, upcoming=list(upcoming))
+    return SceneContext(
+        **dict(context),
+        directions=directions,
+        upcoming=list(upcoming),
+        beat_rules=list(beat_rules),
+    )

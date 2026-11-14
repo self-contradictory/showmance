@@ -7,12 +7,14 @@ from pydantic_settings import BaseSettings
 load_dotenv()
 
 CastKind = Literal["agents", "writer"]
+PacingKind = Literal["parallel", "sequential"]
 TtsKind = Literal["kokoro"]
 
 
 class Settings(BaseSettings):
     llm_model: str | None = None
     cast: CastKind = "agents"
+    pacing: PacingKind = "parallel"
     database_url: str = "sqlite+aiosqlite:///villa.db"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
     host: str = "127.0.0.1"

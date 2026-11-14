@@ -5,6 +5,8 @@ from domain import Beat, Line, SceneContext
 
 def render_scene(context: SceneContext) -> str:
     sections = [*villa_sections(context), recent(context, seen_by=True)]
+    if context.beat_rules:
+        sections.append(f"How beats play:\n{bullets(context.beat_rules, '')}")
     if context.upcoming:
         sections.append(_upcoming(context))
     if context.poll is not None:

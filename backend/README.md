@@ -14,6 +14,7 @@ uv run main.py
 |---|---|
 | `LLM_MODEL` | none: any Pydantic AI model string, plus that provider's API key (e.g. `OPENAI_API_KEY`, `GOOGLE_API_KEY`) in `.env` too |
 | `CAST` | `agents`: who plays the contestants, see below |
+| `PACING` | `parallel`: how much happens at once with `CAST=writer`, see below |
 | `DATABASE_URL` | `sqlite+aiosqlite:///villa.db` |
 | `CORS_ORIGINS` | `["http://localhost:3000"]` (a JSON list) |
 | `HOST` | `127.0.0.1` |
@@ -24,9 +25,18 @@ uv run main.py
 The director (polls and twists) is the same either way. `CAST` picks how the contestants act and feel:
 
 - `agents`: each contestant is its own model call. Every tick, everyone decides an action and everyone who saw something reacts, so about 12 calls a tick for six people.
-- `writer`: one model call writes a scene of about `SCENE_BEATS` beats for everyone, and each tick plays the next beat. In a beat several people act at once: one person talks while others move, hug or kiss. Lines in a beat play in the order written, and a second line for the same person, or a second speaker, waits for the next beat. Feelings come with the lines, so reactions cost nothing. When `PREFETCH_BEATS` beats are left, the next scene is written in the background, picking up after them, so scenes run on without a pause. A staged twist throws away the unplayed beats, cancels any scene being written, and the next tick writes a new scene. Use this on free tiers, with `TICK_INTERVAL=4` or so to match the captions.
+- `writer`: one model call writes a scene of about `SCENE_BEATS` beats for everyone, and each tick plays the next beat. `PACING` sets how much happens in a beat. Feelings come with the lines, so reactions cost nothing. When `PREFETCH_BEATS` beats are left, the next scene is written in the background, picking up after them, so scenes run on without a pause. A staged twist throws away the unplayed beats, cancels any scene being written, and the next tick writes a new scene. Use this on free tiers, with `TICK_INTERVAL=4` or so to match the captions.
 
 Both keep the same state (places, moods, feelings, memories, events), so you can switch a running villa by restarting with the other `CAST`.
+
+## Pacing
+
+With `CAST=writer`, `PACING` picks how much happens at once. Each option is a `Pacing` in `engine/casts/pacing.py` with two parts: the rules the writer gets for beats, and which lines can play in the same tick. Writing, playing, prefetching and twists are shared.
+
+- `parallel`: several people act in one beat. One person talks while others move, hug or kiss, and people who go somewhere together walk at the same time. Lines in a beat play in the order written, so someone can walk in and be greeted in one beat. A second line for the same person, or a second speaker, waits for the next beat.
+- `sequential`: one line per beat, so one person acts at a time.
+
+The frontend plays everything from one tick together, so it needs no setting.
 
 ## Voices
 
