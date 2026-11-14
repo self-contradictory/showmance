@@ -89,3 +89,15 @@ async def test_world_spec_sets_voices(store, sim, client):
 
     [mia] = await store.agents.get_all(world["id"])
     assert await store.voices.get(mia.id) == "v3"
+
+
+async def test_same_line_in_the_same_voice_is_voiced_once(
+    store, villa, narrator, fake_voice
+):
+    await store.voices.assign(villa.mia.id, "v1")
+
+    await narrator.audio(await say(store, villa, villa.mia, "Hi"))
+    await narrator.audio(await say(store, villa, villa.mia, "Hi"))
+    await narrator.audio(await say(store, villa, villa.mia, "Bye"))
+
+    assert [speech.text for speech in fake_voice.spoken] == ["Hi", "Bye"]
