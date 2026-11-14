@@ -1,7 +1,12 @@
+import os
+
+LLM_MODEL = os.getenv("LLM_MODEL")
+
 DEFAULT_MOOD = "neutral"
 
 MIN_SCORE = 0
 MAX_SCORE = 100
 NEUTRAL_SCORE = 50
+MAX_FEELING_CHANGE = 10
 
 RECALL_LIMIT = 20
