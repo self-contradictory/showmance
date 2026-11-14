@@ -1,9 +1,10 @@
+import { Html } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import type { Show } from "@/show/types";
 import { Atmosphere } from "./Atmosphere";
 import { CameraRig } from "./CameraRig";
-import { layoutRooms, spotFor, worldWidth, type Vec3 } from "./layout";
+import { besideOf, layoutRooms, spotFor, worldWidth, type Vec3 } from "./layout";
 import { SKIES } from "./palette";
 import { Person } from "./Person";
 import { Room } from "./Room";
@@ -24,7 +25,7 @@ export default function WorldScene({ show, paused }: Props) {
     if (caption) setActiveRoomId(caption.locationId);
   }, [caption]);
 
-  const spots = useMemo(() => {
+  const placed = useMemo(() => {
     const result = new Map<string, Vec3>();
     for (const room of rooms) {
       const occupants = show.cast.filter((member) => member.locationId === room.id);
@@ -32,6 +33,18 @@ export default function WorldScene({ show, paused }: Props) {
     }
     return result;
   }, [rooms, show.cast]);
+
+  const touch = caption?.touch;
+  const spots = useMemo(() => {
+    if (!caption?.touch || !caption.targetId) return placed;
+    const target = placed.get(caption.targetId);
+    const actor = placed.get(caption.speakerId);
+    if (!target || !actor) return placed;
+    return new Map(placed).set(caption.speakerId, besideOf(target, actor));
+  }, [placed, caption]);
+
+  const actorSpot = touch && caption ? spots.get(caption.speakerId) : undefined;
+  const targetSpot = touch && caption?.targetId ? spots.get(caption.targetId) : undefined;
 
   return (
     <div className="absolute inset-0">
@@ -43,12 +56,9 @@ export default function WorldScene({ show, paused }: Props) {
         {show.cast.map((member, index) => {
           const spot = spots.get(member.id);
           if (!spot) return null;
-          const talking = caption?.speakerId === member.id;
-          const listening = caption?.targetId === member.id;
-          const face =
-            (talking && caption?.targetId ? spots.get(caption.targetId) : undefined) ??
-            (listening && caption ? spots.get(caption.speakerId) : undefined) ??
-            null;
+          const leading = caption?.speakerId === member.id;
+          const partner = leading ? caption?.targetId : caption?.targetId === member.id ? caption?.speakerId : undefined;
+          const face = (partner ? spots.get(partner) : undefined) ?? null;
           return (
             <Person
               key={member.id}
@@ -56,11 +66,19 @@ export default function WorldScene({ show, paused }: Props) {
               index={index}
               spot={spot}
               face={face}
-              talking={talking}
+              talking={leading && !touch}
+              pose={touch && (leading || partner) ? touch : null}
               accent={accent}
             />
           );
         })}
+        {actorSpot && targetSpot && (
+          <Html position={[(actorSpot[0] + targetSpot[0]) / 2, 2.3, (actorSpot[2] + targetSpot[2]) / 2]} center>
+            <span className="pointer-events-none animate-bounce text-3xl select-none">
+              {touch === "hug" ? "🤗" : "💋"}
+            </span>
+          </Html>
+        )}
         <CameraRig room={rooms.find((room) => room.id === activeRoomId) ?? rooms[0]} />
       </Canvas>
     </div>

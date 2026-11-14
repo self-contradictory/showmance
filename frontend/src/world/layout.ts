@@ -38,3 +38,10 @@ export function walkway(from: Vec3, to: Vec3): Vec3[] {
 export function cameraFor(room: RoomLayout): { position: Vec3; target: Vec3 } {
   return { position: [room.x, 3.4, 8.6], target: [room.x, 0.75, -0.4] };
 }
+
+const BESIDE = 0.55;
+
+export function besideOf(target: Vec3, from: Vec3): Vec3 {
+  const side = from[0] <= target[0] ? -1 : 1;
+  return [target[0] + side * BESIDE, 0, target[2]];
+}

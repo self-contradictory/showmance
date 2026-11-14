@@ -60,9 +60,26 @@ export function actionsFor(event: WorldEvent, names: Names): LiveAction[] {
       if (event.target_id === null || destination === null) return [];
       return [{ type: "move", castId: String(event.target_id), locationId: String(destination) }];
     case "hug":
-      return actor && target ? [{ type: "now", text: `${actor} hugs ${target}` }] : [];
-    case "kiss":
-      return actor && target ? [{ type: "now", text: `${actor} kisses ${target}` }] : [];
+    case "kiss": {
+      if (!actor || !target || event.actor_id === null || event.target_id === null) return [];
+      const touch = event.kind === "hug" ? "hug" : "kiss";
+      const text = `${touch === "hug" ? "hugs" : "kisses"} ${target}`;
+      return [
+        {
+          type: "caption",
+          caption: {
+            id: `event-${event.id}`,
+            speakerId: String(event.actor_id),
+            speaker: actor,
+            text,
+            locationId: String(event.location_id ?? ""),
+            targetId: String(event.target_id),
+            touch,
+          },
+        },
+        { type: "now", text: `${actor} ${text}` },
+      ];
+    }
     case "announce":
       return event.text ? [{ type: "now", text: event.text }] : [];
     case "arrive":

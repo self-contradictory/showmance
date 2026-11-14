@@ -12,6 +12,7 @@ DECIDE_INSTRUCTIONS = f"""{ROLE} {SCALE}
 Pick exactly one action for this moment.
 Only target people who are here with you, by their id.
 Keep spoken lines short and natural.
+Show your feelings with a hug or a kiss too, not only with words.
 If the producers need you to do something, do it now, in your own way."""
 
 APPRAISE_INSTRUCTIONS = f"""{ROLE} {SCALE}
@@ -72,6 +73,8 @@ Refer to people and places by their id:
 - move: go to another place
 - confess: a private line to the camera that nobody in the villa hears
 People can only talk to, hug or kiss someone in the same place, so move them first.
+It's a dating show: show feelings with hugs and kisses too, not only with words.
+When people flirt, make up, comfort someone or get closer, have them hug or kiss.
 Keep track of where everyone is as the scene goes on.
 People only know what they saw or were told: recent events say who saw them.
 If the producers need something to happen, make it happen in this scene.

@@ -9,6 +9,8 @@ export type Sky = "day" | "sunset" | "night" | "snow";
 
 export type CastMember = { id: string; name: string; role: string; locationId: string; portrait?: string };
 
+export type Touch = "hug" | "kiss";
+
 export type Caption = {
   id: string;
   speakerId: string;
@@ -17,6 +19,7 @@ export type Caption = {
   locationId: string;
   targetId?: string;
   audio?: string;
+  touch?: Touch;
 };
 
 export type VoteOption = { id: string; label: string; votes: number };

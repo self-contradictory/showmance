@@ -1,6 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
+import type { Touch } from "@/show/types";
 import { walkway, type Vec3 } from "./layout";
 import { lookFor } from "./palette";
 
@@ -12,6 +13,7 @@ type Props = {
   spot: Vec3;
   face: Vec3 | null;
   talking: boolean;
+  pose: Touch | null;
   accent: string;
 };
 
@@ -20,7 +22,7 @@ function turnToward(current: number, target: number, lambda: number, delta: numb
   return current + diff * (1 - Math.exp(-lambda * delta));
 }
 
-export function Person({ id, index, spot, face, talking, accent }: Props) {
+export function Person({ id, index, spot, face, talking, pose, accent }: Props) {
   const look = useMemo(() => lookFor(id, index), [id, index]);
   const root = useRef<Group>(null);
   const torso = useRef<Group>(null);
@@ -73,19 +75,28 @@ export function Person({ id, index, spot, face, talking, accent }: Props) {
     }
 
     const swing = walking ? Math.sin(t * 9) * 0.7 : 0;
+    const holding = walking ? null : pose;
+    const reach = holding === "hug" ? -1.3 : holding === "kiss" ? -0.5 : null;
+    const wrap = holding === "hug" ? 0.35 : 0;
     if (leftLeg.current) leftLeg.current.rotation.x = MathUtils.damp(leftLeg.current.rotation.x, swing, 14, delta);
     if (rightLeg.current) rightLeg.current.rotation.x = MathUtils.damp(rightLeg.current.rotation.x, -swing, 14, delta);
-    if (leftArm.current) leftArm.current.rotation.x = MathUtils.damp(leftArm.current.rotation.x, -swing * 0.8, 14, delta);
+    if (leftArm.current) {
+      leftArm.current.rotation.x = MathUtils.damp(leftArm.current.rotation.x, reach ?? -swing * 0.8, 10, delta);
+      leftArm.current.rotation.z = MathUtils.damp(leftArm.current.rotation.z, wrap, 10, delta);
+    }
     if (rightArm.current) {
       const gesture = talking ? -0.9 + Math.sin(t * 5) * 0.3 : swing * 0.8;
-      rightArm.current.rotation.x = MathUtils.damp(rightArm.current.rotation.x, gesture, 10, delta);
+      rightArm.current.rotation.x = MathUtils.damp(rightArm.current.rotation.x, reach ?? gesture, 10, delta);
+      rightArm.current.rotation.z = MathUtils.damp(rightArm.current.rotation.z, -wrap, 10, delta);
     }
     if (head.current) {
-      const nod = talking ? Math.sin(t * 8) * 0.1 : 0;
+      const nod = holding === "kiss" ? 0.25 : talking ? Math.sin(t * 8) * 0.1 : 0;
       head.current.rotation.x = MathUtils.damp(head.current.rotation.x, nod, 10, delta);
     }
     if (torso.current) {
       torso.current.position.y = walking ? Math.abs(Math.sin(t * 9)) * 0.06 : Math.sin(t * 2) * 0.01;
+      const lean = holding === "kiss" ? 0.12 : holding === "hug" ? 0.06 : 0;
+      torso.current.rotation.x = MathUtils.damp(torso.current.rotation.x, lean, 8, delta);
     }
   });
 
