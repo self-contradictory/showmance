@@ -11,9 +11,11 @@ from domain.operations import (
     Nudge,
     Perform,
     Rejected,
+    RejectReason,
     Relocate,
     Reveal,
     TwistPlan,
+    VoteCheck,
 )
 from domain.polls import (
     OPTION_COUNTS,
@@ -72,6 +74,7 @@ __all__ = [
     "PollStatus",
     "Proposal",
     "Reaction",
+    "RejectReason",
     "Rejected",
     "Relationship",
     "RelationshipChange",
@@ -87,6 +90,7 @@ __all__ = [
     "TwistSource",
     "TwistStatus",
     "Viewer",
+    "VoteCheck",
     "Wait",
     "World",
     "action_kind",

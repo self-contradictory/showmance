@@ -27,8 +27,8 @@ class Staging:
 
     async def _stage(self, twist: Twist, state: WorldState) -> Staged:
         outcome = await self._plan(twist, state)
-        if isinstance(outcome, Rejected):
-            await self._store.twists.reject(twist.id, outcome.reason, state.world.tick)
+        if isinstance(outcome, str):
+            await self._store.twists.reject(twist.id, outcome, state.world.tick)
             await self._store.wallets.refund_twist(twist)
             return Staged()
         headline = await self._store.events.add(
@@ -45,10 +45,18 @@ class Staging:
         await self._store.twists.stage(twist.id, outcome.summary, state.world.tick)
         return staged
 
-    async def _plan(self, twist: Twist, state: WorldState) -> TwistPlan | Rejected:
+    async def _plan(self, twist: Twist, state: WorldState) -> TwistPlan | str:
         context = await director_context(self._store, state)
         try:
-            return await self._director.stage(twist, context)
+            poll = context.poll
+            if (
+                twist.source == "donation"
+                and poll is not None
+                and await self._director.decides_vote(twist, poll)
+            ):
+                return settings.vote_conflict_reason
+            outcome = await self._director.stage(twist, context)
         except Exception:
             logger.exception("director failed on twist %s", twist.id)
-            return Rejected(reason=settings.twist_failed_reason)
+            return settings.twist_failed_reason
+        return outcome.explanation if isinstance(outcome, Rejected) else outcome

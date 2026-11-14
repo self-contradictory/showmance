@@ -5,6 +5,7 @@ from domain import (
     AgentContext,
     DirectorContext,
     Event,
+    Poll,
     PollFormat,
     Proposal,
     Reaction,
@@ -34,6 +35,8 @@ class Director(Protocol):
     async def stage(
         self, twist: Twist, context: DirectorContext
     ) -> TwistPlan | Rejected: ...
+
+    async def decides_vote(self, twist: Twist, poll: Poll) -> bool: ...
 
 
 class Writer(Protocol):

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field
 
 from domain.base import Model
@@ -43,5 +45,13 @@ class TwistPlan(Model):
     performs: list[Perform] = Field(default_factory=list)
 
 
+RejectReason = Literal["not_fit_for_show"]
+
+
 class Rejected(Model):
-    reason: str
+    reason: RejectReason
+    explanation: str
+
+
+class VoteCheck(Model):
+    decides_vote: bool

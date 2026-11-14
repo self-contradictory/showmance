@@ -2,10 +2,26 @@ from pydantic_ai import Agent, ToolOutput
 from pydantic_ai.models import Model
 
 from ai.base import Director
-from ai.prompts import DIRECTOR_INSTRUCTIONS, PROPOSE_INSTRUCTIONS
-from ai.render import render_director, render_proposal
+from ai.prompts import (
+    DIRECTOR_INSTRUCTIONS,
+    PROPOSE_INSTRUCTIONS,
+    VOTE_CHECK_INSTRUCTIONS,
+)
+from ai.render import render_director, render_proposal, render_vote_check
 from config import settings
-from domain import DirectorContext, PollFormat, Proposal, Rejected, Twist, TwistPlan
+from domain import (
+    DirectorContext,
+    Poll,
+    PollFormat,
+    Proposal,
+    Rejected,
+    Twist,
+    TwistPlan,
+    VoteCheck,
+)
+
+STAGE = ToolOutput(TwistPlan, name="stage")
+REJECT = ToolOutput(Rejected, name="reject")
 
 
 class LlmDirector(Director):
@@ -16,10 +32,10 @@ class LlmDirector(Director):
         self._stager: Agent[None, TwistPlan | Rejected] = Agent(
             model,
             instructions=DIRECTOR_INSTRUCTIONS,
-            output_type=[
-                ToolOutput(TwistPlan, name="stage"),
-                ToolOutput(Rejected, name="reject"),
-            ],
+            output_type=[STAGE, REJECT],
+        )
+        self._vote_checker = Agent(
+            model, instructions=VOTE_CHECK_INSTRUCTIONS, output_type=VoteCheck
         )
 
     async def propose(
@@ -31,5 +47,11 @@ class LlmDirector(Director):
     async def stage(
         self, twist: Twist, context: DirectorContext
     ) -> TwistPlan | Rejected:
-        result = await self._stager.run(render_director(context, twist))
-        return result.output
+        prompt = render_director(context, twist)
+        if twist.source == "vote":
+            return (await self._stager.run(prompt, output_type=STAGE)).output
+        return (await self._stager.run(prompt)).output
+
+    async def decides_vote(self, twist: Twist, poll: Poll) -> bool:
+        result = await self._vote_checker.run(render_vote_check(twist, poll))
+        return result.output.decides_vote

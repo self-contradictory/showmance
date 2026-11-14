@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     twists_per_tick: int = 3
     director_event_limit: int = 30
     twist_failed_reason: str = "The producers couldn't stage this twist."
+    vote_conflict_reason: str = (
+        "Viewers are voting on this right now, so it's up to the vote."
+    )
 
     viewer_name_max_length: int = 40
     starter_coins: int = 200

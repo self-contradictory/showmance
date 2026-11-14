@@ -22,6 +22,7 @@ from domain import (
     NewAgent,
     NewLocation,
     NewWorld,
+    Poll,
     PollFormat,
     Proposal,
     Reaction,
@@ -71,9 +72,12 @@ class ScriptedDirector:
         self,
         plans: dict[str, TwistPlan | Rejected | Exception],
         proposal: Proposal | None,
+        conflicts: set[str] | None = None,
     ) -> None:
         self._plans = plans
         self._proposal = proposal
+        self._conflicts = conflicts or set()
+        self.checked: list[str] = []
         self.formats: list[PollFormat] = []
         self.contexts: list[DirectorContext] = []
 
@@ -89,10 +93,16 @@ class ScriptedDirector:
         self, twist: Twist, context: DirectorContext
     ) -> TwistPlan | Rejected:
         self.contexts.append(context)
-        plan = self._plans.get(twist.text, Rejected(reason="unscripted"))
+        plan = self._plans.get(
+            twist.text, Rejected(reason="not_fit_for_show", explanation="unscripted")
+        )
         if isinstance(plan, Exception):
             raise plan
         return plan
+
+    async def decides_vote(self, twist: Twist, poll: Poll) -> bool:
+        self.checked.append(twist.text)
+        return twist.text in self._conflicts
 
 
 class ScriptedWriter:
@@ -164,10 +174,10 @@ async def villa(store):
 
 @pytest.fixture
 def sim(store, memory):
-    def build(script=None, reactions=None, plans=None, proposal=None):
+    def build(script=None, reactions=None, plans=None, proposal=None, conflicts=None):
         decider = ScriptedDecider(script or {})
         appraiser = RecordingAppraiser(reactions or {})
-        director = ScriptedDirector(plans or {}, proposal)
+        director = ScriptedDirector(plans or {}, proposal, conflicts or set())
         cast = AgentsCast(memory, decider, appraiser)
         return SimpleNamespace(
             engine=Engine(store, memory, director, cast),

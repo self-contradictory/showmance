@@ -4,6 +4,7 @@ from ai.render import (
     render_director,
     render_proposal,
     render_scene,
+    render_vote_check,
 )
 from domain import Event, Line, Poll, PollOption, SceneContext
 
@@ -61,7 +62,7 @@ def test_director_sees_the_whole_villa_and_the_twist(director_context, twist):
     )
 
 
-def test_director_sees_what_viewers_are_voting_on(director_context, twist):
+def test_vote_check_compares_the_twist_with_the_options(director_context, twist):
     poll = Poll(
         id=1,
         world_id=1,
@@ -77,11 +78,13 @@ def test_director_sees_what_viewers_are_voting_on(director_context, twist):
     )
     voting = director_context.model_copy(update={"poll": poll})
 
-    prompt = render_director(voting, twist)
+    check = render_vote_check(twist, poll)
 
-    assert (
-        "Viewers are voting on: Should Jake confess?\n- Yes: Jake confesses" in prompt
+    assert check.startswith(
+        "Viewers are voting on: Should Jake confess?\n- Yes: Jake confesses"
     )
+    assert check.endswith("<twist>\ntell Mia about the kiss\n</twist>")
+    assert "Should Jake confess?" not in render_director(voting, twist)
 
 
 def test_proposal_asks_for_the_chosen_format(director_context):
