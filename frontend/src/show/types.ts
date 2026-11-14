@@ -31,6 +31,20 @@ export type Show = {
   balance: number;
 };
 
+export type ShowSummary = {
+  slug: string;
+  title: string;
+  day: number;
+  now: string;
+  viewers: number;
+  cover?: string;
+};
+
+export type Directory = {
+  snapshot(): ShowSummary[];
+  subscribe(listener: (shows: ShowSummary[]) => void): () => void;
+};
+
 export type FeedEvent =
   | { type: "caption"; caption: Caption | null }
   | { type: "now"; text: string }

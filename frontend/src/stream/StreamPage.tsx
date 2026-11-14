@@ -7,7 +7,7 @@ import { useShow } from "@/show/useShow";
 import { Header } from "@/ui/Header";
 import { ShowInfo } from "./ShowInfo";
 import { Stage } from "./Stage";
-import { ShowArt } from "./ShowArt";
+import { ShowArt } from "@/ui/ShowArt";
 
 const CHAT_KEY = "showmance:chat";
 
