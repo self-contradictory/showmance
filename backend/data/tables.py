@@ -80,3 +80,22 @@ class TwistRow(Base):
     status: Mapped[str] = mapped_column(index=True)
     outcome: Mapped[str | None]
     tick: Mapped[int | None]
+
+
+class ViewerRow(Base):
+    __tablename__ = "viewers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    token_hash: Mapped[str] = mapped_column(unique=True)
+    coins: Mapped[int]
+
+
+class CoinEntryRow(Base):
+    __tablename__ = "coin_entries"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    viewer_id: Mapped[int] = mapped_column(ForeignKey("viewers.id"), index=True)
+    amount: Mapped[int]
+    reason: Mapped[str]
+    twist_id: Mapped[int | None] = mapped_column(ForeignKey("twists.id"))

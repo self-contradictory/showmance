@@ -2,8 +2,8 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from config import TWIST_MAX_LENGTH
-from domain import Agent, Location, Relationship, World
+from config import TWIST_MAX_LENGTH, VIEWER_NAME_MAX_LENGTH
+from domain import Agent, Location, Relationship, Viewer, World
 from domain.base import Model
 
 
@@ -42,3 +42,12 @@ class WorldView(Model):
 
 class TwistRequest(Model):
     text: str = Field(min_length=1, max_length=TWIST_MAX_LENGTH)
+
+
+class ViewerRequest(Model):
+    name: str = Field(min_length=1, max_length=VIEWER_NAME_MAX_LENGTH)
+
+
+class ViewerSession(Model):
+    viewer: Viewer
+    token: str

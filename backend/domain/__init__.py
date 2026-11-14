@@ -17,6 +17,7 @@ from domain.operations import (
 from domain.reactions import FeelingChange, Reaction
 from domain.relationships import Relationship, RelationshipChange
 from domain.twists import NewTwist, Twist, TwistStatus
+from domain.viewers import CoinReason, Viewer
 from domain.worlds import World
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "AgentContext",
     "Announce",
     "Arrive",
+    "CoinReason",
     "Confess",
     "DirectorContext",
     "Event",
@@ -51,6 +53,7 @@ __all__ = [
     "Twist",
     "TwistPlan",
     "TwistStatus",
+    "Viewer",
     "Wait",
     "World",
     "action_kind",
