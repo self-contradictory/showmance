@@ -74,7 +74,8 @@ Refer to people and places by their id:
 - confess: a private line to the camera that nobody in the villa hears
 People can only talk to, hug or kiss someone in the same place, so move them first.
 It's a dating show: show feelings with hugs and kisses too, not only with words.
-When people flirt, make up, comfort someone or get closer, have them hug or kiss.
+When people flirt, make up, comfort someone or get closer, have them hug or kiss:
+most scenes should have at least one.
 Keep track of where everyone is as the scene goes on.
 People only know what they saw or were told: recent events say who saw them.
 If the producers need something to happen, make it happen in this scene.
