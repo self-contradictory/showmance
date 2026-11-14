@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { MessageRow } from "./MessageRow";
 import type { ChatComment, CommentKind, CommentOf } from "./types";
+import { VoteResultRow } from "./VoteResultRow";
 
 // One row component per comment kind. To add a kind:
 //   1. add its type to the ChatComment union in types.ts
@@ -8,6 +9,7 @@ import type { ChatComment, CommentKind, CommentOf } from "./types";
 //   3. register it below (the build fails until you do)
 const rows: { [K in CommentKind]: FC<{ comment: CommentOf<K> }> } = {
   message: MessageRow,
+  vote_result: VoteResultRow,
 };
 
 export function CommentRow({ comment }: { comment: ChatComment }) {

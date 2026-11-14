@@ -72,8 +72,16 @@ const FAKE_MESSAGES = [
   "who else is voting Chris",
 ];
 
+const VOTES: { question: string; options: string[] }[] = [
+  { question: "Who should Sara take on a date?", options: ["Chris", "Leo"] },
+  { question: "Should Mia forgive Jake?", options: ["Forgive him", "Walk away"] },
+  { question: "Who goes to the confession room?", options: ["Nina", "Leo", "Jake"] },
+];
+
 const LINE_MS = 3600;
 const GAP_MS = 700;
+const VOTE_MS = 75_000;
+const BETWEEN_VOTES_MS = 20_000;
 
 function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)]!;
@@ -88,6 +96,7 @@ export function createMockFeed(): Feed {
     viewers: 412,
     caption: null,
     comments: [],
+    vote: null,
   };
 
   const listeners = new Set<(event: FeedEvent) => void>();
@@ -142,10 +151,66 @@ export function createMockFeed(): Feed {
     later(1200 + Math.random() * 2800, fakeChatter);
   }
 
+  // Votes: open one, let it run, post the result, pause, open the next.
+  let voteIndex = 0;
+
+  function openVote() {
+    const plan = VOTES[voteIndex++ % VOTES.length]!;
+    emit({
+      type: "vote",
+      vote: {
+        id: nextId("vote"),
+        question: plan.question,
+        options: plan.options.map((label, i) => ({ id: String(i), label, votes: 0 })),
+        endsAt: Date.now() + VOTE_MS,
+      },
+    });
+    later(900, fakeVotes);
+    later(VOTE_MS, closeVote);
+  }
+
+  function addVotes(voteId: string, optionId: string, count: number) {
+    const vote = state.vote;
+    if (!vote || vote.id !== voteId || Date.now() >= vote.endsAt) return;
+    const options = vote.options.map((o) => (o.id === optionId ? { ...o, votes: o.votes + count } : o));
+    emit({ type: "vote", vote: { ...vote, options } });
+  }
+
+  // Dev only, like the fake chatter. Leans toward the first option so a
+  // winner shows up.
+  function fakeVotes() {
+    const vote = state.vote;
+    if (!vote) return;
+    const option = Math.random() < 0.6 ? vote.options[0]! : pick(vote.options);
+    addVotes(vote.id, option.id, 1 + Math.floor(Math.random() * 3));
+    later(700, fakeVotes);
+  }
+
+  function closeVote() {
+    const vote = state.vote;
+    if (!vote) return;
+    const total = vote.options.reduce((sum, o) => sum + o.votes, 0);
+    const winner = vote.options.reduce((best, o) => (o.votes > best.votes ? o : best));
+    emit({ type: "vote", vote: null });
+    emit({
+      type: "comment",
+      comment: {
+        kind: "vote_result",
+        id: nextId("comment"),
+        at: Date.now(),
+        question: vote.question,
+        winner: winner.label,
+        pct: total ? Math.round((winner.votes / total) * 100) : 0,
+      },
+    });
+    later(BETWEEN_VOTES_MS, openVote);
+  }
+
   function start() {
     later(800, playNextLine);
     later(5000, driftViewers);
     later(600, fakeChatter);
+    later(1500, openVote);
   }
 
   function stop() {
@@ -166,6 +231,9 @@ export function createMockFeed(): Feed {
     send(author, text) {
       const message = text.trim().slice(0, MAX_MESSAGE_LENGTH);
       if (message) postMessage(author, message);
+    },
+    vote(voteId, optionId) {
+      addVotes(voteId, optionId, 1);
     },
   };
 }

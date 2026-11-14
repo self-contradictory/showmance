@@ -13,5 +13,7 @@ export function reduceShow(show: Show, event: FeedEvent): Show {
       return { ...show, viewers: event.count };
     case "comment":
       return { ...show, comments: [...show.comments, event.comment].slice(-MAX_COMMENTS) };
+    case "vote":
+      return { ...show, vote: event.vote };
   }
 }
