@@ -1,4 +1,4 @@
-from domain.actions import Action, Confess, Hug, Kiss, Move, Say, Wait
+from domain.actions import Action, Confess, Hug, Kiss, Move, Say, Wait, action_kind
 from domain.agents import Agent, NewAgent
 from domain.context import AgentContext
 from domain.events import Event, NewEvent
@@ -30,4 +30,5 @@ __all__ = [
     "Say",
     "Wait",
     "World",
+    "action_kind",
 ]

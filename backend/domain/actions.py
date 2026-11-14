@@ -28,3 +28,7 @@ class Wait(Model):
 
 
 Action = Say | Hug | Kiss | Move | Confess | Wait
+
+
+def action_kind(action: type[Model]) -> str:
+    return action.__name__.lower()

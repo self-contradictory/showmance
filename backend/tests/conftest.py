@@ -6,33 +6,61 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from data import Store, connect
 from domain import (
+    Action,
     Agent,
     AgentContext,
+    Event,
     Location,
     Memory,
     NewAgent,
     NewLocation,
+    Reaction,
     Relationship,
+    Wait,
     World,
 )
+from engine import Engine
+from engine.state import WorldState
 from memory import SqlMemoryStore
 
 
-@pytest.fixture
-async def engine(tmp_path):
-    engine = await connect(f"sqlite+aiosqlite:///{tmp_path / 'test.db'}")
-    yield engine
-    await engine.dispose()
+class ScriptedDecider:
+    def __init__(self, script: dict[str, Action | Exception]) -> None:
+        self._script = script
+
+    async def decide(self, context: AgentContext) -> Action:
+        choice = self._script.get(context.agent.name, Wait())
+        if isinstance(choice, Exception):
+            raise choice
+        return choice
+
+
+class RecordingAppraiser:
+    def __init__(self, reactions: dict[str, Reaction]) -> None:
+        self._reactions = reactions
+        self.seen: dict[str, list[str]] = {}
+
+    async def appraise(self, context: AgentContext, events: list[Event]) -> Reaction:
+        self.seen[context.agent.name] = [event.kind for event in events]
+        default = Reaction(mood="calm", memory="noted", changes=[])
+        return self._reactions.get(context.agent.name, default)
 
 
 @pytest.fixture
-def store(engine):
-    return Store(engine)
+async def db(tmp_path):
+    db = await connect(f"sqlite+aiosqlite:///{tmp_path / 'test.db'}")
+    yield db
+    await db.dispose()
 
 
 @pytest.fixture
-def memory(engine):
-    return SqlMemoryStore(engine)
+def store(db):
+    return Store(db)
+
+
+@pytest.fixture
+def memory(db):
+    return SqlMemoryStore(db)
 
 
 @pytest.fixture
@@ -57,6 +85,15 @@ async def villa(store):
 
 
 @pytest.fixture
+def sim(store, memory):
+    def build(script, reactions=None):
+        appraiser = RecordingAppraiser(reactions or {})
+        return Engine(store, memory, ScriptedDecider(script), appraiser), appraiser
+
+    return build
+
+
+@pytest.fixture
 def context():
     pool = Location(id=1, world_id=1, name="pool")
     kitchen = Location(id=2, world_id=1, name="kitchen")
@@ -74,6 +111,16 @@ def context():
             Relationship(from_id=1, to_id=2, affection=70, trust=40, note="flirty")
         ],
         memories=[Memory(id=1, agent_id=1, tick=2, text="Jake hugged me at the pool")],
+    )
+
+
+@pytest.fixture
+def state(context):
+    return WorldState(
+        world=context.world,
+        agents=[context.agent, *context.others],
+        locations=context.locations,
+        relationships=context.relationships,
     )
 
 

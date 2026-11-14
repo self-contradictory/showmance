@@ -7,7 +7,7 @@ from ai.base import Decider
 from ai.prompts import DECIDE_INSTRUCTIONS
 from ai.render import render_context
 from config import LLM_MODEL
-from domain import Action, AgentContext
+from domain import Action, AgentContext, action_kind
 
 
 class LlmDecider(Decider):
@@ -16,7 +16,7 @@ class LlmDecider(Decider):
             model,
             instructions=DECIDE_INSTRUCTIONS,
             output_type=[
-                ToolOutput(action, name=action.__name__.lower())
+                ToolOutput(action, name=action_kind(action))
                 for action in get_args(Action)
             ],
         )
