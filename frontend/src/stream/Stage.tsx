@@ -8,9 +8,11 @@ type Props = {
   viewers?: number;
   caption: Caption | null;
   paused: boolean;
+  muted: boolean;
   fullscreen: boolean;
   canFullscreen: boolean;
   onTogglePause: () => void;
+  onToggleMute: () => void;
   onToggleFullscreen: () => void;
   onShowChat?: () => void;
   children: ReactNode;
@@ -20,14 +22,15 @@ export function Stage({
   viewers,
   caption,
   paused,
+  muted,
   fullscreen,
   canFullscreen,
   onTogglePause,
+  onToggleMute,
   onToggleFullscreen,
   onShowChat,
   children,
 }: Props) {
-  const [muted, setMuted] = useState(false);
   const [frozenCaption, setFrozenCaption] = useState<Caption | null>(null);
   const shownCaption = paused ? frozenCaption : caption;
 
@@ -99,7 +102,7 @@ export function Stage({
             <StageButton label={paused ? "Play" : "Pause"} onClick={togglePause}>
               {paused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
             </StageButton>
-            <StageButton label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>
+            <StageButton label={muted ? "Unmute" : "Mute"} onClick={onToggleMute}>
               {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </StageButton>
           </div>

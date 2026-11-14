@@ -1,5 +1,7 @@
 import type { Show } from "./types";
 
+export type ShowOptions = { sound?: boolean };
+
 export type ShowHandle = {
   show: Show;
   notFound: boolean;

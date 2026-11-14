@@ -9,10 +9,12 @@ export function useLiveShowList(): ShowSummary[] | undefined {
 
   return useMemo(
     () =>
-      data?.map(({ world }) => ({
+      data?.map(({ world, viewers }) => ({
         slug: worldSlug(world),
         title: world.name,
+        day: world.day,
         now: world.setting,
+        viewers,
         cover: world.thumbnail_url ?? undefined,
       })),
     [data],

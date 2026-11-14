@@ -1,10 +1,10 @@
 import { useEffect, useReducer, useState } from "react";
 import { loadGuestName } from "@/lib/guestName";
-import type { ShowHandle } from "./handle";
+import type { ShowHandle, ShowOptions } from "./handle";
 import { createMockFeed } from "./mockFeed";
 import { reduceShow } from "./reduce";
 
-export function useMockShow(slug: string): ShowHandle {
+export function useMockShow(slug: string, _options: ShowOptions = {}): ShowHandle {
   const [feed] = useState(() => createMockFeed(slug));
   const [me] = useState(loadGuestName);
   const [show, dispatch] = useReducer(reduceShow, feed, (f) => f.snapshot());

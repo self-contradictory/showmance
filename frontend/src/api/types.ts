@@ -4,9 +4,10 @@ export type World = {
   setting: string;
   thumbnail_url: string | null;
   tick: number;
+  day: number;
 };
 
-export type WorldSummary = { world: World; running: boolean };
+export type WorldSummary = { world: World; running: boolean; viewers: number };
 
 export type Place = { id: number; world_id: number; name: string; description: string };
 
@@ -24,6 +25,7 @@ export type WorldView = {
   locations: Place[];
   agents: Agent[];
   running: boolean;
+  viewers: number;
 };
 
 export type WorldEvent = {
@@ -51,6 +53,8 @@ export type Poll = {
 export type PollView = { poll: Poll; votes: number[] };
 
 export type Viewer = { id: number; name: string; coins: number };
+
+export type ChatMessage = { id: number; world_id: number; viewer_id: number; name: string; text: string };
 
 export type ViewerSession = { viewer: Viewer; token: string };
 

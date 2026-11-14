@@ -14,20 +14,27 @@ import { Stage } from "./Stage";
 const WorldScene = lazy(() => import("@/world/WorldScene"));
 
 const CHAT_KEY = "showmance:chat";
+const MUTED_KEY = "showmance:muted";
 
 export function StreamPage({ slug }: { slug: string }) {
-  const { show, notFound, myVote, send, vote, dropTwist } = useShow(slug);
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(() => readStored(MUTED_KEY) === "muted");
+  const { show, notFound, myVote, send, vote, dropTwist } = useShow(slug, { sound: !muted && !paused });
   const streamRef = useRef<HTMLDivElement>(null);
   const fullscreen = useFullscreen(streamRef);
   const isDesktop = useMediaQuery("(min-width: 64rem)");
   const [chatOpen, setChatOpen] = useState(() => readStored(CHAT_KEY) !== "hidden");
-  const [paused, setPaused] = useState(false);
   const chatShown = chatOpen || !isDesktop;
   const fs = fullscreen.isFullscreen;
 
   useEffect(() => {
     document.title = show.title ? `${show.title} | Showmance` : "Showmance";
   }, [show.title]);
+
+  function toggleMute() {
+    setMuted(!muted);
+    writeStored(MUTED_KEY, muted ? "sound" : "muted");
+  }
 
   function setChat(open: boolean) {
     setChatOpen(open);
@@ -51,9 +58,11 @@ export function StreamPage({ slug }: { slug: string }) {
             viewers={show.viewers}
             caption={show.caption}
             paused={paused}
+            muted={muted}
             fullscreen={fs}
             canFullscreen={fullscreen.supported}
             onTogglePause={() => setPaused(!paused)}
+            onToggleMute={toggleMute}
             onToggleFullscreen={fullscreen.toggle}
             onShowChat={chatShown ? undefined : () => setChat(true)}
           >

@@ -4,9 +4,18 @@ import type { ChatComment } from "@/chat/comments/types";
 import { api, ApiError } from "@/api/client";
 import { TWIST_PRICE } from "@/api/config";
 import { worldIdFromSlug } from "@/api/slug";
-import type { PollView, WorldEvent } from "@/api/types";
-import type { ShowHandle } from "./handle";
-import { actionsFor, castFor, locationsFor, namesFor, skyFor, type LiveAction, type Names } from "./liveEvents";
+import type { ChatMessage, PollView, WorldEvent } from "@/api/types";
+import type { ShowHandle, ShowOptions } from "./handle";
+import {
+  actionsFor,
+  castFor,
+  chatComment,
+  locationsFor,
+  namesFor,
+  skyFor,
+  type LiveAction,
+  type Names,
+} from "./liveEvents";
 import type { Show, Vote } from "./types";
 import { useCaptionQueue } from "./useCaptionQueue";
 import { useViewer } from "./useViewer";
@@ -15,13 +24,15 @@ const HISTORY_SIZE = 40;
 const MAX_COMMENTS = 200;
 const TWIST_CHECK_MS = 2000;
 const TWIST_CHECKS = 30;
+const WORLD_REFRESH_MS = 30_000;
 
-type LiveState = { now: string; moved: Record<string, string>; comments: ChatComment[] };
+type LiveState = { now: string; moved: Record<string, string>; comments: ChatComment[]; viewers?: number };
 
 type LiveUpdate =
   | { type: "now"; text: string }
   | { type: "move"; castId: string; locationId: string }
-  | { type: "comment"; comment: ChatComment };
+  | { type: "comment"; comment: ChatComment }
+  | { type: "viewers"; count: number };
 
 function reduceLive(state: LiveState, update: LiveUpdate): LiveState {
   switch (update.type) {
@@ -30,7 +41,10 @@ function reduceLive(state: LiveState, update: LiveUpdate): LiveState {
     case "move":
       return { ...state, moved: { ...state.moved, [update.castId]: update.locationId } };
     case "comment":
+      if (state.comments.some((comment) => comment.id === update.comment.id)) return state;
       return { ...state, comments: [...state.comments, update.comment].slice(-MAX_COMMENTS) };
+    case "viewers":
+      return { ...state, viewers: update.count };
   }
 }
 
@@ -42,7 +56,7 @@ function useLatest<T>(value: T) {
   return ref;
 }
 
-export function useLiveShow(slug: string): ShowHandle {
+export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): ShowHandle {
   const worldId = worldIdFromSlug(slug) ?? -1;
   const queryClient = useQueryClient();
   const viewer = useViewer();
@@ -50,6 +64,7 @@ export function useLiveShow(slug: string): ShowHandle {
   const world = useQuery({
     queryKey: ["world", worldId],
     queryFn: () => api.world(worldId),
+    refetchInterval: WORLD_REFRESH_MS,
     retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 3,
   });
   const history = useQuery({
@@ -67,7 +82,7 @@ export function useLiveShow(slug: string): ShowHandle {
   });
 
   const [live, update] = useReducer(reduceLive, { now: "", moved: {}, comments: [] });
-  const { caption, push } = useCaptionQueue();
+  const { caption, push } = useCaptionQueue(sound);
   const [ballot, setBallot] = useState<{ pollId: string; optionId: string } | null>(null);
   const myTwists = useRef(new Set<number>());
   const mounted = useRef(true);
@@ -150,6 +165,20 @@ export function useLiveShow(slug: string): ShowHandle {
     for (const event of history.data.slice(-HISTORY_SIZE)) handle(event, true);
     const source = new EventSource(api.streamUrl(worldId, history.data.at(-1)?.id ?? 0));
     source.onmessage = (message) => handle(JSON.parse(String(message.data)) as WorldEvent, false);
+    source.addEventListener("chat", (message) =>
+      update({ type: "comment", comment: chatComment(JSON.parse(String(message.data)) as ChatMessage) }),
+    );
+    source.addEventListener("viewers", (message) =>
+      update({ type: "viewers", count: Number(JSON.parse(String(message.data))) }),
+    );
+    source.onopen = () => {
+      api
+        .chat(worldId)
+        .then((messages) => {
+          for (const message of messages) update({ type: "comment", comment: chatComment(message) });
+        })
+        .catch(() => {});
+    };
     return () => source.close();
   }, [history.data, worldId, push, queryClient, namesRef, pollRef, meRef]);
 
@@ -169,6 +198,12 @@ export function useLiveShow(slug: string): ShowHandle {
   const voteMutation = useMutation({
     mutationFn: ({ option, token }: { option: number; token: string }) => api.vote(worldId, option, token),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["poll", worldId] }),
+  });
+
+  const chatMutation = useMutation({
+    mutationFn: ({ text, token }: { text: string; token: string }) => api.sendChat(worldId, text, token),
+    onSuccess: (message) => update({ type: "comment", comment: chatComment(message) }),
+    onError: () => notice(`chat-${Date.now()}`, "Message not sent", "Try again in a moment."),
   });
 
   const twistMutation = useMutation({
@@ -203,11 +238,13 @@ export function useLiveShow(slug: string): ShowHandle {
   const show: Show = {
     slug,
     title: data?.world.name ?? "",
+    day: data?.world.day,
     now: live.now || data?.world.setting || "",
     cover: data?.world.thumbnail_url ?? undefined,
     sky: skyFor(data?.world.setting ?? ""),
     locations: data ? locationsFor(data.locations) : [],
     cast: data ? castFor(data.agents, live.moved) : [],
+    viewers: live.viewers ?? data?.viewers,
     caption,
     comments: live.comments,
     vote,
@@ -220,9 +257,8 @@ export function useLiveShow(slug: string): ShowHandle {
     notFound: world.error instanceof ApiError && world.error.status === 404,
     myVote,
     send: (text) => {
-      const author = viewer.data?.viewer.name;
-      if (!author) return;
-      update({ type: "comment", comment: { kind: "message", id: `me-${Date.now()}`, at: Date.now(), author, text } });
+      const token = viewer.data?.token;
+      if (token) chatMutation.mutate({ text, token });
     },
     vote: (optionId) => {
       const token = viewer.data?.token;

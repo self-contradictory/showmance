@@ -1,5 +1,14 @@
 import { API_URL } from "./config";
-import type { PollView, Twist, Viewer, ViewerSession, WorldEvent, WorldSummary, WorldView } from "./types";
+import type {
+  ChatMessage,
+  PollView,
+  Twist,
+  Viewer,
+  ViewerSession,
+  WorldEvent,
+  WorldSummary,
+  WorldView,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -40,4 +49,8 @@ export const api = {
   twist: (worldId: number, twistId: number) => request<Twist>(`/worlds/${worldId}/twists/${twistId}`),
   join: (name: string) => request<ViewerSession>("/viewers", { method: "POST", body: { name } }),
   me: (token: string) => request<Viewer>("/viewers/me", { token }),
+  chat: (worldId: number) => request<ChatMessage[]>(`/worlds/${worldId}/chat`),
+  sendChat: (worldId: number, text: string, token: string) =>
+    request<ChatMessage>(`/worlds/${worldId}/chat`, { method: "POST", body: { text }, token }),
+  audioUrl: (worldId: number, eventId: number) => `${API_URL}/worlds/${worldId}/events/${eventId}/audio`,
 };

@@ -16,6 +16,7 @@ export type Caption = {
   text: string;
   locationId: string;
   targetId?: string;
+  audio?: string;
 };
 
 export type VoteOption = { id: string; label: string; votes: number };

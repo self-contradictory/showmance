@@ -1,4 +1,6 @@
-import type { Agent, Place, WorldEvent } from "@/api/types";
+import { api } from "@/api/client";
+import type { Agent, ChatMessage, Place, WorldEvent } from "@/api/types";
+import type { ChatComment } from "@/chat/comments/types";
 import type { Caption, CastMember, Location, Sky } from "./types";
 
 export type Names = { agents: Map<number, string>; places: Map<number, string> };
@@ -43,6 +45,7 @@ export function actionsFor(event: WorldEvent, names: Names): LiveAction[] {
             text: event.text,
             locationId: String(event.location_id ?? ""),
             targetId: event.kind === "say" && event.target_id !== null ? String(event.target_id) : undefined,
+            audio: api.audioUrl(event.world_id, event.id),
           },
         },
       ];
@@ -76,6 +79,10 @@ export function actionsFor(event: WorldEvent, names: Names): LiveAction[] {
     default:
       return [];
   }
+}
+
+export function chatComment(message: ChatMessage): ChatComment {
+  return { kind: "message", id: `chat-${message.id}`, at: Date.now(), author: message.name, text: message.text };
 }
 
 export function skyFor(setting: string): Sky {
