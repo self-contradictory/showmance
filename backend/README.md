@@ -24,7 +24,7 @@ uv run main.py
 The director (polls and twists) is the same either way. `CAST` picks how the contestants act and feel:
 
 - `agents`: each contestant is its own model call. Every tick, everyone decides an action and everyone who saw something reacts, so about 12 calls a tick for six people.
-- `writer`: one model call writes a scene of about `SCENE_LINES` lines for everyone, and each tick plays the next line. Feelings come with the lines, so reactions cost nothing. When `PREFETCH_LINES` lines are left, the next scene is written in the background, picking up after them, so scenes run on without a pause. A staged twist throws away the unplayed lines, cancels any scene being written, and the next tick writes a new scene. Use this on free tiers, with `TICK_INTERVAL=4` or so to match the captions.
+- `writer`: one model call writes a scene of about `SCENE_BEATS` beats for everyone, and each tick plays the next beat. In a beat several people act at once: one person talks while others move, hug or kiss. Lines in a beat play in the order written, and a second line for the same person, or a second speaker, waits for the next beat. Feelings come with the lines, so reactions cost nothing. When `PREFETCH_BEATS` beats are left, the next scene is written in the background, picking up after them, so scenes run on without a pause. A staged twist throws away the unplayed beats, cancels any scene being written, and the next tick writes a new scene. Use this on free tiers, with `TICK_INTERVAL=4` or so to match the captions.
 
 Both keep the same state (places, moods, feelings, memories, events), so you can switch a running villa by restarting with the other `CAST`.
 

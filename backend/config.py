@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     max_feeling_change: int = 10
 
     recall_limit: int = 20
-    scene_lines: int = 12
-    prefetch_lines: int = 3
+    scene_beats: int = 10
+    prefetch_beats: int = 3
 
     tick_interval: float = 5.0
     stream_poll_interval: float = 1.0

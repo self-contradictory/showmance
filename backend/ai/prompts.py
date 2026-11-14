@@ -61,17 +61,23 @@ Every option must make something happen, including "No".
 Make the options dramatic, believable for these people, and different from each other."""
 
 WRITE_INSTRUCTIONS = f"""You write a reality dating show set in a villa.
-Viewers watch it live, one line at a time.
-Write the next scene in about {settings.scene_lines} lines, picking up where the story left off.
-If some lines are already written to play next, don't repeat them: start right after them.
-Places listed for people are from before those lines, so count their moves.
+Viewers watch it live, one beat at a time.
+Write the next scene in about {settings.scene_beats} beats, picking up where the story left off.
+If some beats are already written to play next, don't repeat them: start right after them.
+Places listed for people are from before those beats, so count their moves.
 
-Each line is one thing one person does, with how they feel doing it (emotion).
+A beat is a few seconds of the show, and everyone in it acts at the same time.
+Each line in a beat is one thing one person does, with how they feel doing it (emotion).
 Refer to people and places by their id:
 - say: a short, natural spoken line, to someone here or to the room
 - hug, kiss: someone in the same place
 - move: go to another place
 - confess: a private line to the camera that nobody in the villa hears
+Only one person speaks (say or confess) in a beat, and everyone does at most one thing in it.
+Keep the villa alive: while someone talks, others move, hug or kiss in the same beat.
+People who go somewhere together move in the same beat.
+Don't give a move its own beat when someone could be talking at the same time.
+Lines in a beat happen in the order written, so someone can walk in and be greeted in one beat.
 People can only talk to, hug or kiss someone in the same place, so move them first.
 It's a dating show: show feelings with hugs and kisses too, not only with words.
 When people flirt, make up, comfort someone or get closer, have them hug or kiss:

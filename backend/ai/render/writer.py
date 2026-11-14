@@ -1,6 +1,6 @@
 from ai.render.common import bullets
 from ai.render.villa import names, poll_section, recent, villa_sections
-from domain import Line, SceneContext
+from domain import Beat, Line, SceneContext
 
 
 def render_scene(context: SceneContext) -> str:
@@ -17,8 +17,12 @@ def render_scene(context: SceneContext) -> str:
 def _upcoming(context: SceneContext) -> str:
     who = names(context)
     places = {loc.id: loc.name for loc in context.locations}
-    lines = (_line(line, who, places) for line in context.upcoming)
-    return f"Already written, playing next:\n{bullets(lines, '')}"
+    beats = (_beat(beat, who, places) for beat in context.upcoming)
+    return f"Already written, playing next, one beat per line:\n{bullets(beats, '')}"
+
+
+def _beat(beat: Beat, who: dict[int, str], places: dict[int, str]) -> str:
+    return " + ".join(_line(line, who, places) for line in beat.lines)
 
 
 def _line(line: Line, who: dict[int, str], places: dict[int, str]) -> str:

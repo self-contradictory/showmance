@@ -1,4 +1,5 @@
 import asyncio
+import dataclasses
 import logging
 from collections import deque
 
@@ -6,7 +7,16 @@ from ai import Writer
 from ai.render import render_memory
 from config import settings
 from data import Store
-from domain import Action, Event, Line, Reaction, SceneContext
+from domain import (
+    SPOKEN_KINDS,
+    Action,
+    Beat,
+    Event,
+    Line,
+    Move,
+    Reaction,
+    SceneContext,
+)
 from engine.casts.base import Cast
 from engine.context import scene_context
 from engine.rules import takes_effect
@@ -14,14 +24,16 @@ from engine.state import WorldState
 
 logger = logging.getLogger(__name__)
 
+Playable = list[tuple[Line, Action]]
+
 
 class WriterCast(Cast):
     def __init__(self, store: Store, writer: Writer) -> None:
         self._store = store
         self._writer = writer
-        self._scripts: dict[int, deque[Line]] = {}
+        self._scripts: dict[int, deque[Beat]] = {}
         self._next_scene: dict[int, asyncio.Task[None]] = {}
-        self._playing: dict[int, Line] = {}
+        self._playing: dict[int, list[Line]] = {}
 
     async def act(
         self, state: WorldState, directions: dict[int, list[str]]
@@ -33,23 +45,23 @@ class WriterCast(Cast):
         if not script:
             await self._refill(state, directions)
         playable = _next_playable(script, state)
-        if playable is None:
+        if not playable:
             return {}
-        line, action = playable
-        self._playing[world_id] = line
-        if len(script) <= settings.prefetch_lines and not self._writing(world_id):
+        lines = [line for line, _ in playable]
+        self._playing[world_id] = lines
+        if len(script) <= settings.prefetch_beats and not self._writing(world_id):
             context = await scene_context(
-                self._store, state, {}, upcoming=[line, *script]
+                self._store, state, {}, upcoming=[Beat(lines=lines), *script]
             )
             self._next_scene[world_id] = asyncio.create_task(self._write(context))
-        return {line.actor_id: action}
+        return {line.actor_id: action for line, action in playable}
 
     async def react(
         self, state: WorldState, seen: dict[int, list[Event]]
     ) -> dict[int, Reaction]:
-        line = self._playing.pop(state.world.id, None)
+        lines = self._playing.pop(state.world.id, [])
         return {
-            agent_id: _reaction(state, agent_id, events, line)
+            agent_id: _reaction(state, agent_id, events, lines)
             for agent_id, events in seen.items()
         }
 
@@ -79,28 +91,50 @@ class WriterCast(Cast):
         except Exception:
             logger.exception("writer failed for world %s", context.world.id)
             return
-        self._scripts[context.world.id].extend(_new_lines(scene.lines, context))
+        self._scripts[context.world.id].extend(_new_beats(scene.beats, context))
 
 
-def _next_playable(
-    script: deque[Line], state: WorldState
-) -> tuple[Line, Action] | None:
+def _next_playable(script: deque[Beat], state: WorldState) -> Playable:
     while script:
-        line = script.popleft()
+        playable = _play(script.popleft(), script, state)
+        if playable:
+            return playable
+    return []
+
+
+def _play(beat: Beat, script: deque[Beat], state: WorldState) -> Playable:
+    after = dataclasses.replace(state)
+    playable: Playable = []
+    acting: set[int] = set()
+    spoken = False
+    for index, line in enumerate(beat.lines):
+        speaks = line.kind in SPOKEN_KINDS
+        if line.actor_id in acting or (speaks and spoken):
+            script.appendleft(Beat(lines=beat.lines[index:]))
+            break
         action = line.action()
         if (
-            action is not None
-            and state.has_agent(line.actor_id)
-            and takes_effect(action, state.agent(line.actor_id), state)
+            action is None
+            or not after.has_agent(line.actor_id)
+            or not takes_effect(action, after.agent(line.actor_id), after)
         ):
-            return line, action
-    return None
+            continue
+        playable.append((line, action))
+        acting.add(line.actor_id)
+        spoken = spoken or speaks
+        if isinstance(action, Move):
+            after.move(line.actor_id, action.destination_id)
+    return playable
 
 
-def _new_lines(lines: list[Line], context: SceneContext) -> list[Line]:
-    written = {_content(line) for line in context.upcoming}
+def _new_beats(beats: list[Beat], context: SceneContext) -> list[Beat]:
+    written = {_content(line) for beat in context.upcoming for line in beat.lines}
     written |= {_spoken(e.actor_id, e.kind, e.text) for e in context.events if e.text}
-    return [line for line in lines if _content(line) not in written]
+    fresh = (
+        Beat(lines=[line for line in beat.lines if _content(line) not in written])
+        for beat in beats
+    )
+    return [beat for beat in fresh if beat.lines]
 
 
 def _content(line: Line) -> tuple[object, ...]:
@@ -114,14 +148,11 @@ def _spoken(actor_id: int | None, kind: str, text: str) -> tuple[object, ...]:
 
 
 def _reaction(
-    state: WorldState, agent_id: int, events: list[Event], line: Line | None
+    state: WorldState, agent_id: int, events: list[Event], lines: list[Line]
 ) -> Reaction:
-    mood = state.agent(agent_id).mood
-    changes = []
-    if line is not None:
-        if line.actor_id == agent_id:
-            mood = line.emotion
-        changes = [f for f in line.feelings if f.from_id == agent_id]
+    own = next((line for line in lines if line.actor_id == agent_id), None)
     return Reaction(
-        mood=mood, memory=render_memory(events, state.agents), changes=changes
+        mood=own.emotion if own is not None else state.agent(agent_id).mood,
+        memory=render_memory(events, state.agents),
+        changes=[f for line in lines for f in line.feelings if f.from_id == agent_id],
     )

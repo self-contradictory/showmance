@@ -31,5 +31,9 @@ class Line(Model):
             return None
 
 
-class Scene(Model):
+class Beat(Model):
     lines: list[Line]
+
+
+class Scene(Model):
+    beats: list[Beat]

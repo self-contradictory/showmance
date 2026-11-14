@@ -1,5 +1,4 @@
 import asyncio
-import random
 
 from ai import Director
 from data import Store
@@ -46,10 +45,8 @@ class Engine:
     async def _resolve(
         self, decisions: dict[int, Action], state: WorldState
     ) -> list[Event]:
-        order = list(decisions.items())
-        random.shuffle(order)
         events = []
-        for agent_id, action in order:
+        for agent_id, action in decisions.items():
             actor = state.agent(agent_id)
             if takes_effect(action, actor, state):
                 events.append(

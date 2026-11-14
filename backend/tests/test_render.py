@@ -6,7 +6,7 @@ from ai.render import (
     render_scene,
     render_vote_check,
 )
-from domain import Event, Line, Poll, PollOption, SceneContext
+from domain import Beat, Event, Line, Poll, PollOption, SceneContext
 
 
 def test_context_shows_only_what_the_agent_knows(context):
@@ -119,15 +119,25 @@ def test_writer_sees_who_saw_what_and_what_the_producers_need(director_context):
     )
 
 
-def test_writer_sees_the_lines_already_written(director_context):
+def test_writer_sees_the_beats_already_written(director_context):
     upcoming = [
-        Line(actor_id=2, kind="move", destination_id=2, emotion="sneaky"),
-        Line(actor_id=1, kind="say", text="Where is he?", emotion="worried"),
+        Beat(
+            lines=[
+                Line(actor_id=2, kind="move", destination_id=2, emotion="sneaky"),
+                Line(actor_id=3, kind="move", destination_id=1, emotion="bored"),
+            ]
+        ),
+        Beat(
+            lines=[
+                Line(actor_id=1, kind="say", text="Where is he?", emotion="worried")
+            ]
+        ),
     ]
     context = SceneContext(**dict(director_context), upcoming=upcoming)
 
     assert render_scene(context).endswith(
-        "Already written, playing next:\n"
-        "- Jake: move (to kitchen, emotion: sneaky)\n"
+        "Already written, playing next, one beat per line:\n"
+        "- Jake: move (to kitchen, emotion: sneaky)"
+        " + Sara: move (to pool, emotion: bored)\n"
         '- Mia: say "Where is he?" (emotion: worried)'
     )

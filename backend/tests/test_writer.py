@@ -7,6 +7,7 @@ from ai.render import render_scene
 from config import settings
 from domain import (
     Action,
+    Beat,
     Confess,
     Kiss,
     Line,
@@ -28,6 +29,12 @@ def say(agent, text, **fields):
     return Line(actor_id=agent.id, kind="say", text=text, emotion="happy", **fields)
 
 
+def scene(*beats):
+    return Scene(
+        beats=[Beat(lines=b if isinstance(b, list) else [b]) for b in beats]
+    )
+
+
 class GatedWriter:
     def __init__(self, scenes: dict[int, Scene], gated: int) -> None:
         self._scenes = scenes
@@ -45,10 +52,10 @@ class GatedWriter:
             except asyncio.CancelledError:
                 self.cancelled = True
                 raise
-        return self._scenes.get(call, Scene(lines=[]))
+        return self._scenes.get(call, scene())
 
 
-async def test_scene_plays_one_line_per_tick(store, memory, villa, writer_sim):
+async def test_scene_plays_one_beat_per_tick(store, memory, villa, writer_sim):
     v = villa
     crush = ScriptedFeeling(
         from_id=v.jake.id,
@@ -66,7 +73,7 @@ async def test_scene_plays_one_line_per_tick(store, memory, villa, writer_sim):
         feelings=[crush],
     )
     hug = Line(actor_id=v.jake.id, kind="hug", target_id=v.mia.id, emotion="smitten")
-    s = writer_sim([Scene(lines=[hi, hug])])
+    s = writer_sim([scene(hi, hug)])
 
     [first] = await s.engine.step(v.world.id)
     [second] = await s.engine.step(v.world.id)
@@ -97,12 +104,12 @@ async def test_scene_plays_one_line_per_tick(store, memory, villa, writer_sim):
 async def test_next_scene_is_written_while_the_last_lines_play(
     villa, writer_sim, monkeypatch
 ):
-    monkeypatch.setattr(settings, "prefetch_lines", 1)
+    monkeypatch.setattr(settings, "prefetch_beats", 1)
     v = villa
     s = writer_sim(
         [
-            Scene(lines=[say(v.mia, "One"), say(v.mia, "Two"), say(v.mia, "Three")]),
-            Scene(lines=[say(v.jake, "Four")]),
+            scene(say(v.mia, "One"), say(v.mia, "Two"), say(v.mia, "Three")),
+            scene(say(v.jake, "Four")),
         ]
     )
 
@@ -112,14 +119,17 @@ async def test_next_scene_is_written_while_the_last_lines_play(
 
     assert [e.text for events in played for e in events] == ["Two", "Three", "Four"]
     ahead = s.writer.contexts[1]
-    assert [line.text for line in ahead.upcoming] == ["Two", "Three"]
+    assert [line.text for beat in ahead.upcoming for line in beat.lines] == [
+        "Two",
+        "Three",
+    ]
     assert [e.text for e in ahead.events] == ["One"]
 
 
 async def test_next_scene_does_not_repeat_what_was_already_written(
     villa, writer_sim, monkeypatch
 ):
-    monkeypatch.setattr(settings, "prefetch_lines", 1)
+    monkeypatch.setattr(settings, "prefetch_beats", 1)
     v = villa
     aired = Line(actor_id=v.mia.id, kind="say", text=" one", emotion="sad")
     upcoming = Line(
@@ -127,8 +137,8 @@ async def test_next_scene_does_not_repeat_what_was_already_written(
     )
     s = writer_sim(
         [
-            Scene(lines=[say(v.mia, "One"), say(v.mia, "Two"), say(v.mia, "Three")]),
-            Scene(lines=[aired, upcoming, say(v.jake, "Four")]),
+            scene(say(v.mia, "One"), say(v.mia, "Two"), say(v.mia, "Three")),
+            scene(aired, upcoming, say(v.jake, "Four")),
         ]
     )
 
@@ -145,7 +155,7 @@ async def test_next_scene_does_not_repeat_what_was_already_written(
 async def test_running_out_waits_for_the_scene_being_written(villa, writer_sim):
     v = villa
     writer = GatedWriter(
-        {1: Scene(lines=[say(v.mia, "One")]), 2: Scene(lines=[say(v.jake, "Two")])},
+        {1: scene(say(v.mia, "One")), 2: scene(say(v.jake, "Two"))},
         gated=2,
     )
     s = writer_sim(writer=writer)
@@ -171,9 +181,9 @@ async def test_twist_replaces_the_rest_of_the_scene(store, villa, writer_sim):
     )
     s = writer_sim(
         [
-            Scene(lines=[say(v.mia, "One"), say(v.mia, "Two")]),
-            Scene(lines=[say(v.mia, "Stale")]),
-            Scene(lines=[say(v.jake, "Who's that?")]),
+            scene(say(v.mia, "One"), say(v.mia, "Two")),
+            scene(say(v.mia, "Stale")),
+            scene(say(v.jake, "Who's that?")),
         ],
         plans={"bring the ex": plan},
     )
@@ -198,8 +208,8 @@ async def test_twist_cancels_the_scene_being_written(store, villa, writer_sim):
     v = villa
     writer = GatedWriter(
         {
-            1: Scene(lines=[say(v.mia, "One"), say(v.mia, "Two")]),
-            3: Scene(lines=[say(v.jake, "Fresh")]),
+            1: scene(say(v.mia, "One"), say(v.mia, "Two")),
+            3: scene(say(v.jake, "Fresh")),
         },
         gated=2,
     )
@@ -228,25 +238,23 @@ async def test_lines_that_cannot_happen_do_not_use_up_a_tick(store, villa, write
     )
     s = writer_sim(
         [
-            Scene(
-                lines=[
-                    Line(actor_id=v.mia.id, kind="say", emotion="shy"),
-                    say(SimpleNamespace(id=999), "Who am I?"),
-                    Line(
-                        actor_id=v.jake.id,
-                        kind="kiss",
-                        target_id=v.sara.id,
-                        emotion="bold",
-                        feelings=[longing],
-                    ),
-                    Line(
-                        actor_id=v.mia.id,
-                        kind="move",
-                        destination_id=v.pool.id,
-                        emotion="bored",
-                    ),
-                    say(v.mia, "Hi"),
-                ]
+            scene(
+                Line(actor_id=v.mia.id, kind="say", emotion="shy"),
+                say(SimpleNamespace(id=999), "Who am I?"),
+                Line(
+                    actor_id=v.jake.id,
+                    kind="kiss",
+                    target_id=v.sara.id,
+                    emotion="bold",
+                    feelings=[longing],
+                ),
+                Line(
+                    actor_id=v.mia.id,
+                    kind="move",
+                    destination_id=v.pool.id,
+                    emotion="bored",
+                ),
+                say(v.mia, "Hi"),
             )
         ]
     )
@@ -257,8 +265,112 @@ async def test_lines_that_cannot_happen_do_not_use_up_a_tick(store, villa, write
     assert await store.relationships.get_all(v.world.id) == []
 
 
+async def test_everyone_in_a_beat_acts_in_the_same_tick(store, villa, writer_sim):
+    v = villa
+    s = writer_sim(
+        [
+            scene(
+                [
+                    say(v.mia, "Look who's here", target_id=v.jake.id),
+                    Line(
+                        actor_id=v.sara.id,
+                        kind="move",
+                        destination_id=v.pool.id,
+                        emotion="curious",
+                    ),
+                    Line(
+                        actor_id=v.jake.id,
+                        kind="hug",
+                        target_id=v.mia.id,
+                        emotion="warm",
+                    ),
+                ],
+                say(v.jake, "Later"),
+            )
+        ]
+    )
+
+    events = await s.engine.step(v.world.id)
+
+    assert [(e.kind, e.actor_id, e.tick) for e in events] == [
+        ("say", v.mia.id, 1),
+        ("move", v.sara.id, 1),
+        ("hug", v.jake.id, 1),
+    ]
+    moods = {a.name: a.mood for a in await store.agents.get_all(v.world.id)}
+    assert (moods["Mia"], moods["Sara"], moods["Jake"]) == ("happy", "curious", "warm")
+
+
+async def test_lines_in_a_beat_play_in_order(store, villa, writer_sim):
+    v = villa
+    s = writer_sim(
+        [
+            scene(
+                [
+                    Line(
+                        actor_id=v.sara.id,
+                        kind="move",
+                        destination_id=v.pool.id,
+                        emotion="bold",
+                    ),
+                    Line(
+                        actor_id=v.jake.id,
+                        kind="kiss",
+                        target_id=v.sara.id,
+                        emotion="smitten",
+                    ),
+                ]
+            )
+        ]
+    )
+
+    events = await s.engine.step(v.world.id)
+
+    assert [(e.kind, e.actor_id) for e in events] == [
+        ("move", v.sara.id),
+        ("kiss", v.jake.id),
+    ]
+
+
+async def test_a_second_line_for_someone_waits_for_the_next_beat(villa, writer_sim):
+    v = villa
+    s = writer_sim(
+        [
+            scene(
+                [
+                    Line(
+                        actor_id=v.mia.id,
+                        kind="move",
+                        destination_id=v.kitchen.id,
+                        emotion="sneaky",
+                    ),
+                    say(v.jake, "Where are you going?"),
+                    say(v.mia, "Hey Sara", target_id=v.sara.id),
+                ]
+            )
+        ]
+    )
+
+    first = await s.engine.step(v.world.id)
+    second = await s.engine.step(v.world.id)
+
+    assert [e.kind for e in first] == ["move", "say"]
+    assert [e.text for e in second] == ["Hey Sara"]
+
+
+async def test_only_one_person_speaks_in_a_beat(villa, writer_sim):
+    v = villa
+    s = writer_sim([scene([say(v.mia, "One"), say(v.jake, "Two")])])
+
+    first = await s.engine.step(v.world.id)
+    second = await s.engine.step(v.world.id)
+
+    assert [e.text for e in first] == ["One"]
+    assert [e.text for e in second] == ["Two"]
+
+
 async def test_failed_writer_call_skips_the_tick(villa, writer_sim):
-    s = writer_sim([RuntimeError("model down"), Scene(lines=[say(villa.mia, "Back")])])
+    s = writer_sim([RuntimeError("model down"), scene(say(villa.mia, "Back"))])
 
     assert await s.engine.step(villa.world.id) == []
     [back] = await s.engine.step(villa.world.id)
@@ -284,13 +396,12 @@ def test_lines_become_actions():
 
 async def test_llm_writer_returns_the_scene(director_context, fake_model):
     context = SceneContext(**dict(director_context))
-    model, seen = fake_model(
-        {"lines": [{"actor_id": 1, "kind": "kiss", "target_id": 2, "emotion": "bold"}]}
-    )
+    kiss = {"actor_id": 1, "kind": "kiss", "target_id": 2, "emotion": "bold"}
+    model, seen = fake_model({"beats": [{"lines": [kiss]}]})
 
-    scene = await LlmWriter(model).write(context)
+    written = await LlmWriter(model).write(context)
 
-    assert [line.action() for line in scene.lines] == [Kiss(target_id=2)]
+    assert [line.action() for line in written.beats[0].lines] == [Kiss(target_id=2)]
     assert seen["prompt"] == render_scene(context)
 
 

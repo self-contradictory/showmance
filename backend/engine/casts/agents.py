@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 from ai import Appraiser, Decider
 from domain import Action, Event, Reaction
@@ -26,7 +27,12 @@ class AgentsCast(Cast):
                 for agent in state.agents
             )
         )
-        return await settle({c.agent.id: self._decider.decide(c) for c in contexts})
+        decisions = await settle(
+            {c.agent.id: self._decider.decide(c) for c in contexts}
+        )
+        order = list(decisions.items())
+        random.shuffle(order)
+        return dict(order)
 
     async def react(
         self, state: WorldState, seen: dict[int, list[Event]]

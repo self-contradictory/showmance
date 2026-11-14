@@ -29,7 +29,7 @@ from domain.polls import (
 )
 from domain.reactions import FeelingChange, Reaction
 from domain.relationships import Relationship, RelationshipChange
-from domain.scenes import Line, LineKind, Scene, ScriptedFeeling
+from domain.scenes import Beat, Line, LineKind, Scene, ScriptedFeeling
 from domain.speech import SPOKEN_KINDS, Audio, Speech
 from domain.twists import NewTwist, Twist, TwistSource, TwistStatus
 from domain.viewers import CoinReason, Viewer
@@ -45,6 +45,7 @@ __all__ = [
     "Announce",
     "Arrive",
     "Audio",
+    "Beat",
     "ChatMessage",
     "CoinReason",
     "Confess",

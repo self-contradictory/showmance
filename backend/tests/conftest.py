@@ -112,7 +112,7 @@ class ScriptedWriter:
 
     async def write(self, context: SceneContext) -> Scene:
         self.contexts.append(context)
-        scene = self._scenes.pop(0) if self._scenes else Scene(lines=[])
+        scene = self._scenes.pop(0) if self._scenes else Scene(beats=[])
         if isinstance(scene, Exception):
             raise scene
         return scene
