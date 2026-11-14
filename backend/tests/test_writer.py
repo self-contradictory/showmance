@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from typing import get_args
 
 from ai import LlmWriter, llm_roles
@@ -43,7 +44,7 @@ async def test_scene_plays_one_line_per_tick(store, memory, villa, writer_sim):
         target_id=v.jake.id,
         feelings=[crush],
     )
-    hug = Line(actor_id=v.jake.id, kind="hug", target_id=v.mia.id)
+    hug = Line(actor_id=v.jake.id, kind="hug", target_id=v.mia.id, emotion="smitten")
     s = writer_sim([Scene(lines=[hi, hug])])
 
     [first] = await s.engine.step(v.world.id)
@@ -61,7 +62,11 @@ async def test_scene_plays_one_line_per_tick(store, memory, villa, writer_sim):
         settings.neutral_score + 5,
     )
     moods = {a.name: a.mood for a in await store.agents.get_all(v.world.id)}
-    assert (moods["Mia"], moods["Jake"]) == ("flirty", settings.default_mood)
+    assert (moods["Mia"], moods["Jake"], moods["Sara"]) == (
+        "flirty",
+        "smitten",
+        settings.default_mood,
+    )
     assert [m.text for m in await memory.recall(v.jake.id, "")] == [
         'Mia: say "Hi" (to Jake, emotion: flirty)',
         "Jake: hug (to Mia)",
@@ -111,7 +116,7 @@ async def test_twist_replaces_the_rest_of_the_scene(store, villa, writer_sim):
     }
 
 
-async def test_lines_that_cannot_happen_are_skipped(store, villa, writer_sim):
+async def test_lines_that_cannot_happen_do_not_use_up_a_tick(store, villa, writer_sim):
     v = villa
     longing = ScriptedFeeling(
         from_id=v.sara.id,
@@ -124,13 +129,20 @@ async def test_lines_that_cannot_happen_are_skipped(store, villa, writer_sim):
         [
             Scene(
                 lines=[
-                    Line(actor_id=v.mia.id, kind="say"),
-                    Line(actor_id=999, kind="say", text="Who am I?"),
+                    Line(actor_id=v.mia.id, kind="say", emotion="shy"),
+                    say(SimpleNamespace(id=999), "Who am I?"),
                     Line(
                         actor_id=v.jake.id,
                         kind="kiss",
                         target_id=v.sara.id,
+                        emotion="bold",
                         feelings=[longing],
+                    ),
+                    Line(
+                        actor_id=v.mia.id,
+                        kind="move",
+                        destination_id=v.pool.id,
+                        emotion="bored",
                     ),
                     say(v.mia, "Hi"),
                 ]
@@ -138,10 +150,10 @@ async def test_lines_that_cannot_happen_are_skipped(store, villa, writer_sim):
         ]
     )
 
-    assert await s.engine.step(v.world.id) == []
-    assert await store.relationships.get_all(v.world.id) == []
     [hi] = await s.engine.step(v.world.id)
+
     assert hi.text == "Hi"
+    assert await store.relationships.get_all(v.world.id) == []
     assert len(s.writer.contexts) == 1
 
 
@@ -161,22 +173,19 @@ def test_every_line_kind_is_an_action():
 
 
 def test_lines_become_actions():
-    assert Line(actor_id=1, kind="say", text="Hi").action() == Say(
-        text="Hi", emotion=settings.default_mood
-    )
-    assert Line(actor_id=1, kind="move", destination_id=2).action() == Move(
-        destination_id=2
-    )
-    assert Line(actor_id=1, kind="confess", text="I lied").action() == Confess(
-        text="I lied"
-    )
-    assert Line(actor_id=1, kind="kiss").action() is None
+    def line(kind, **fields):
+        return Line(actor_id=1, kind=kind, emotion="shy", **fields)
+
+    assert line("say", text="Hi").action() == Say(text="Hi", emotion="shy")
+    assert line("move", destination_id=2).action() == Move(destination_id=2)
+    assert line("confess", text="I lied").action() == Confess(text="I lied")
+    assert line("kiss").action() is None
 
 
 async def test_llm_writer_returns_the_scene(director_context, fake_model):
     context = SceneContext(**dict(director_context))
     model, seen = fake_model(
-        {"lines": [{"actor_id": 1, "kind": "kiss", "target_id": 2}]}
+        {"lines": [{"actor_id": 1, "kind": "kiss", "target_id": 2, "emotion": "bold"}]}
     )
 
     scene = await LlmWriter(model).write(context)

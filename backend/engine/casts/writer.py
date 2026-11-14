@@ -7,6 +7,7 @@ from data import Store
 from domain import Action, Event, Line, Reaction
 from engine.casts.base import Cast
 from engine.context import scene_context
+from engine.rules import takes_effect
 from engine.state import WorldState
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class WriterCast(Cast):
         while script:
             line = script.popleft()
             action = line.action()
-            if action is not None and state.has_agent(line.actor_id):
+            if action is not None and _can_play(line.actor_id, action, state):
                 self._playing[world_id] = line
                 return {line.actor_id: action}
         return {}
@@ -63,13 +64,19 @@ class WriterCast(Cast):
         return scene.lines
 
 
+def _can_play(actor_id: int, action: Action, state: WorldState) -> bool:
+    return state.has_agent(actor_id) and takes_effect(
+        action, state.agent(actor_id), state
+    )
+
+
 def _reaction(
     state: WorldState, agent_id: int, events: list[Event], line: Line | None
 ) -> Reaction:
     mood = state.agent(agent_id).mood
     changes = []
     if line is not None:
-        if line.actor_id == agent_id and line.emotion:
+        if line.actor_id == agent_id:
             mood = line.emotion
         changes = [f for f in line.feelings if f.from_id == agent_id]
     return Reaction(

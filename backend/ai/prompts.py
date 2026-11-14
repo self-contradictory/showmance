@@ -52,12 +52,14 @@ WRITE_INSTRUCTIONS = f"""You write a reality dating show set in a villa.
 Viewers watch it live, one line at a time.
 Write the next scene in about {settings.scene_lines} lines, picking up where the story left off.
 
-Each line is one thing one person does. Refer to people and places by their id:
-- say: a short, natural spoken line with an emotion, to someone here or to the room
+Each line is one thing one person does, with how they feel doing it (emotion).
+Refer to people and places by their id:
+- say: a short, natural spoken line, to someone here or to the room
 - hug, kiss: someone in the same place
 - move: go to another place
 - confess: a private line to the camera that nobody in the villa hears
 People can only talk to, hug or kiss someone in the same place, so move them first.
+Keep track of where everyone is as the scene goes on.
 People only know what they saw or were told: recent events say who saw them.
 If the producers need something to happen, make it happen in this scene.
 If viewers are voting, build toward the vote but never decide it.
