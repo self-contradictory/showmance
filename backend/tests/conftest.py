@@ -5,7 +5,6 @@ from httpx import ASGITransport, AsyncClient
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from ai import Roles
 from api.app import create_app
 from api.deps import get_services
 from api.runners import Runners
@@ -33,6 +32,7 @@ from domain import (
     World,
 )
 from engine import Engine
+from engine.casts import AgentsCast
 from engine.state import WorldState
 from memory import SqlMemoryStore
 
@@ -134,9 +134,9 @@ def sim(store, memory):
         decider = ScriptedDecider(script or {})
         appraiser = RecordingAppraiser(reactions or {})
         director = ScriptedDirector(plans or {}, proposal)
-        roles = Roles(decider=decider, appraiser=appraiser, director=director)
+        cast = AgentsCast(memory, decider, appraiser)
         return SimpleNamespace(
-            engine=Engine(store, memory, roles),
+            engine=Engine(store, memory, director, cast),
             decider=decider,
             appraiser=appraiser,
             director=director,

@@ -6,6 +6,7 @@ from ai import llm_roles
 from api.runners import Runners
 from data import Store
 from engine import Engine
+from engine.casts import AgentsCast
 from memory import SqlMemoryStore
 
 
@@ -18,5 +19,8 @@ class Services:
 
 def build_services(db: AsyncEngine) -> Services:
     store = Store(db)
-    engine = Engine(store, SqlMemoryStore(db), llm_roles())
+    memory = SqlMemoryStore(db)
+    roles = llm_roles()
+    cast = AgentsCast(memory, roles.decider, roles.appraiser)
+    engine = Engine(store, memory, roles.director, cast)
     return Services(store=store, engine=engine, runners=Runners(engine))
