@@ -2,8 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from backend.data import Store, connect
-from backend.memory import SqlMemoryStore
+from data import Store, connect
+from domain import NewAgent, NewLocation
+from memory import SqlMemoryStore
 
 
 @pytest.fixture
@@ -25,15 +26,20 @@ def memory(engine):
 
 @pytest.fixture
 async def villa(store):
-    """A world with a pool and a kitchen, Mia and Jake at the pool, Sara in the kitchen."""
-    world = await store.create_world("A villa in Bali")
-    pool = await store.add_location(world.id, "pool")
-    kitchen = await store.add_location(world.id, "kitchen")
-    mia = await store.add_agent(world.id, "Mia", "Bold and jealous.", pool.id)
-    jake = await store.add_agent(world.id, "Jake", "Charming, can't commit.", pool.id)
-    sara = await store.add_agent(
-        world.id, "Sara", "Quiet, notices everything.", kitchen.id
-    )
+    world = await store.worlds.create("A villa in Bali")
+    pool = await store.locations.add(NewLocation(world_id=world.id, name="pool"))
+    kitchen = await store.locations.add(NewLocation(world_id=world.id, name="kitchen"))
+
+    async def agent(name, location):
+        return await store.agents.add(
+            NewAgent(world_id=world.id, name=name, persona="", location_id=location.id)
+        )
+
     return SimpleNamespace(
-        world=world, pool=pool, kitchen=kitchen, mia=mia, jake=jake, sara=sara
+        world=world,
+        pool=pool,
+        kitchen=kitchen,
+        mia=await agent("Mia", pool),
+        jake=await agent("Jake", pool),
+        sara=await agent("Sara", kitchen),
     )
