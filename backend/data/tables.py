@@ -12,7 +12,9 @@ class WorldRow(Base):
     __tablename__ = "worlds"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
     setting: Mapped[str]
+    thumbnail_url: Mapped[str | None]
     tick: Mapped[int]
 
 

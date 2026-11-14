@@ -28,7 +28,7 @@ from domain.reactions import FeelingChange, Reaction
 from domain.relationships import Relationship, RelationshipChange
 from domain.twists import NewTwist, Twist, TwistSource, TwistStatus
 from domain.viewers import CoinReason, Viewer
-from domain.worlds import World
+from domain.worlds import NewWorld, World
 
 __all__ = [
     "OPTION_COUNTS",
@@ -54,6 +54,7 @@ __all__ = [
     "NewMemory",
     "NewPoll",
     "NewTwist",
+    "NewWorld",
     "Nudge",
     "Perform",
     "Poll",

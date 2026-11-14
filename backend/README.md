@@ -28,7 +28,8 @@ curl -N localhost:8000/worlds/1/stream
 
 | Method | Path | |
 |---|---|---|
-| `POST` | `/worlds` | create a world from a spec like `villa.json` |
+| `GET` | `/worlds` | every world (name, thumbnail, setting, tick) with `running`, for the homepage |
+| `POST` | `/worlds` | create a world from a spec like `villa.json`: `name`, `setting`, `thumbnail_url?`, locations, agents |
 | `GET` | `/worlds/{id}` | world, locations, agents, relationships, running |
 | `GET` | `/worlds/{id}/events?after_id=` | event history |
 | `GET` | `/worlds/{id}/stream?after_id=` | live events over SSE, resumes from `Last-Event-ID` |

@@ -1,5 +1,5 @@
 from config import settings
-from domain import NewAgent, NewLocation, RelationshipChange
+from domain import NewAgent, NewLocation, NewWorld, RelationshipChange
 
 
 async def test_relationships_are_directional_and_clamped(store, villa):
@@ -26,7 +26,7 @@ async def test_relationships_are_directional_and_clamped(store, villa):
 
 
 async def test_relationships_stay_in_their_world(store, villa):
-    other = await store.worlds.create("Another villa")
+    other = await store.worlds.create(NewWorld(name="Other", setting="Another villa"))
     room = await store.locations.add(NewLocation(world_id=other.id, name="room"))
     a, b = [
         await store.agents.add(

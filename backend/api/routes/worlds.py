@@ -1,16 +1,26 @@
 from fastapi import APIRouter
 
 from api.deps import ServicesDep, WorldDep
-from api.schemas import WorldSpec, WorldView
-from domain import NewAgent, NewLocation, World
+from api.schemas import WorldSpec, WorldSummary, WorldView
+from domain import NewAgent, NewLocation, NewWorld, World
 
 router = APIRouter()
+
+
+@router.get("/worlds")
+async def list_worlds(services: ServicesDep) -> list[WorldSummary]:
+    return [
+        WorldSummary(world=world, running=services.runners.running(world.id))
+        for world in await services.store.worlds.get_all()
+    ]
 
 
 @router.post("/worlds", status_code=201)
 async def create_world(spec: WorldSpec, services: ServicesDep) -> World:
     store = services.store
-    world = await store.worlds.create(spec.setting)
+    world = await store.worlds.create(
+        NewWorld(name=spec.name, setting=spec.setting, thumbnail_url=spec.thumbnail_url)
+    )
     location_ids = {}
     for location in spec.locations:
         saved = await store.locations.add(

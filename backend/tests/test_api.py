@@ -2,6 +2,8 @@ from config import settings
 from domain import Hug, Reveal, TwistPlan
 
 VILLA = {
+    "name": "Bali Villa",
+    "thumbnail_url": "/thumbnails/bali.jpg",
     "setting": "A villa in Bali",
     "locations": [{"name": "pool"}, {"name": "kitchen"}],
     "agents": [
@@ -26,6 +28,23 @@ async def test_create_world_and_read_it_back(sim, client):
     agents = {a["name"]: places[a["location_id"]] for a in view["agents"]}
     assert agents == {"Mia": "pool", "Jake": "kitchen"}
     assert view["running"] is False
+
+
+async def test_homepage_lists_every_world_with_its_status(villa, sim, client):
+    async with client(sim().engine) as http:
+        created = (await http.post("/worlds", json=VILLA)).json()
+        await http.post(f"/worlds/{created['id']}/start")
+        listed = (await http.get("/worlds")).json()
+        await http.post(f"/worlds/{created['id']}/stop")
+
+    summaries = {s["world"]["id"]: s for s in listed}
+    assert summaries[villa.world.id]["running"] is False
+    assert summaries[created["id"]]["running"] is True
+    card = summaries[created["id"]]["world"]
+    assert (card["name"], card["thumbnail_url"]) == (
+        "Bali Villa",
+        "/thumbnails/bali.jpg",
+    )
 
 
 async def test_agent_in_unknown_location_is_rejected(sim, client):

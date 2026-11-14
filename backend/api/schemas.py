@@ -19,7 +19,9 @@ class AgentSpec(Model):
 
 
 class WorldSpec(Model):
+    name: str
     setting: str
+    thumbnail_url: str | None = None
     locations: list[LocationSpec]
     agents: list[AgentSpec]
 
@@ -30,6 +32,11 @@ class WorldSpec(Model):
         if lost:
             raise ValueError(f"unknown location for: {', '.join(lost)}")
         return self
+
+
+class WorldSummary(Model):
+    world: World
+    running: bool
 
 
 class WorldView(Model):

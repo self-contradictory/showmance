@@ -21,6 +21,7 @@ from domain import (
     Memory,
     NewAgent,
     NewLocation,
+    NewWorld,
     PollFormat,
     Proposal,
     Reaction,
@@ -108,7 +109,7 @@ def memory(db):
 
 @pytest.fixture
 async def villa(store):
-    world = await store.worlds.create("A villa in Bali")
+    world = await store.worlds.create(NewWorld(name="Villa", setting="A villa in Bali"))
     pool = await store.locations.add(NewLocation(world_id=world.id, name="pool"))
     kitchen = await store.locations.add(NewLocation(world_id=world.id, name="kitchen"))
 
@@ -149,7 +150,7 @@ def context():
     pool = Location(id=1, world_id=1, name="pool")
     kitchen = Location(id=2, world_id=1, name="kitchen")
     return AgentContext(
-        world=World(id=1, setting="A villa in Bali", tick=3),
+        world=World(id=1, name="Villa", setting="A villa in Bali", tick=3),
         agent=Agent(
             id=1, world_id=1, name="Mia", persona="Bold and jealous.", location_id=1
         ),
