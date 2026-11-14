@@ -15,7 +15,7 @@ export function ShowInfo({ title, day, now, cast }: Props) {
 
       <ul className="flex shrink-0 gap-3 max-lg:hidden" aria-label="Cast">
         {cast.map((member) => (
-          <li key={member.id} title={member.role} className="flex flex-col items-center gap-1">
+          <li key={member.id} className="flex flex-col items-center gap-1">
             <span
               className="grid size-9 place-items-center rounded-full bg-surface text-sm font-semibold"
               aria-hidden

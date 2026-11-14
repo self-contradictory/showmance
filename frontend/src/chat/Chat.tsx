@@ -22,11 +22,11 @@ export function Chat({ comments, vote, myVote, onSend, onVote, onHide }: Props) 
       aria-label="Chat"
       className="flex min-h-0 flex-col max-lg:flex-1 max-lg:px-4 max-lg:pb-3 lg:w-[340px] lg:shrink-0"
     >
-      <div className="flex items-center justify-between pb-2 max-lg:hidden">
-        <h2 className="text-sm font-semibold">Chat</h2>
-        <IconButton label="Hide chat" onClick={onHide} className="-mr-2">
+      <div className="grid grid-cols-[2.25rem_1fr_2.25rem] items-center pb-2 max-lg:hidden">
+        <IconButton label="Hide chat" onClick={onHide}>
           <PanelRightClose size={18} />
         </IconButton>
+        <h2 className="text-center text-sm font-semibold">Chat</h2>
       </div>
       <AnimatePresence initial={false}>
         {vote && (

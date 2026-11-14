@@ -94,7 +94,6 @@ export function Stage({ viewers, caption, twistPrice, balance, onDropTwist, onSh
               <button
                 type="button"
                 onClick={() => setTwisting(true)}
-                title="Drop a twist into the show"
                 className="flex h-9 items-center gap-1.5 rounded-full bg-accent pr-4 pl-3 text-sm font-semibold text-on-accent transition-opacity hover:opacity-90"
               >
                 <Sparkles size={16} />

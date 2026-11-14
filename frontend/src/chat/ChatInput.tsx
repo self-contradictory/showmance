@@ -23,7 +23,7 @@ export function ChatInput({ onSend }: { onSend: (text: string) => void }) {
         aria-label="Send a message"
         autoComplete="off"
         enterKeyHint="send"
-        className="h-10 w-full rounded-full bg-surface px-4 text-sm outline-none placeholder:text-muted focus:ring-1 focus:ring-muted/50"
+        className="h-10 w-full rounded-full bg-surface px-4 text-sm outline-none placeholder:text-muted focus:ring-1 focus:ring-muted/50 focus:ring-inset"
       />
     </form>
   );
