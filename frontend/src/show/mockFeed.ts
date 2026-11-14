@@ -1,16 +1,12 @@
 import { reduceShow } from "./reduce";
 import {
   MAX_MESSAGE_LENGTH,
+  MAX_TWIST_LENGTH,
   type CastMember,
   type Feed,
   type FeedEvent,
   type Show,
-  type Twist,
 } from "./types";
-
-// Stands in for the backend so the page can be built without a server.
-// It plays scripted scenes through the same Feed interface a WebSocket
-// feed will implement.
 
 const CAST: CastMember[] = [
   { id: "mia", name: "Mia", role: "The planner" },
@@ -61,17 +57,8 @@ const SCENES: Scene[] = [
   },
 ];
 
-const TWISTS: Twist[] = [
-  { id: "tell-mia", label: "Tell Mia about the kiss", price: 50 },
-  { id: "tempter", label: "Send a tempter to test Jake", price: 80 },
-  { id: "date", label: "Set up a date for Chris and Sara", price: 60 },
-  { id: "leak", label: "Leak Leo's plan to the house", price: 70 },
-  { id: "confession", label: "Call Nina to the confession room", price: 40 },
-];
-
-// How the villa reacts to each twist. The backend's writer AI replaces these.
-const TWIST_SCENES: Record<string, Scene> = {
-  "tell-mia": {
+const IDEA_SCENES: Record<string, Scene> = {
+  "Tell Mia about the kiss": {
     now: "Mia just got a text about the kiss",
     lines: [
       ["Mia", "I got a text!"],
@@ -82,7 +69,7 @@ const TWIST_SCENES: Record<string, Scene> = {
       ["Mia", "Unbelievable."],
     ],
   },
-  tempter: {
+  "Send Jake a tempter": {
     now: "A new arrival is here to test Jake",
     lines: [
       ["Nina", "Someone new just walked in."],
@@ -91,7 +78,7 @@ const TWIST_SCENES: Record<string, Scene> = {
       ["Jake", "I'm just being polite!"],
     ],
   },
-  date: {
+  "Date night for Chris and Sara": {
     now: "Chris and Sara are going on a date",
     lines: [
       ["Chris", "I got a text! Sara, it's you and me tonight."],
@@ -100,7 +87,7 @@ const TWIST_SCENES: Record<string, Scene> = {
       ["Sara", "Okay. I'm in."],
     ],
   },
-  leak: {
+  "Leak Leo's plan": {
     now: "The whole house just found out about Leo's plan",
     lines: [
       ["Nina", "Everyone, read this."],
@@ -110,20 +97,12 @@ const TWIST_SCENES: Record<string, Scene> = {
       ["Leo", "It's a game, Chris."],
     ],
   },
-  confession: {
-    now: "Nina is in the confession room",
-    lines: [
-      ["Nina", "Fine. I'll say it."],
-      ["Nina", "I told Leo to go after Chris."],
-      ["Nina", "And I'd do it again."],
-    ],
-  },
 };
 
+const TWIST_IDEAS = Object.keys(IDEA_SCENES);
+const TWIST_PRICE = 50;
 const STARTING_COINS = 300;
 
-// Dev only: fake viewers so the chat has traffic while there is no backend.
-// The real feed carries real viewers only.
 const FAKE_VIEWERS = ["jess_k", "mike88", "tina", "sam_r", "dee", "carlos.v", "priya", "ben_t"];
 const FAKE_MESSAGES = [
   "he's done lol",
@@ -155,6 +134,19 @@ function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)]!;
 }
 
+function customTwistScene(): Scene {
+  const first = pick(CAST);
+  const second = pick(CAST.filter((member) => member !== first));
+  return {
+    now: "A viewer's twist just hit the villa",
+    lines: [
+      [first.name, "Wait. Did everyone just see that?"],
+      [second.name, "Nobody saw that coming."],
+      [first.name, "This changes everything."],
+    ],
+  };
+}
+
 export function createMockFeed(): Feed {
   let state: Show = {
     title: "The Villa",
@@ -165,7 +157,8 @@ export function createMockFeed(): Feed {
     caption: null,
     comments: [],
     vote: null,
-    twists: TWISTS,
+    twistIdeas: TWIST_IDEAS,
+    twistPrice: TWIST_PRICE,
     balance: STARTING_COINS,
   };
 
@@ -187,7 +180,6 @@ export function createMockFeed(): Feed {
     timers.add(timer);
   }
 
-  // Scenes: one caption at a time, with a short gap between lines.
   let queue: Scene["lines"] = [];
   let sceneIndex = 0;
 
@@ -221,7 +213,6 @@ export function createMockFeed(): Feed {
     later(1200 + Math.random() * 2800, fakeChatter);
   }
 
-  // Votes: open one, let it run, post the result, pause, open the next.
   let voteIndex = 0;
 
   function openVote() {
@@ -246,8 +237,6 @@ export function createMockFeed(): Feed {
     emit({ type: "vote", vote: { ...vote, options } });
   }
 
-  // Dev only, like the fake chatter. Leans toward the first option so a
-  // winner shows up.
   function fakeVotes() {
     const vote = state.vote;
     if (!vote) return;
@@ -305,17 +294,12 @@ export function createMockFeed(): Feed {
     vote(voteId, optionId) {
       addVotes(voteId, optionId, 1);
     },
-    buyTwist(author, twistId) {
-      const twist = TWISTS.find((t) => t.id === twistId);
-      const scene = TWIST_SCENES[twistId];
-      if (!twist || !scene || state.balance < twist.price) return;
-      emit({ type: "balance", balance: state.balance - twist.price });
-      emit({
-        type: "comment",
-        comment: { kind: "twist", id: nextId("comment"), at: Date.now(), author, twist: twist.label },
-      });
-      // The reaction starts right after the line on screen now.
-      playScene(scene);
+    dropTwist(author, text) {
+      const twist = text.trim().slice(0, MAX_TWIST_LENGTH);
+      if (!twist || state.balance < TWIST_PRICE) return;
+      emit({ type: "balance", balance: state.balance - TWIST_PRICE });
+      emit({ type: "comment", comment: { kind: "twist", id: nextId("comment"), at: Date.now(), author, twist } });
+      playScene(IDEA_SCENES[twist] ?? customTwistScene());
     },
   };
 }

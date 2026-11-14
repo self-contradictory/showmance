@@ -12,7 +12,7 @@ import { VillaPlaceholder } from "./VillaPlaceholder";
 const CHAT_KEY = "showmance:chat";
 
 export function StreamPage() {
-  const { show, myVote, send, vote, buyTwist } = useShow();
+  const { show, myVote, send, vote, dropTwist } = useShow();
   const [chatOpen, setChatOpen] = useState(() => readStored(CHAT_KEY) !== "hidden");
 
   function toggleChat() {
@@ -49,11 +49,12 @@ export function StreamPage() {
             comments={show.comments}
             vote={show.vote}
             myVote={myVote}
-            twists={show.twists}
+            twistIdeas={show.twistIdeas}
+            twistPrice={show.twistPrice}
             balance={show.balance}
             onSend={send}
             onVote={vote}
-            onBuyTwist={buyTwist}
+            onDropTwist={dropTwist}
           />
         </div>
       </div>
