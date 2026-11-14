@@ -1,55 +1,55 @@
 import asyncio
 import random
 
-from ai import Appraiser, Decider
+from ai import Roles
 from data import Store
-from domain import Action, Event, NewEvent
+from domain import Action, Event
 from engine.context import ContextBuilder
 from engine.effects import Effects
 from engine.events import to_event
 from engine.parallel import settle
 from engine.reactions import Reactions
 from engine.rules import takes_effect
+from engine.staging import Staging
 from engine.state import WorldState, load_state
 from memory import MemoryStore
 
 
 class Engine:
-    def __init__(
-        self,
-        store: Store,
-        memory: MemoryStore,
-        decider: Decider,
-        appraiser: Appraiser,
-    ) -> None:
+    def __init__(self, store: Store, memory: MemoryStore, roles: Roles) -> None:
         self._store = store
-        self._decider = decider
-        self._appraiser = appraiser
+        self._roles = roles
         self._contexts = ContextBuilder(memory)
         self._effects = Effects(store)
         self._reactions = Reactions(store, memory)
+        self._staging = Staging(store, roles.director)
         self._lock = asyncio.Lock()
 
     async def step(self, world_id: int) -> list[Event]:
         async with self._lock:
             await self._store.worlds.advance_tick(world_id)
             state = await load_state(self._store, world_id)
-            decisions = await self._decide(state)
+            staged = await self._staging.run(state)
+            if staged.events:
+                await self._react(staged.events, state)
+                state = await load_state(self._store, world_id)
+            decisions = await self._decide(state, staged.directions)
             events = await self._resolve(decisions, state)
             await self._react(events, state)
-            return events
+            return [*staged.events, *events]
 
-    async def inject(self, event: NewEvent) -> Event:
-        async with self._lock:
-            saved = await self._store.events.add(event)
-            await self._react([saved], await load_state(self._store, event.world_id))
-            return saved
-
-    async def _decide(self, state: WorldState) -> dict[int, Action]:
+    async def _decide(
+        self, state: WorldState, directions: dict[int, list[str]]
+    ) -> dict[int, Action]:
         contexts = await asyncio.gather(
-            *(self._contexts.build(agent, state) for agent in state.agents)
+            *(
+                self._contexts.build(agent, state, directions.get(agent.id, []))
+                for agent in state.agents
+            )
         )
-        return await settle({c.agent.id: self._decider.decide(c) for c in contexts})
+        return await settle(
+            {c.agent.id: self._roles.decider.decide(c) for c in contexts}
+        )
 
     async def _resolve(
         self, decisions: dict[int, Action], state: WorldState
@@ -76,7 +76,7 @@ class Engine:
         )
         reactions = await settle(
             {
-                c.agent.id: self._appraiser.appraise(c, seen[c.agent.id])
+                c.agent.id: self._roles.appraiser.appraise(c, seen[c.agent.id])
                 for c in contexts
             }
         )

@@ -20,3 +20,13 @@ class EventRepository(Repository):
                 .order_by(EventRow.id)
             )
             return [Event.model_validate(r) for r in rows]
+
+    async def recent(self, world_id: int, limit: int) -> list[Event]:
+        async with self._session() as s:
+            rows = await s.scalars(
+                select(EventRow)
+                .where(EventRow.world_id == world_id)
+                .order_by(EventRow.id.desc())
+                .limit(limit)
+            )
+            return [Event.model_validate(r) for r in reversed(rows.all())]

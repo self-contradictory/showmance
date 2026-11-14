@@ -69,3 +69,14 @@ class MemoryRow(Base):
     tick: Mapped[int]
     text: Mapped[str]
     event_id: Mapped[int | None] = mapped_column(ForeignKey("events.id"))
+
+
+class TwistRow(Base):
+    __tablename__ = "twists"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    world_id: Mapped[int] = mapped_column(ForeignKey("worlds.id"), index=True)
+    text: Mapped[str]
+    status: Mapped[str] = mapped_column(index=True)
+    outcome: Mapped[str | None]
+    tick: Mapped[int | None]

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from ai import LlmAppraiser, LlmDecider
+from ai import llm_roles
 from api.runners import Runners
 from data import Store
 from engine import Engine
@@ -18,5 +18,5 @@ class Services:
 
 def build_services(db: AsyncEngine) -> Services:
     store = Store(db)
-    engine = Engine(store, SqlMemoryStore(db), LlmDecider(), LlmAppraiser())
+    engine = Engine(store, SqlMemoryStore(db), llm_roles())
     return Services(store=store, engine=engine, runners=Runners(engine))

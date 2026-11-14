@@ -4,8 +4,7 @@ from engine import Runner
 
 
 async def test_runner_steps_until_stopped(store, villa, sim):
-    engine, _ = sim({})
-    runner = Runner(engine, villa.world.id, interval=0)
+    runner = Runner(sim().engine, villa.world.id, interval=0)
 
     runner.start()
     async with asyncio.timeout(2):

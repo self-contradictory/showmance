@@ -5,6 +5,7 @@ from httpx import ASGITransport, AsyncClient
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
+from ai import Roles
 from api.app import create_app
 from api.deps import get_services
 from api.runners import Runners
@@ -14,13 +15,16 @@ from domain import (
     Action,
     Agent,
     AgentContext,
+    DirectorContext,
     Event,
     Location,
     Memory,
     NewAgent,
     NewLocation,
     Reaction,
+    Rejected,
     Relationship,
+    TwistPlan,
     Wait,
     World,
 )
@@ -32,8 +36,10 @@ from memory import SqlMemoryStore
 class ScriptedDecider:
     def __init__(self, script: dict[str, Action | Exception]) -> None:
         self._script = script
+        self.contexts: dict[str, AgentContext] = {}
 
     async def decide(self, context: AgentContext) -> Action:
+        self.contexts[context.agent.name] = context
         choice = self._script.get(context.agent.name, Wait())
         if isinstance(choice, Exception):
             raise choice
@@ -49,6 +55,17 @@ class RecordingAppraiser:
         self.seen[context.agent.name] = [event.kind for event in events]
         default = Reaction(mood="calm", memory="noted", changes=[])
         return self._reactions.get(context.agent.name, default)
+
+
+class ScriptedDirector:
+    def __init__(self, plans: dict[str, TwistPlan | Rejected | Exception]) -> None:
+        self._plans = plans
+
+    async def stage(self, twist: str, context: DirectorContext) -> TwistPlan | Rejected:
+        plan = self._plans.get(twist, Rejected(reason="unscripted"))
+        if isinstance(plan, Exception):
+            raise plan
+        return plan
 
 
 @pytest.fixture
@@ -91,9 +108,17 @@ async def villa(store):
 
 @pytest.fixture
 def sim(store, memory):
-    def build(script, reactions=None):
+    def build(script=None, reactions=None, plans=None):
+        decider = ScriptedDecider(script or {})
         appraiser = RecordingAppraiser(reactions or {})
-        return Engine(store, memory, ScriptedDecider(script), appraiser), appraiser
+        roles = Roles(
+            decider=decider,
+            appraiser=appraiser,
+            director=ScriptedDirector(plans or {}),
+        )
+        return SimpleNamespace(
+            engine=Engine(store, memory, roles), decider=decider, appraiser=appraiser
+        )
 
     return build
 
@@ -126,6 +151,17 @@ def state(context):
         agents=[context.agent, *context.others],
         locations=context.locations,
         relationships=context.relationships,
+    )
+
+
+@pytest.fixture
+def director_context(context):
+    return DirectorContext(
+        world=context.world,
+        agents=[context.agent, *context.others],
+        locations=context.locations,
+        relationships=context.relationships,
+        events=[Event(id=1, world_id=1, tick=2, kind="hug", actor_id=2, target_id=1)],
     )
 
 

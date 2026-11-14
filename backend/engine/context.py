@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from domain import Agent, AgentContext
 from engine.state import WorldState
 from memory import MemoryStore
@@ -7,7 +9,9 @@ class ContextBuilder:
     def __init__(self, memory: MemoryStore) -> None:
         self._memory = memory
 
-    async def build(self, agent: Agent, state: WorldState) -> AgentContext:
+    async def build(
+        self, agent: Agent, state: WorldState, directions: Sequence[str] = ()
+    ) -> AgentContext:
         return AgentContext(
             world=state.world,
             agent=agent,
@@ -15,6 +19,7 @@ class ContextBuilder:
             locations=state.locations,
             relationships=[r for r in state.relationships if r.from_id == agent.id],
             memories=await self._memory.recall(agent.id, _situation(agent, state)),
+            directions=list(directions),
         )
 
 

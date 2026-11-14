@@ -1,4 +1,4 @@
-from ai.render import render_appraisal, render_context
+from ai.render import render_appraisal, render_context, render_director
 from domain import Event
 
 
@@ -11,6 +11,15 @@ def test_context_shows_only_what_the_agent_knows(context):
     assert "- Jake (id 2): affection 70, trust 40. flirty" in prompt
     assert "- [tick 2] Jake hugged me at the pool" in prompt
     assert "Sara" not in prompt
+    assert "producers" not in prompt
+
+
+def test_context_shows_producer_directions(context):
+    directed = context.model_copy(update={"directions": ["Confess to Jake"]})
+
+    assert render_context(directed).endswith(
+        "The producers need you to do this now:\n- Confess to Jake"
+    )
 
 
 def test_appraisal_renders_any_event_kind(context):
@@ -33,3 +42,12 @@ def test_appraisal_renders_any_event_kind(context):
         "- Jake: hug (to Mia)\n"
         '- Mia: say "Again?" (to Jake, emotion: happy)'
     )
+
+
+def test_director_sees_the_whole_villa_and_the_twist(director_context):
+    prompt = render_director(director_context, "tell Mia about the kiss")
+
+    assert "- Sara (id 3), at kitchen, mood neutral." in prompt
+    assert "- Mia → Jake: affection 70, trust 40. flirty" in prompt
+    assert "- [tick 2] Jake: hug (to Mia)" in prompt
+    assert prompt.endswith("<twist>\ntell Mia about the kiss\n</twist>")

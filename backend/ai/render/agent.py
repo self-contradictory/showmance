@@ -1,23 +1,23 @@
-from collections.abc import Iterable
-
+from ai.render.common import bullets, event_line
 from domain import AgentContext, Event
 
 
 def render_context(context: AgentContext) -> str:
-    return "\n\n".join(
-        [
-            _world(context),
-            _self(context),
-            _surroundings(context),
-            _feelings(context),
-            _memories(context),
-        ]
-    )
+    sections = [
+        _world(context),
+        _self(context),
+        _surroundings(context),
+        _feelings(context),
+        _memories(context),
+    ]
+    if context.directions:
+        sections.append(_directions(context))
+    return "\n\n".join(sections)
 
 
 def render_appraisal(context: AgentContext, events: list[Event]) -> str:
     names = _names(context)
-    happened = _bullets((_event(event, names) for event in events), "nothing")
+    happened = bullets((event_line(event, names) for event in events), "nothing")
     return f"{render_context(context)}\n\nWhat just happened:\n{happened}"
 
 
@@ -53,34 +53,17 @@ def _feelings(context: AgentContext) -> str:
         + (f". {r.note}" if r.note else "")
         for r in context.relationships
     )
-    return f"How you feel about others:\n{_bullets(lines, 'no strong feelings yet')}"
+    return f"How you feel about others:\n{bullets(lines, 'no strong feelings yet')}"
 
 
 def _memories(context: AgentContext) -> str:
     lines = (f"[tick {m.tick}] {m.text}" for m in context.memories)
-    return f"What you remember:\n{_bullets(lines, 'nothing yet')}"
+    return f"What you remember:\n{bullets(lines, 'nothing yet')}"
 
 
-def _event(event: Event, names: dict[int, str]) -> str:
-    line = event.kind
-    if event.actor_id is not None:
-        line = f"{names.get(event.actor_id, 'someone')}: {line}"
-    if event.text:
-        line += f' "{event.text}"'
-    details = (
-        []
-        if event.target_id is None
-        else [f"to {names.get(event.target_id, 'someone')}"]
-    )
-    details += [f"{key}: {value}" for key, value in event.data.items()]
-    if details:
-        line += f" ({', '.join(details)})"
-    return line
+def _directions(context: AgentContext) -> str:
+    return f"The producers need you to do this now:\n{bullets(context.directions, '')}"
 
 
 def _names(context: AgentContext) -> dict[int, str]:
     return {a.id: a.name for a in [context.agent, *context.others]}
-
-
-def _bullets(lines: Iterable[str], empty: str) -> str:
-    return "\n".join(f"- {line}" for line in lines) or f"- {empty}"

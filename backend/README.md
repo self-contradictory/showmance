@@ -34,7 +34,8 @@ curl -N localhost:8000/worlds/1/stream
 | `POST` | `/worlds/{id}/step` | run one tick |
 | `POST` | `/worlds/{id}/start` | tick every `TICK_INTERVAL` seconds |
 | `POST` | `/worlds/{id}/stop` | stop after the current tick |
-| `POST` | `/worlds/{id}/twists` | drop a twist: `{kind, text, witness_ids, target_id?}` |
+| `POST` | `/worlds/{id}/twists` | send a twist in free text: `{text}`, staged on the next tick |
+| `GET` | `/worlds/{id}/twists/{twist_id}` | twist status: pending, staged with a summary, or rejected with a reason |
 
 ## Test
 
