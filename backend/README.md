@@ -19,6 +19,7 @@ uv run main.py
 | `CORS_ORIGINS` | `["http://localhost:3000"]` (a JSON list) |
 | `HOST` | `127.0.0.1` |
 | `PORT` | `8000` |
+| `STRIPE_SECRET_KEY` | none: buying coins is off without it, see Coins |
 
 ## Who plays the contestants
 
@@ -50,6 +51,16 @@ curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-fil
 curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin
 ```
 
+## Coins
+
+Every viewer starts with `STARTER_COINS` and a twist costs `TWIST_PRICE`. Viewers buy more in packs (`COIN_PACKS`, priced in cents of `CURRENCY`) through Stripe's embedded checkout, so they pay without leaving the show.
+
+1. Make a free Stripe account and copy the test secret key (Developers, then API keys) into `.env` as `STRIPE_SECRET_KEY=sk_test_...`. The frontend needs the matching publishable key.
+2. `POST /purchases` starts a checkout for a pack and returns its client secret for the checkout form.
+3. When the form finishes, `POST /purchases/{id}/confirm` asks Stripe whether it was paid and adds the coins. Each purchase adds coins once, however many times it's confirmed.
+
+Pay with the test card `4242 4242 4242 4242`, any future date and any CVC. Payments go through a `Payments` interface in `payments/`, with Stripe behind it. Before taking real money, add a Stripe webhook that settles purchases too, so coins arrive even if someone closes the tab while paying.
+
 ## Start the villa
 
 ```bash
@@ -77,6 +88,9 @@ curl -N localhost:8000/worlds/1/stream
 | `GET` | `/viewers/me` | your viewer and coin balance 🔑 |
 | `GET` | `/worlds/{id}/poll` | the open poll and its vote counts, or `null` |
 | `POST` | `/worlds/{id}/poll/vote` | vote with `{option}`, voting again changes your vote 🔑 |
+| `GET` | `/packs` | the coin packs and their currency |
+| `POST` | `/purchases` | start buying `{pack_id}`: returns the checkout `id` and `client_secret`; `503` without `STRIPE_SECRET_KEY` 🔑 |
+| `POST` | `/purchases/{id}/confirm` | add the pack's coins once Stripe says it's paid, `409` before that; returns your viewer 🔑 |
 | `POST` | `/worlds/{id}/twists` | pay `TWIST_PRICE` coins for a free-text twist `{text}`, staged on the next tick; `402` without enough coins 🔑 |
 | `GET` | `/worlds/{id}/twists/{twist_id}` | twist status: pending, staged with a summary, or rejected with a reason (refunded) |
 

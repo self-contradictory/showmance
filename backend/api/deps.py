@@ -6,6 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from api.services import Services
 from data import NotFound
 from domain import Viewer, World
+from payments import Payments
 
 bearer = HTTPBearer(auto_error=False)
 
@@ -40,3 +41,12 @@ async def get_viewer(
 
 
 ViewerDep = Annotated[Viewer, Depends(get_viewer)]
+
+
+def get_payments(services: ServicesDep) -> Payments:
+    if services.payments is None:
+        raise HTTPException(status_code=503, detail="payments are not set up")
+    return services.payments
+
+
+PaymentsDep = Annotated[Payments, Depends(get_payments)]

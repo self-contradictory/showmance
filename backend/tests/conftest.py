@@ -40,6 +40,7 @@ from engine import Engine
 from engine.casts import AgentsCast, WriterCast, build_pacing
 from engine.state import WorldState
 from memory import SqlMemoryStore
+from payments import Checkout, PaymentError
 from voice import AudioCache, Narrator
 
 
@@ -116,6 +117,25 @@ class ScriptedWriter:
         if isinstance(scene, Exception):
             raise scene
         return scene
+
+
+class FakePayments:
+    def __init__(self) -> None:
+        self.started = 0
+        self.paid_ids: set[str] = set()
+        self.failing = False
+
+    async def checkout(self, pack, viewer) -> Checkout:
+        if self.failing:
+            raise PaymentError("card network down")
+        self.started += 1
+        checkout_id = f"cs_test_{self.started}"
+        return Checkout(id=checkout_id, client_secret=f"{checkout_id}_secret")
+
+    async def paid(self, checkout_id: str) -> bool:
+        if self.failing:
+            raise PaymentError("card network down")
+        return checkout_id in self.paid_ids
 
 
 class FakeVoice:
@@ -262,11 +282,20 @@ def fake_model():
 
 
 @pytest.fixture
-def client(store, narrator):
-    def build(engine):
+def payments():
+    return FakePayments()
+
+
+@pytest.fixture
+def client(store, narrator, payments):
+    def build(engine, payments=payments):
         app = create_app()
         services = Services(
-            store=store, engine=engine, runners=Runners(engine), narrator=narrator
+            store=store,
+            engine=engine,
+            runners=Runners(engine),
+            narrator=narrator,
+            payments=payments,
         )
         app.dependency_overrides[get_services] = lambda: services
         return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")

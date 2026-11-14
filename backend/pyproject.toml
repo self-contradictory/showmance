@@ -15,6 +15,7 @@ dependencies = [
     "pydantic-ai-slim[google,openai]>=2.68.0",
     "pydantic-settings>=2.16.3",
     "sqlalchemy[asyncio]>=2.1.8",
+    "stripe[async]>=17.0.0",
     "uvicorn>=0.54.0",
 ]
 

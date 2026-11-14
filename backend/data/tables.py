@@ -106,6 +106,18 @@ class CoinEntryRow(Base):
     amount: Mapped[int]
     reason: Mapped[str]
     twist_id: Mapped[int | None] = mapped_column(ForeignKey("twists.id"))
+    purchase_id: Mapped[str | None] = mapped_column(ForeignKey("purchases.id"))
+
+
+class PurchaseRow(Base):
+    __tablename__ = "purchases"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    viewer_id: Mapped[int] = mapped_column(ForeignKey("viewers.id"), index=True)
+    pack_id: Mapped[str]
+    coins: Mapped[int]
+    price_cents: Mapped[int]
+    status: Mapped[str]
 
 
 class PollRow(Base):

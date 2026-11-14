@@ -2,7 +2,7 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from config import settings
+from config import CoinPack, settings
 from domain import Agent, Gender, Location, Poll, Relationship, Viewer, World
 from domain.base import Model
 
@@ -75,3 +75,12 @@ class VoteRequest(Model):
 
 class ChatRequest(Model):
     text: str = Field(min_length=1, max_length=settings.chat_max_length)
+
+
+class CoinShop(Model):
+    currency: str
+    packs: list[CoinPack]
+
+
+class PurchaseRequest(Model):
+    pack_id: str

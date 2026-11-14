@@ -1,4 +1,14 @@
-from api.routes import audio, chat, control, events, polls, twists, viewers, worlds
+from api.routes import (
+    audio,
+    chat,
+    control,
+    events,
+    polls,
+    purchases,
+    twists,
+    viewers,
+    worlds,
+)
 
 ROUTERS = [
     worlds.router,
@@ -9,4 +19,5 @@ ROUTERS = [
     viewers.router,
     chat.router,
     audio.router,
+    purchases.router,
 ]

@@ -2,7 +2,7 @@ from typing import Literal
 
 from domain.base import Model
 
-CoinReason = Literal["starter", "twist", "refund"]
+CoinReason = Literal["starter", "twist", "refund", "purchase"]
 
 
 class Viewer(Model):

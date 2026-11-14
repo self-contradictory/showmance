@@ -10,6 +10,7 @@ from data import Store
 from engine import Engine
 from engine.casts import build_cast
 from memory import SqlMemoryStore
+from payments import Payments, build_payments
 from voice import AudioCache, Narrator, build_voice
 
 
@@ -20,6 +21,7 @@ class Services:
     runners: Runners
     narrator: Narrator
     presence: Presence = field(default_factory=Presence)
+    payments: Payments | None = None
 
 
 def build_services(db: AsyncEngine) -> Services:
@@ -32,5 +34,9 @@ def build_services(db: AsyncEngine) -> Services:
         store, build_voice(settings.tts), AudioCache(settings.audio_dir)
     )
     return Services(
-        store=store, engine=engine, runners=Runners(engine), narrator=narrator
+        store=store,
+        engine=engine,
+        runners=Runners(engine),
+        narrator=narrator,
+        payments=build_payments(settings.stripe_secret_key),
     )

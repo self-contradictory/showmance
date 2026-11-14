@@ -1,9 +1,9 @@
 from sqlalchemy import update
 
 from data.db import Repository
-from data.tables import CoinEntryRow, ViewerRow
+from data.tables import CoinEntryRow, PurchaseRow, ViewerRow
 from data.twists import pending_row
-from domain import CoinReason, NewTwist, Twist
+from domain import CoinReason, NewTwist, Purchase, Twist
 
 
 class WalletRepository(Repository):
@@ -15,6 +15,31 @@ class WalletRepository(Repository):
                 .values(coins=ViewerRow.coins + amount)
             )
             s.add(CoinEntryRow(viewer_id=viewer_id, amount=amount, reason=reason))
+
+    async def settle_purchase(self, purchase: Purchase) -> bool:
+        async with self._session.begin() as s:
+            settled = await s.scalar(
+                update(PurchaseRow)
+                .where(PurchaseRow.id == purchase.id, PurchaseRow.status == "pending")
+                .values(status="paid")
+                .returning(PurchaseRow.id)
+            )
+            if settled is None:
+                return False
+            await s.execute(
+                update(ViewerRow)
+                .where(ViewerRow.id == purchase.viewer_id)
+                .values(coins=ViewerRow.coins + purchase.coins)
+            )
+            s.add(
+                CoinEntryRow(
+                    viewer_id=purchase.viewer_id,
+                    amount=purchase.coins,
+                    reason="purchase",
+                    purchase_id=purchase.id,
+                )
+            )
+        return True
 
     async def buy_twist(self, twist: NewTwist) -> Twist | None:
         viewer_id = twist.viewer_id

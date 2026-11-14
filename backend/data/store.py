@@ -5,6 +5,7 @@ from data.chat import ChatRepository
 from data.events import EventRepository
 from data.locations import LocationRepository
 from data.polls import PollRepository
+from data.purchases import PurchaseRepository
 from data.relationships import RelationshipRepository
 from data.twists import TwistRepository
 from data.viewers import ViewerRepository
@@ -26,3 +27,4 @@ class Store:
         self.wallets = WalletRepository(engine)
         self.chat = ChatRepository(engine)
         self.voices = VoiceRepository(engine)
+        self.purchases = PurchaseRepository(engine)

@@ -1,7 +1,7 @@
 from typing import Literal
 
 from dotenv import load_dotenv
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -9,6 +9,12 @@ load_dotenv()
 CastKind = Literal["agents", "writer"]
 PacingKind = Literal["parallel", "sequential"]
 TtsKind = Literal["kokoro"]
+
+
+class CoinPack(BaseModel):
+    id: str
+    coins: int
+    price_cents: int
 
 
 class Settings(BaseSettings):
@@ -43,6 +49,16 @@ class Settings(BaseSettings):
     viewer_name_max_length: int = 40
     starter_coins: int = 200
     twist_price: int = 50
+
+    stripe_secret_key: str | None = None
+    currency: str = "usd"
+    coin_packs: list[CoinPack] = Field(
+        default_factory=lambda: [
+            CoinPack(id="small", coins=500, price_cents=499),
+            CoinPack(id="medium", coins=1200, price_cents=999),
+            CoinPack(id="large", coins=3000, price_cents=1999),
+        ]
+    )
 
     poll_ticks: int = 24
 
