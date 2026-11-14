@@ -17,6 +17,7 @@ export type Place = {
   facing: number;
   shot: Shot;
   cut?: Cut;
+  perRow?: number;
 };
 
 /** The points to walk through, or null to appear at the destination. */
@@ -74,10 +75,21 @@ export function placeFor(id: string, center: Vec3, shot: Shot, spacing: number, 
   };
 }
 
+const ROW_GAP = 0.8;
+
+/** Lines people up side by side; past `perRow`, the rest stand staggered in rows behind. */
 export function spotFor(place: Place, index: number, count: number): Vec3 {
-  const offset = (index - (count - 1) / 2) * place.spacing;
+  const perRow = place.perRow ?? count;
+  const row = Math.floor(index / perRow);
+  const inRow = Math.min(perRow, count - row * perRow);
+  const offset = (index - row * perRow - (inRow - 1) / 2 + (row % 2) / 2) * place.spacing;
+  const back = row * ROW_GAP;
   const [x, y, z] = place.center;
-  return [x + place.lateral[0] * offset, y, z + place.lateral[2] * offset];
+  return [
+    x + place.lateral[0] * offset - Math.sin(place.facing) * back,
+    y,
+    z + place.lateral[2] * offset - Math.cos(place.facing) * back,
+  ];
 }
 
 export function walkway(from: Vec3, to: Vec3): Vec3[] {

@@ -22,4 +22,4 @@ bunx @gltf-transform/cli optimize in.glb out.glb --compress meshopt --texture-co
 Credits:
 
 - Villa: "Two-storey villa" by Innerscene, CC0.
-- Modern house: ["Modern House Interior + Exterior"](https://sketchfab.com/3d-models/modern-house-interior-exterior-free-b4053371db864bd2b0f59d16113d42ee) by Fazeel.Saeed, CC BY 4.0. The stage shows this credit while the set is on.
+- Cottage: ["Low Poly House Interior"](https://sketchfab.com/3d-models/low-poly-house-interior-62b1714ef66f4e0d9f42dcd12efb3f52) by Paolo Mercogliano, CC BY 4.0. The stage shows this credit while the set is on.

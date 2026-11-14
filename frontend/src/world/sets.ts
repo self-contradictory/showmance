@@ -1,7 +1,7 @@
 import type { Location } from "@/show/types";
 import { roomKind, type RoomKind } from "./kinds";
 import { placeFor, type Layout, type Place, type Route, type Vec3 } from "./layout";
-import modernHouseUrl from "./models/modern-house.glb";
+import cottageUrl from "./models/cottage.glb";
 import villaUrl from "./models/villa.glb";
 
 /**
@@ -16,6 +16,7 @@ export type ModelRoom = {
   fov?: number;
   spacing?: number;
   cut?: number;
+  width?: number;
 };
 
 /** A flat platform people can stand on outside, its top at `at[1]`. */
@@ -67,31 +68,31 @@ const VILLA: ModelSet = {
   span: 26,
 };
 
-const MODERN_HOUSE: ModelSet = {
+const COTTAGE: ModelSet = {
   kind: "model",
-  id: "modern",
-  name: "Modern house",
-  url: modernHouseUrl,
-  scale: 0.01,
-  offset: [41, -0.155, -33],
+  id: "cottage",
+  name: "Cottage",
+  url: cottageUrl,
+  scale: 1,
+  offset: [-1.4, 0, -8.6],
   rooms: [
-    { name: "terrace", kinds: ["pool", "deck", "beach"], center: [-20, 0.4, -5.5], camera: [-20, 3.2, -13], fov: 40 },
-    { name: "lounge", kinds: ["living", "room"], center: [-2.2, 0.25, 0], camera: [-2.2, 2.4, -6] },
-    { name: "kitchen", kinds: ["kitchen", "bar"], center: [10, 0.25, -3.5], camera: [10, 2.4, -7.6] },
-    { name: "bedroom", kinds: ["bedroom"], center: [10, 4.5, 5], camera: [10, 6.6, 2] },
+    { name: "garden", kinds: ["pool", "beach", "deck"], center: [0, 0, 5.4], camera: [0, 3.4, 11.8], fov: 36 },
+    { name: "kitchen", kinds: ["kitchen", "bar"], center: [0.5, 0.13, -2.6], camera: [0.5, 2.1, -8.1], fov: 40, spacing: 0.75, cut: 0.55, width: 1.6 },
+    { name: "living room", kinds: ["living", "room"], center: [0.2, 0.13, -7.7], camera: [0.2, 2.2, -13.6], fov: 40, spacing: 0.8, cut: 0.55, width: 2.5 },
+    { name: "bedroom", kinds: ["bedroom", "room"], center: [-0.3, 2.96, -2.2], camera: [-5.9, 4.7, -2.2], fov: 40, spacing: 0.8, cut: 0.75, width: 2.4 },
   ],
-  grounds: [],
-  pools: [],
-  span: 52,
+  grounds: [{ at: [0, 0, 4.4], size: [16, 11] }],
+  pools: [[0, 0, 2.7]],
+  span: 22,
   credit: {
-    text: "Modern House Interior + Exterior by Fazeel.Saeed, CC BY 4.0",
-    href: "https://sketchfab.com/3d-models/modern-house-interior-exterior-free-b4053371db864bd2b0f59d16113d42ee",
+    text: "Low Poly House Interior by Paolo Mercogliano, CC BY 4.0",
+    href: "https://sketchfab.com/3d-models/low-poly-house-interior-62b1714ef66f4e0d9f42dcd12efb3f52",
   },
 };
 
 const CLASSIC: ClassicSet = { kind: "classic", id: "classic", name: "Classic" };
 
-export const WORLD_SETS: WorldSet[] = [VILLA, MODERN_HOUSE, CLASSIC];
+export const WORLD_SETS: WorldSet[] = [VILLA, COTTAGE, CLASSIC];
 
 export const DEFAULT_SET = VILLA;
 
@@ -113,7 +114,9 @@ export function modelLayout(set: ModelSet, locations: Location[]): Layout {
     const room = rooms[i]!;
     const [x, y, z] = room.center;
     const shot = { position: room.camera, target: [x, y + CHEST, z] as Vec3, fov: room.fov ?? FOV };
-    return placeFor(location.id, room.center, shot, room.spacing ?? SPACING, room.cut);
+    const spacing = room.spacing ?? SPACING;
+    const place = placeFor(location.id, room.center, shot, spacing, room.cut);
+    return room.width ? { ...place, perRow: Math.floor(room.width / spacing) + 1 } : place;
   });
   return { places, route: withinPlace(places), span: set.span, cuts: true };
 }

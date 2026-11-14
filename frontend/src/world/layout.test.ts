@@ -40,3 +40,12 @@ test("stepping beside someone keeps your floor and your side", () => {
   expect(besideOf([0, 3.42, 0], [2, 3.42, 0])).toEqual([0.55, 3.42, 0]);
   expect(besideOf([0, 0, 0], [0, 0, -3])).toEqual([0, 0, -0.55]);
 });
+
+test("people past a full row stand staggered behind it", () => {
+  const place = { ...modelLayout(villa, locations("Kitchen")).places[0]!, perRow: 2 };
+  const [first, , third] = [0, 1, 2].map((index) => spotFor(place, index, 3));
+
+  expect(first![2]).toBeCloseTo(1.15);
+  expect(third![0]).toBeCloseTo(4.7);
+  expect(third![2]).toBeCloseTo(0.35);
+});
