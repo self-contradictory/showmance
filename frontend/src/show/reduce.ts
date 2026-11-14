@@ -8,6 +8,13 @@ export function reduceShow(show: Show, event: FeedEvent): Show {
       return { ...show, caption: event.caption };
     case "now":
       return { ...show, now: event.text };
+    case "move":
+      return {
+        ...show,
+        cast: show.cast.map((member) =>
+          member.id === event.castId ? { ...member, locationId: event.locationId } : member,
+        ),
+      };
     case "viewers":
       return { ...show, viewers: event.count };
     case "comment":

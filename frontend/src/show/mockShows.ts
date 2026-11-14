@@ -1,6 +1,6 @@
-import type { CastMember } from "./types";
+import type { CastMember, Location, Sky } from "./types";
 
-export type Scene = { now: string; lines: [speaker: string, text: string][] };
+export type Scene = { now: string; location: string; lines: [speaker: string, text: string][] };
 
 export type ShowScript = {
   slug: string;
@@ -8,6 +8,8 @@ export type ShowScript = {
   day: number;
   viewers: number;
   cover?: string;
+  sky: Sky;
+  locations: Location[];
   cast: CastMember[];
   scenes: Scene[];
   votes: { question: string; options: string[] }[];
@@ -22,17 +24,20 @@ export const SHOWS: ShowScript[] = [
     title: "The Villa",
     day: 3,
     viewers: 412,
+    sky: "sunset",
+    locations: [{ id: "pool", name: "Pool" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
-      { id: "mia", name: "Mia", role: "The planner" },
-      { id: "jake", name: "Jake", role: "The charmer" },
-      { id: "sara", name: "Sara", role: "The wildcard" },
-      { id: "chris", name: "Chris", role: "The newcomer" },
-      { id: "leo", name: "Leo", role: "The strategist" },
-      { id: "nina", name: "Nina", role: "The queen bee" },
+      { id: "mia", name: "Mia", role: "The planner", locationId: "pool" },
+      { id: "jake", name: "Jake", role: "The charmer", locationId: "pool" },
+      { id: "sara", name: "Sara", role: "The wildcard", locationId: "bedroom" },
+      { id: "chris", name: "Chris", role: "The newcomer", locationId: "bedroom" },
+      { id: "leo", name: "Leo", role: "The strategist", locationId: "kitchen" },
+      { id: "nina", name: "Nina", role: "The queen bee", locationId: "kitchen" },
     ],
     scenes: [
       {
         now: "Mia and Jake are talking by the pool",
+        location: "pool",
         lines: [
           ["Mia", "Do you ever think about what happens after this?"],
           ["Jake", "All the time. With you."],
@@ -42,6 +47,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Leo and Nina are making plans in the kitchen",
+        location: "kitchen",
         lines: [
           ["Leo", "If Chris stays another week, we're in trouble."],
           ["Nina", "Then we make sure he doesn't."],
@@ -51,6 +57,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Chris is working up the nerve to talk to Sara",
+        location: "bedroom",
         lines: [
           ["Chris", "Sara, got a second?"],
           ["Sara", "For you? Maybe two."],
@@ -60,6 +67,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Sara can't stop thinking about the kiss",
+        location: "bedroom",
         lines: [
           ["Sara", "I shouldn't have done that."],
           ["Sara", "Jake is with Mia. Everyone knows that."],
@@ -90,17 +98,20 @@ export const SHOWS: ShowScript[] = [
     title: "Snowed In",
     day: 1,
     viewers: 268,
+    sky: "snow",
+    locations: [{ id: "living", name: "Living room" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
-      { id: "ava", name: "Ava", role: "The skeptic" },
-      { id: "ethan", name: "Ethan", role: "The flirt" },
-      { id: "zoe", name: "Zoe", role: "The artist" },
-      { id: "marcus", name: "Marcus", role: "The romantic" },
-      { id: "lily", name: "Lily", role: "The quiet one" },
-      { id: "ryan", name: "Ryan", role: "The joker" },
+      { id: "ava", name: "Ava", role: "The skeptic", locationId: "living" },
+      { id: "ethan", name: "Ethan", role: "The flirt", locationId: "living" },
+      { id: "zoe", name: "Zoe", role: "The artist", locationId: "bedroom" },
+      { id: "marcus", name: "Marcus", role: "The romantic", locationId: "bedroom" },
+      { id: "lily", name: "Lily", role: "The quiet one", locationId: "kitchen" },
+      { id: "ryan", name: "Ryan", role: "The joker", locationId: "kitchen" },
     ],
     scenes: [
       {
         now: "Ava and Ethan are sharing the last blanket",
+        location: "living",
         lines: [
           ["Ava", "There's one blanket left."],
           ["Ethan", "Then we share it."],
@@ -110,6 +121,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Zoe found Marcus's notebook by the fire",
+        location: "living",
         lines: [
           ["Zoe", "Marcus, why is my name in here?"],
           ["Marcus", "Give that back."],
@@ -119,6 +131,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "The power just went out",
+        location: "kitchen",
         lines: [
           ["Lily", "Everyone stay calm."],
           ["Ryan", "Who's holding my hand?"],
@@ -147,17 +160,20 @@ export const SHOWS: ShowScript[] = [
     title: "Last Resort",
     day: 2,
     viewers: 183,
+    sky: "day",
+    locations: [{ id: "beach", name: "Beach" }, { id: "bar", name: "Bar" }, { id: "pool", name: "Pool" }],
     cast: [
-      { id: "nora", name: "Nora", role: "The planner" },
-      { id: "luca", name: "Luca", role: "The charmer" },
-      { id: "ivy", name: "Ivy", role: "The dancer" },
-      { id: "theo", name: "Theo", role: "The shy one" },
-      { id: "rosa", name: "Rosa", role: "The competitor" },
-      { id: "kai", name: "Kai", role: "The surfer" },
+      { id: "nora", name: "Nora", role: "The planner", locationId: "beach" },
+      { id: "luca", name: "Luca", role: "The charmer", locationId: "beach" },
+      { id: "ivy", name: "Ivy", role: "The dancer", locationId: "bar" },
+      { id: "theo", name: "Theo", role: "The shy one", locationId: "bar" },
+      { id: "rosa", name: "Rosa", role: "The competitor", locationId: "pool" },
+      { id: "kai", name: "Kai", role: "The surfer", locationId: "pool" },
     ],
     scenes: [
       {
         now: "Nora and Luca missed the last boat",
+        location: "beach",
         lines: [
           ["Nora", "We missed the boat."],
           ["Luca", "We did."],
@@ -167,6 +183,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Ivy is teaching Theo to dance",
+        location: "bar",
         lines: [
           ["Ivy", "Left foot. Your other left."],
           ["Theo", "I have two left feet."],
@@ -175,6 +192,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Rosa and Kai are fighting over the last sunbed",
+        location: "pool",
         lines: [
           ["Rosa", "I was here first."],
           ["Kai", "Your towel was here first."],
@@ -203,17 +221,20 @@ export const SHOWS: ShowScript[] = [
     title: "Second Chances",
     day: 5,
     viewers: 97,
+    sky: "night",
+    locations: [{ id: "deck", name: "Deck" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
-      { id: "grace", name: "Grace", role: "The one who left" },
-      { id: "daniel", name: "Daniel", role: "The one who stayed" },
-      { id: "maya", name: "Maya", role: "The planner" },
-      { id: "josh", name: "Josh", role: "The romantic" },
-      { id: "elena", name: "Elena", role: "The skeptic" },
-      { id: "sam", name: "Sam", role: "The surprise" },
+      { id: "grace", name: "Grace", role: "The one who left", locationId: "kitchen" },
+      { id: "daniel", name: "Daniel", role: "The one who stayed", locationId: "deck" },
+      { id: "maya", name: "Maya", role: "The planner", locationId: "bedroom" },
+      { id: "josh", name: "Josh", role: "The romantic", locationId: "bedroom" },
+      { id: "elena", name: "Elena", role: "The skeptic", locationId: "deck" },
+      { id: "sam", name: "Sam", role: "The surprise", locationId: "kitchen" },
     ],
     scenes: [
       {
         now: "Grace and Daniel are alone for the first time in two years",
+        location: "kitchen",
         lines: [
           ["Grace", "You still take your coffee black?"],
           ["Daniel", "Some things don't change."],
@@ -222,6 +243,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Maya just found a ring in Josh's bag",
+        location: "bedroom",
         lines: [
           ["Maya", "Why is there a ring in your bag?"],
           ["Josh", "It's from before."],
@@ -231,6 +253,7 @@ export const SHOWS: ShowScript[] = [
       },
       {
         now: "Elena's ex just walked in",
+        location: "deck",
         lines: [
           ["Elena", "No. Absolutely not."],
           ["Sam", "Hi, Elena."],

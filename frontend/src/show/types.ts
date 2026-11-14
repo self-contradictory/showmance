@@ -3,9 +3,20 @@ import type { ChatComment } from "@/chat/comments/types";
 export const MAX_MESSAGE_LENGTH = 300;
 export const MAX_TWIST_LENGTH = 140;
 
-export type CastMember = { id: string; name: string; role: string; portrait?: string };
+export type Location = { id: string; name: string };
 
-export type Caption = { id: string; speaker: string; text: string };
+export type Sky = "day" | "sunset" | "night" | "snow";
+
+export type CastMember = { id: string; name: string; role: string; locationId: string; portrait?: string };
+
+export type Caption = {
+  id: string;
+  speakerId: string;
+  speaker: string;
+  text: string;
+  locationId: string;
+  targetId?: string;
+};
 
 export type VoteOption = { id: string; label: string; votes: number };
 
@@ -22,6 +33,8 @@ export type Show = {
   day: number;
   now: string;
   cover?: string;
+  sky: Sky;
+  locations: Location[];
   cast: CastMember[];
   viewers: number;
   caption: Caption | null;
@@ -48,6 +61,7 @@ export type Directory = {
 export type FeedEvent =
   | { type: "caption"; caption: Caption | null }
   | { type: "now"; text: string }
+  | { type: "move"; castId: string; locationId: string }
   | { type: "viewers"; count: number }
   | { type: "comment"; comment: ChatComment }
   | { type: "vote"; vote: Vote | null }
