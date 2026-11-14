@@ -11,12 +11,14 @@ type Props = {
   comments: ChatComment[];
   vote: VoteData | null;
   myVote: string | null;
+  canTwist: boolean;
   onSend: (text: string) => void;
   onVote: (optionId: string) => void;
+  onDropTwist: (text: string) => void;
   onHide: () => void;
 };
 
-export function Chat({ comments, vote, myVote, onSend, onVote, onHide }: Props) {
+export function Chat({ comments, vote, myVote, canTwist, onSend, onVote, onDropTwist, onHide }: Props) {
   return (
     <aside
       aria-label="Chat"
@@ -44,7 +46,7 @@ export function Chat({ comments, vote, myVote, onSend, onVote, onHide }: Props) 
       </AnimatePresence>
       <Comments comments={comments} />
       <div className="shrink-0 pt-3">
-        <ChatInput onSend={onSend} />
+        <ChatInput canTwist={canTwist} onSend={onSend} onDropTwist={onDropTwist} />
       </div>
     </aside>
   );

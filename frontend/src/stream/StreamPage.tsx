@@ -33,9 +33,6 @@ export function StreamPage() {
           <Stage
             viewers={show.viewers}
             caption={show.caption}
-            twistPrice={show.twistPrice}
-            balance={show.balance}
-            onDropTwist={dropTwist}
             onShowChat={chatShown ? undefined : () => setChat(true)}
           >
             <VillaPlaceholder />
@@ -51,8 +48,10 @@ export function StreamPage() {
             comments={show.comments}
             vote={show.vote}
             myVote={myVote}
+            canTwist={show.balance >= show.twistPrice}
             onSend={send}
             onVote={vote}
+            onDropTwist={dropTwist}
             onHide={() => setChat(false)}
           />
         </div>

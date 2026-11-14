@@ -1,26 +1,21 @@
-import { Maximize, Minimize, PanelRightOpen, Sparkles } from "lucide-react";
+import { Maximize, Minimize, PanelRightOpen } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Caption } from "@/show/types";
 import { StageButton } from "./StageButton";
-import { TwistComposer } from "./TwistComposer";
 
 type Props = {
   viewers: number;
   caption: Caption | null;
-  twistPrice: number;
-  balance: number;
-  onDropTwist: (text: string) => void;
   onShowChat?: () => void;
   children: ReactNode;
 };
 
 const canFullscreen = typeof document !== "undefined" && document.fullscreenEnabled;
 
-export function Stage({ viewers, caption, twistPrice, balance, onDropTwist, onShowChat, children }: Props) {
+export function Stage({ viewers, caption, onShowChat, children }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [twisting, setTwisting] = useState(false);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(document.fullscreenElement === frameRef.current);
@@ -54,7 +49,7 @@ export function Stage({ viewers, caption, twistPrice, balance, onDropTwist, onSh
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`absolute inset-x-0 mx-auto w-fit max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug transition-[bottom] duration-200 sm:text-lg ${twisting ? "bottom-[4.75rem]" : "bottom-[8%]"}`}
+            className="absolute inset-x-0 bottom-[8%] mx-auto w-fit max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug sm:text-lg"
           >
             <span className="font-semibold">{caption.speaker}:</span> {caption.text}
           </motion.p>
@@ -70,43 +65,13 @@ export function Stage({ viewers, caption, twistPrice, balance, onDropTwist, onSh
           </div>
         )}
 
-        <AnimatePresence mode="wait" initial={false}>
-          {twisting ? (
-            <TwistComposer
-              key="composer"
-              price={twistPrice}
-              balance={balance}
-              onDrop={(text) => {
-                onDropTwist(text);
-                setTwisting(false);
-              }}
-              onClose={() => setTwisting(false)}
-            />
-          ) : (
-            <motion.div
-              key="actions"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-3 bottom-3 flex items-center gap-2"
-            >
-              <button
-                type="button"
-                onClick={() => setTwisting(true)}
-                className="flex h-9 items-center gap-1.5 rounded-full bg-accent pr-4 pl-3 text-sm font-semibold text-on-accent transition-opacity hover:opacity-90"
-              >
-                <Sparkles size={16} />
-                Twist
-              </button>
-              {canFullscreen && (
-                <StageButton label={isFullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={toggleFullscreen}>
-                  {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-                </StageButton>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {canFullscreen && (
+          <div className="absolute right-3 bottom-3">
+            <StageButton label={isFullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={toggleFullscreen}>
+              {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+            </StageButton>
+          </div>
+        )}
       </div>
     </div>
   );
