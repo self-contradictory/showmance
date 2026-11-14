@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-from api.deps import ServicesDep, WorldDep
+from api.deps import ServicesDep, ViewerDep, WorldDep
 from api.schemas import TwistRequest
+from config import TWIST_PRICE
 from data import NotFound
 from domain import NewTwist, Twist
 
@@ -10,11 +11,20 @@ router = APIRouter()
 
 @router.post("/worlds/{world_id}/twists", status_code=202)
 async def send_twist(
-    body: TwistRequest, world: WorldDep, services: ServicesDep
+    body: TwistRequest, world: WorldDep, viewer: ViewerDep, services: ServicesDep
 ) -> Twist:
-    return await services.store.twists.add(
-        NewTwist(world_id=world.id, text=body.text, source="donation")
+    twist = await services.store.wallets.buy_twist(
+        NewTwist(
+            world_id=world.id,
+            text=body.text,
+            source="donation",
+            viewer_id=viewer.id,
+            price=TWIST_PRICE,
+        )
     )
+    if twist is None:
+        raise HTTPException(status_code=402, detail="not enough coins")
+    return twist
 
 
 @router.get("/worlds/{world_id}/twists/{twist_id}")

@@ -2,9 +2,11 @@ from config import TWIST_FAILED_REASON
 from domain import (
     Announce,
     Arrive,
+    NewPoll,
     NewTwist,
     Nudge,
     Perform,
+    PollOption,
     Reaction,
     Rejected,
     Relocate,
@@ -134,3 +136,46 @@ async def test_invalid_targets_are_skipped(store, villa, sim):
     events = await s.engine.step(villa.world.id)
 
     assert [e.kind for e in events] == ["twist"]
+
+
+async def test_rejected_donation_is_refunded(store, villa, sim):
+    viewer, _ = await store.viewers.create("Ann")
+    await store.wallets.grant(viewer.id, 100, "starter")
+    twist = await store.wallets.buy_twist(
+        NewTwist(
+            world_id=villa.world.id,
+            text="make Jake cheat",
+            source="donation",
+            viewer_id=viewer.id,
+            price=50,
+        )
+    )
+    s = sim(plans={"make Jake cheat": Rejected(reason="That's up to the vote")})
+
+    await s.engine.step(villa.world.id)
+
+    assert twist is not None
+    assert (await store.twists.get(twist.id)).status == "rejected"
+    assert (await store.viewers.get(viewer.id)).coins == 100
+
+
+async def test_director_sees_the_open_poll_when_staging(store, villa, sim):
+    poll = await store.polls.open(
+        NewPoll(
+            world_id=villa.world.id,
+            question="Should Jake cheat?",
+            options=[
+                PollOption(label="Yes", twist="Jake cheats"),
+                PollOption(label="No", twist="Jake stays loyal"),
+            ],
+            opened_tick=0,
+            closes_tick=99,
+        )
+    )
+    s = sim()
+    await send(store, villa, "make Jake cheat")
+
+    await s.engine.step(villa.world.id)
+
+    [context] = s.director.contexts
+    assert context.poll == poll

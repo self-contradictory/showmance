@@ -36,7 +36,9 @@ Use only these operations, referring to people and places by their id:
 
 Write a one-line summary of the twist for the viewers.
 Reject the twist, with a short reason, if it can't happen in this villa
-or isn't fit for a reality TV show."""
+or isn't fit for a reality TV show.
+If a viewer paid for the twist and it does the same thing as, or the opposite of,
+an option viewers are voting on right now, reject it: that is up to the vote."""
 
 PROPOSE_INSTRUCTIONS = """You are the showrunner of a reality dating show.
 AI contestants live in a villa, and the audience votes on what happens next.

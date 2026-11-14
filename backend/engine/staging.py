@@ -27,6 +27,7 @@ class Staging:
         outcome = await self._plan(twist, state)
         if isinstance(outcome, Rejected):
             await self._store.twists.reject(twist.id, outcome.reason, state.world.tick)
+            await self._store.wallets.refund_twist(twist)
             return Staged()
         headline = await self._store.events.add(
             NewEvent(

@@ -1,4 +1,4 @@
-from config import TWIST_MAX_LENGTH
+from config import STARTER_COINS, TWIST_MAX_LENGTH, TWIST_PRICE
 from domain import Hug, Reveal, TwistPlan
 
 VILLA = {
@@ -9,6 +9,11 @@ VILLA = {
         {"name": "Jake", "persona": "Charming.", "location": "kitchen"},
     ],
 }
+
+
+async def join(http, name):
+    token = (await http.post("/viewers", json={"name": name})).json()["token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
 async def test_create_world_and_read_it_back(sim, client):
@@ -60,25 +65,45 @@ async def test_twist_waits_for_the_next_tick(villa, sim, client):
     s = sim(plans={"tell Mia about the kiss": plan})
     world = f"/worlds/{villa.world.id}"
     async with client(s.engine) as http:
+        ann = await join(http, "Ann")
         sent = await http.post(
-            f"{world}/twists", json={"text": "tell Mia about the kiss"}
+            f"{world}/twists", json={"text": "tell Mia about the kiss"}, headers=ann
         )
         twist = f"{world}/twists/{sent.json()['id']}"
         before = (await http.get(twist)).json()
         await http.post(f"{world}/step")
         after = (await http.get(twist)).json()
+        balance = (await http.get("/viewers/me", headers=ann)).json()["coins"]
 
     assert sent.status_code == 202
     assert before["status"] == "pending"
     assert (after["status"], after["outcome"]) == ("staged", "Mia finds out")
+    assert balance == STARTER_COINS - TWIST_PRICE
+
+
+async def test_twist_needs_a_viewer_with_enough_coins(store, villa, sim, client):
+    world = f"/worlds/{villa.world.id}"
+    _, broke_token = await store.viewers.create("Broke")
+    async with client(sim().engine) as http:
+        anonymous = await http.post(f"{world}/twists", json={"text": "anything"})
+        broke = await http.post(
+            f"{world}/twists",
+            json={"text": "anything"},
+            headers={"Authorization": f"Bearer {broke_token}"},
+        )
+
+    assert (anonymous.status_code, broke.status_code) == (401, 402)
 
 
 async def test_twist_text_must_fit(villa, sim, client):
     world = f"/worlds/{villa.world.id}"
     async with client(sim().engine) as http:
-        empty = await http.post(f"{world}/twists", json={"text": ""})
+        ann = await join(http, "Ann")
+        empty = await http.post(f"{world}/twists", json={"text": ""}, headers=ann)
         long = await http.post(
-            f"{world}/twists", json={"text": "x" * (TWIST_MAX_LENGTH + 1)}
+            f"{world}/twists",
+            json={"text": "x" * (TWIST_MAX_LENGTH + 1)},
+            headers=ann,
         )
         missing = await http.get(f"{world}/twists/999")
 

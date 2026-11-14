@@ -6,9 +6,13 @@ from data.tables import TwistRow
 from domain import NewTwist, Twist, TwistStatus
 
 
+def pending_row(twist: NewTwist) -> TwistRow:
+    return TwistRow(**twist.model_dump(), status="pending", outcome=None, tick=None)
+
+
 class TwistRepository(Repository):
     async def add(self, twist: NewTwist) -> Twist:
-        row = TwistRow(**twist.model_dump(), status="pending", outcome=None, tick=None)
+        row = pending_row(twist)
         async with self._session.begin() as s:
             s.add(row)
         return Twist.model_validate(row)

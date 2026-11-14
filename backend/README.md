@@ -34,8 +34,16 @@ curl -N localhost:8000/worlds/1/stream
 | `POST` | `/worlds/{id}/step` | run one tick |
 | `POST` | `/worlds/{id}/start` | tick every `TICK_INTERVAL` seconds |
 | `POST` | `/worlds/{id}/stop` | stop after the current tick |
-| `POST` | `/worlds/{id}/twists` | send a twist in free text: `{text}`, staged on the next tick |
-| `GET` | `/worlds/{id}/twists/{twist_id}` | twist status: pending, staged with a summary, or rejected with a reason |
+| `POST` | `/viewers` | join with `{name}`: returns the viewer (with `STARTER_COINS`) and a token |
+| `GET` | `/viewers/me` | your viewer and coin balance 🔑 |
+| `GET` | `/worlds/{id}/poll` | the open poll and its vote counts, or `null` |
+| `POST` | `/worlds/{id}/poll/vote` | vote with `{option}`, voting again changes your vote 🔑 |
+| `POST` | `/worlds/{id}/twists` | pay `TWIST_PRICE` coins for a free-text twist `{text}`, staged on the next tick; `402` without enough coins 🔑 |
+| `GET` | `/worlds/{id}/twists/{twist_id}` | twist status: pending, staged with a summary, or rejected with a reason (refunded) |
+
+🔑 needs `Authorization: Bearer <token>` from `POST /viewers`.
+
+The director opens a new poll whenever none is running (yes/no, two or three options, picked at random) and it closes after `POLL_TICKS` ticks. The winning option is staged in that same tick. Paid twists that match or counter an open poll option are rejected and refunded.
 
 ## Test
 
