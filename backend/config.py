@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
     host: str = "127.0.0.1"
     port: int = 8000
+    shutdown_timeout: int = 5
 
     default_mood: str = "neutral"
 
