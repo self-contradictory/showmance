@@ -1,0 +1,154 @@
+import { useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import { MathUtils, type Group } from "three";
+import { walkway, type Vec3 } from "./layout";
+import { lookFor } from "./palette";
+
+const WALK_SPEED = 2.2;
+
+type Props = {
+  id: string;
+  index: number;
+  spot: Vec3;
+  face: Vec3 | null;
+  talking: boolean;
+  accent: string;
+};
+
+function turnToward(current: number, target: number, lambda: number, delta: number): number {
+  const diff = Math.atan2(Math.sin(target - current), Math.cos(target - current));
+  return current + diff * (1 - Math.exp(-lambda * delta));
+}
+
+export function Person({ id, index, spot, face, talking, accent }: Props) {
+  const look = useMemo(() => lookFor(id, index), [id, index]);
+  const root = useRef<Group>(null);
+  const torso = useRef<Group>(null);
+  const head = useRef<Group>(null);
+  const leftArm = useRef<Group>(null);
+  const rightArm = useRef<Group>(null);
+  const leftLeg = useRef<Group>(null);
+  const rightLeg = useRef<Group>(null);
+  const path = useRef<Vec3[]>([]);
+  const placed = useRef(false);
+  const [x, y, z] = spot;
+
+  useEffect(() => {
+    const body = root.current;
+    if (!body) return;
+    if (!placed.current) {
+      body.position.set(x, y, z);
+      placed.current = true;
+      return;
+    }
+    path.current = walkway([body.position.x, 0, body.position.z], [x, y, z]);
+  }, [x, y, z]);
+
+  useFrame((state, delta) => {
+    const body = root.current;
+    if (!body) return;
+    const t = state.clock.elapsedTime + index * 1.7;
+
+    let walking = false;
+    const next = path.current[0];
+    if (next) {
+      const dx = next[0] - body.position.x;
+      const dz = next[2] - body.position.z;
+      const distance = Math.hypot(dx, dz);
+      const step = WALK_SPEED * delta;
+      if (distance <= step) {
+        body.position.set(next[0], 0, next[2]);
+        path.current.shift();
+      } else {
+        body.position.x += (dx / distance) * step;
+        body.position.z += (dz / distance) * step;
+        body.rotation.y = turnToward(body.rotation.y, Math.atan2(dx, dz), 12, delta);
+        walking = true;
+      }
+    }
+
+    if (!walking) {
+      const angle = face ? Math.atan2(face[0] - body.position.x, face[2] - body.position.z) : 0;
+      body.rotation.y = turnToward(body.rotation.y, angle, 6, delta);
+    }
+
+    const swing = walking ? Math.sin(t * 9) * 0.7 : 0;
+    if (leftLeg.current) leftLeg.current.rotation.x = MathUtils.damp(leftLeg.current.rotation.x, swing, 14, delta);
+    if (rightLeg.current) rightLeg.current.rotation.x = MathUtils.damp(rightLeg.current.rotation.x, -swing, 14, delta);
+    if (leftArm.current) leftArm.current.rotation.x = MathUtils.damp(leftArm.current.rotation.x, -swing * 0.8, 14, delta);
+    if (rightArm.current) {
+      const gesture = talking ? -0.9 + Math.sin(t * 5) * 0.3 : swing * 0.8;
+      rightArm.current.rotation.x = MathUtils.damp(rightArm.current.rotation.x, gesture, 10, delta);
+    }
+    if (head.current) {
+      const nod = talking ? Math.sin(t * 8) * 0.1 : 0;
+      head.current.rotation.x = MathUtils.damp(head.current.rotation.x, nod, 10, delta);
+    }
+    if (torso.current) {
+      torso.current.position.y = walking ? Math.abs(Math.sin(t * 9)) * 0.06 : Math.sin(t * 2) * 0.01;
+    }
+  });
+
+  return (
+    <group ref={root}>
+      {talking && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+          <ringGeometry args={[0.42, 0.5, 40]} />
+          <meshBasicMaterial color={accent} toneMapped={false} />
+        </mesh>
+      )}
+      <group ref={torso}>
+        <group ref={leftLeg} position={[-0.12, 0.55, 0]}>
+          <mesh position={[0, -0.27, 0]} castShadow>
+            <capsuleGeometry args={[0.1, 0.36, 4, 10]} />
+            <meshStandardMaterial color={look.pants} />
+          </mesh>
+        </group>
+        <group ref={rightLeg} position={[0.12, 0.55, 0]}>
+          <mesh position={[0, -0.27, 0]} castShadow>
+            <capsuleGeometry args={[0.1, 0.36, 4, 10]} />
+            <meshStandardMaterial color={look.pants} />
+          </mesh>
+        </group>
+        <mesh position={[0, 0.98, 0]} castShadow>
+          <capsuleGeometry args={[0.26, 0.4, 6, 14]} />
+          <meshStandardMaterial color={look.shirt} />
+        </mesh>
+        <group ref={leftArm} position={[-0.34, 1.36, 0]}>
+          <mesh position={[0, -0.28, 0]} castShadow>
+            <capsuleGeometry args={[0.075, 0.42, 4, 10]} />
+            <meshStandardMaterial color={look.shirt} />
+          </mesh>
+        </group>
+        <group ref={rightArm} position={[0.34, 1.36, 0]}>
+          <mesh position={[0, -0.28, 0]} castShadow>
+            <capsuleGeometry args={[0.075, 0.42, 4, 10]} />
+            <meshStandardMaterial color={look.shirt} />
+          </mesh>
+        </group>
+        <group ref={head} position={[0, 1.45, 0]}>
+          <mesh position={[0, 0.21, 0]} castShadow>
+            <sphereGeometry args={[0.21, 20, 16]} />
+            <meshStandardMaterial color={look.skin} />
+          </mesh>
+          {[-0.075, 0.075].map((eyeX) => (
+            <mesh key={eyeX} position={[eyeX, 0.23, 0.19]}>
+              <sphereGeometry args={[0.028, 10, 8]} />
+              <meshStandardMaterial color="#1a1a1a" />
+            </mesh>
+          ))}
+          <mesh position={[0, 0.23, -0.01]} castShadow>
+            <sphereGeometry args={[0.225, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2.1]} />
+            <meshStandardMaterial color={look.hair} />
+          </mesh>
+          {look.longHair && (
+            <mesh position={[0, 0.1, -0.1]} castShadow>
+              <capsuleGeometry args={[0.17, 0.22, 4, 12]} />
+              <meshStandardMaterial color={look.hair} />
+            </mesh>
+          )}
+        </group>
+      </group>
+    </group>
+  );
+}

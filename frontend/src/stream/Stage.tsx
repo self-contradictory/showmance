@@ -7,8 +7,10 @@ import { StageButton } from "./StageButton";
 type Props = {
   viewers: number;
   caption: Caption | null;
+  paused: boolean;
   fullscreen: boolean;
   canFullscreen: boolean;
+  onTogglePause: () => void;
   onToggleFullscreen: () => void;
   onShowChat?: () => void;
   children: ReactNode;
@@ -17,20 +19,21 @@ type Props = {
 export function Stage({
   viewers,
   caption,
+  paused,
   fullscreen,
   canFullscreen,
+  onTogglePause,
   onToggleFullscreen,
   onShowChat,
   children,
 }: Props) {
-  const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [frozenCaption, setFrozenCaption] = useState<Caption | null>(null);
   const shownCaption = paused ? frozenCaption : caption;
 
   function togglePause() {
     if (!paused) setFrozenCaption(caption);
-    setPaused(!paused);
+    onTogglePause();
   }
 
   return (
@@ -52,7 +55,7 @@ export function Stage({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="absolute inset-x-0 bottom-16 mx-auto w-fit max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug sm:text-lg"
+            className="absolute inset-x-0 bottom-12 mx-auto w-fit sm:bottom-16 max-w-[70%] rounded-lg bg-overlay px-3 py-1.5 text-center text-sm leading-snug sm:text-lg"
           >
             <span className="font-semibold">{shownCaption.speaker}:</span> {shownCaption.text}
           </motion.p>

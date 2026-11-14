@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Chat } from "@/chat/Chat";
 import { useFullscreen } from "@/lib/useFullscreen";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { readStored, writeStored } from "@/lib/storage";
 import { useShow } from "@/show/useShow";
+import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { Header } from "@/ui/Header";
+import { ShowArt } from "@/ui/ShowArt";
 import { ShowInfo } from "./ShowInfo";
 import { Stage } from "./Stage";
-import { ShowArt } from "@/ui/ShowArt";
+
+const WorldScene = lazy(() => import("@/world/WorldScene"));
 
 const CHAT_KEY = "showmance:chat";
 
@@ -17,6 +20,7 @@ export function StreamPage({ slug }: { slug: string }) {
   const fullscreen = useFullscreen(streamRef);
   const isDesktop = useMediaQuery("(min-width: 64rem)");
   const [chatOpen, setChatOpen] = useState(() => readStored(CHAT_KEY) !== "hidden");
+  const [paused, setPaused] = useState(false);
   const chatShown = chatOpen || !isDesktop;
   const fs = fullscreen.isFullscreen;
 
@@ -43,12 +47,18 @@ export function StreamPage({ slug }: { slug: string }) {
           <Stage
             viewers={show.viewers}
             caption={show.caption}
+            paused={paused}
             fullscreen={fs}
             canFullscreen={fullscreen.supported}
+            onTogglePause={() => setPaused(!paused)}
             onToggleFullscreen={fullscreen.toggle}
             onShowChat={chatShown ? undefined : () => setChat(true)}
           >
-            <ShowArt title={show.title} cover={show.cover} />
+            <ErrorBoundary fallback={<ShowArt title={show.title} cover={show.cover} />}>
+              <Suspense fallback={<ShowArt title={show.title} cover={show.cover} />}>
+                <WorldScene show={show} paused={paused} />
+              </Suspense>
+            </ErrorBoundary>
           </Stage>
           {!fs && <ShowInfo title={show.title} day={show.day} now={show.now} cast={show.cast} />}
         </main>
