@@ -2,7 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
 import type { Touch } from "@/show/types";
-import { walkway, type Vec3 } from "./layout";
+import type { Route, Vec3 } from "./layout";
 import { lookFor } from "./palette";
 
 const WALK_SPEED = 2.2;
@@ -11,6 +11,8 @@ type Props = {
   id: string;
   index: number;
   spot: Vec3;
+  rest: number;
+  route: Route;
   face: Vec3 | null;
   talking: boolean;
   pose: Touch | null;
@@ -22,7 +24,7 @@ function turnToward(current: number, target: number, lambda: number, delta: numb
   return current + diff * (1 - Math.exp(-lambda * delta));
 }
 
-export function Person({ id, index, spot, face, talking, pose, accent }: Props) {
+export function Person({ id, index, spot, rest, route, face, talking, pose, accent }: Props) {
   const look = useMemo(() => lookFor(id, index), [id, index]);
   const root = useRef<Group>(null);
   const torso = useRef<Group>(null);
@@ -38,13 +40,11 @@ export function Person({ id, index, spot, face, talking, pose, accent }: Props) 
   useEffect(() => {
     const body = root.current;
     if (!body) return;
-    if (!placed.current) {
-      body.position.set(x, y, z);
-      placed.current = true;
-      return;
-    }
-    path.current = walkway([body.position.x, 0, body.position.z], [x, y, z]);
-  }, [x, y, z]);
+    const walk = placed.current ? route([body.position.x, body.position.y, body.position.z], [x, y, z]) : null;
+    placed.current = true;
+    path.current = walk ?? [];
+    if (!walk) body.position.set(x, y, z);
+  }, [x, y, z, route]);
 
   useFrame((state, delta) => {
     const body = root.current;
@@ -59,10 +59,11 @@ export function Person({ id, index, spot, face, talking, pose, accent }: Props) 
       const distance = Math.hypot(dx, dz);
       const step = WALK_SPEED * delta;
       if (distance <= step) {
-        body.position.set(next[0], 0, next[2]);
+        body.position.set(next[0], next[1], next[2]);
         path.current.shift();
       } else {
         body.position.x += (dx / distance) * step;
+        body.position.y = next[1];
         body.position.z += (dz / distance) * step;
         body.rotation.y = turnToward(body.rotation.y, Math.atan2(dx, dz), 12, delta);
         walking = true;
@@ -70,7 +71,7 @@ export function Person({ id, index, spot, face, talking, pose, accent }: Props) 
     }
 
     if (!walking) {
-      const angle = face ? Math.atan2(face[0] - body.position.x, face[2] - body.position.z) : 0;
+      const angle = face ? Math.atan2(face[0] - body.position.x, face[2] - body.position.z) : rest;
       body.rotation.y = turnToward(body.rotation.y, angle, 6, delta);
     }
 

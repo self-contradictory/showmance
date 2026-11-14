@@ -8,6 +8,14 @@ declare module "*.svg" {
   export = path;
 }
 
+declare module "*.glb" {
+  /**
+   * A path to the 3D model
+   */
+  const path: `${string}.glb`;
+  export = path;
+}
+
 declare module "*.css" {}
 
 declare module "*.module.css" {

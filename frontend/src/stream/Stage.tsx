@@ -1,7 +1,8 @@
-import { Maximize, Minimize, PanelRightOpen, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { House, Maximize, Minimize, PanelRightOpen, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import type { Caption } from "@/show/types";
+import type { Credit } from "@/world/sets";
 import { CaptionText } from "./CaptionText";
 import { StageButton } from "./StageButton";
 
@@ -16,6 +17,9 @@ type Props = {
   onToggleMute: () => void;
   onToggleFullscreen: () => void;
   onShowChat?: () => void;
+  setName?: string;
+  onSwitchSet?: () => void;
+  credit?: Credit;
   children: ReactNode;
 };
 
@@ -30,6 +34,9 @@ export function Stage({
   onToggleMute,
   onToggleFullscreen,
   onShowChat,
+  setName,
+  onSwitchSet,
+  credit,
   children,
 }: Props) {
   const [frozenCaption, setFrozenCaption] = useState<Caption | null>(null);
@@ -47,11 +54,24 @@ export function Stage({
     >
       {children}
 
-      {viewers !== undefined && (
-        <p className="absolute top-3 left-3 rounded-md bg-overlay px-2 py-1 text-xs font-medium tabular-nums">
-          {viewers.toLocaleString("en-US")} watching
-        </p>
-      )}
+      <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
+        {viewers !== undefined && (
+          <p className="rounded-md bg-overlay px-2 py-1 text-xs font-medium tabular-nums">
+            {viewers.toLocaleString("en-US")} watching
+          </p>
+        )}
+        {credit && (
+          <a
+            href={credit.href}
+            target="_blank"
+            rel="noreferrer"
+            onDoubleClick={(event) => event.stopPropagation()}
+            className="rounded-md bg-overlay px-2 py-0.5 text-[10px] opacity-80 hover:opacity-100"
+          >
+            {credit.text}
+          </a>
+        )}
+      </div>
 
       <AnimatePresence>
         {shownCaption && (
@@ -106,6 +126,18 @@ export function Stage({
             <StageButton label={muted ? "Unmute" : "Mute"} onClick={onToggleMute}>
               {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </StageButton>
+            {onSwitchSet && setName && (
+              <button
+                type="button"
+                onClick={onSwitchSet}
+                aria-label={`Set: ${setName}. Switch to the next set`}
+                title="Switch set"
+                className="flex h-9 items-center gap-1.5 rounded-full bg-overlay px-3 text-sm font-medium backdrop-blur-md transition-colors hover:bg-overlay-strong"
+              >
+                <House size={16} />
+                {setName}
+              </button>
+            )}
           </div>
           {canFullscreen && (
             <StageButton label={fullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={onToggleFullscreen}>
