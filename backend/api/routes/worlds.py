@@ -10,7 +10,11 @@ router = APIRouter()
 @router.get("/worlds")
 async def list_worlds(services: ServicesDep) -> list[WorldSummary]:
     return [
-        WorldSummary(world=world, running=services.runners.running(world.id))
+        WorldSummary(
+            world=world,
+            running=services.runners.running(world.id),
+            viewers=services.presence.count(world.id),
+        )
         for world in await services.store.worlds.get_all()
     ]
 
@@ -52,4 +56,5 @@ async def get_world(world: WorldDep, services: ServicesDep) -> WorldView:
         agents=await store.agents.get_all(world.id),
         relationships=await store.relationships.get_all(world.id),
         running=services.runners.running(world.id),
+        viewers=services.presence.count(world.id),
     )

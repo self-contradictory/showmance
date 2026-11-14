@@ -1,8 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from ai import llm_roles
+from api.presence import Presence
 from api.runners import Runners
 from config import settings
 from data import Store
@@ -16,6 +17,7 @@ class Services:
     store: Store
     engine: Engine
     runners: Runners
+    presence: Presence = field(default_factory=Presence)
 
 
 def build_services(db: AsyncEngine) -> Services:

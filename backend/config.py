@@ -42,5 +42,10 @@ class Settings(BaseSettings):
 
     poll_ticks: int = 24
 
+    chat_max_length: int = 300
+    chat_history: int = 50
+
+    ticks_per_day: int = 120
+
 
 settings = Settings()

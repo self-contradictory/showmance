@@ -40,11 +40,13 @@ curl -N localhost:8000/worlds/1/stream
 
 | Method | Path | |
 |---|---|---|
-| `GET` | `/worlds` | every world (name, thumbnail, setting, tick) with `running`, for the homepage |
+| `GET` | `/worlds` | every world (name, thumbnail, setting, tick, day) with `running` and `viewers`, for the homepage |
 | `POST` | `/worlds` | create a world from a spec like `villa.json`: `name`, `setting`, `thumbnail_url?`, locations, agents |
-| `GET` | `/worlds/{id}` | world, locations, agents, relationships, running |
+| `GET` | `/worlds/{id}` | world (with `day`), locations, agents, relationships, `running`, `viewers` |
 | `GET` | `/worlds/{id}/events?after_id=` | event history |
-| `GET` | `/worlds/{id}/stream?after_id=` | live events over SSE, resumes from `Last-Event-ID` |
+| `GET` | `/worlds/{id}/stream?after_id=` | one SSE connection per viewer: world events (unnamed, with ids, resume from `Last-Event-ID`), `chat` events with new messages, `viewers` events when the count changes |
+| `GET` | `/worlds/{id}/chat` | the last `CHAT_HISTORY` chat messages, oldest first |
+| `POST` | `/worlds/{id}/chat` | send `{text}` to everyone watching 🔑 |
 | `POST` | `/worlds/{id}/step` | run one tick |
 | `POST` | `/worlds/{id}/start` | tick every `TICK_INTERVAL` seconds |
 | `POST` | `/worlds/{id}/stop` | stop after the current tick |
@@ -64,3 +66,5 @@ The director opens a new poll whenever none is running (yes/no, two or three opt
 ```bash
 uv run pytest
 ```
+
+`day` is `tick // TICKS_PER_DAY + 1`. `viewers` counts open stream connections on this server, so a second tab counts twice.

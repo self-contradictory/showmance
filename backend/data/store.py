@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from data.agents import AgentRepository
+from data.chat import ChatRepository
 from data.events import EventRepository
 from data.locations import LocationRepository
 from data.polls import PollRepository
@@ -22,3 +23,4 @@ class Store:
         self.polls = PollRepository(engine)
         self.viewers = ViewerRepository(engine)
         self.wallets = WalletRepository(engine)
+        self.chat = ChatRepository(engine)

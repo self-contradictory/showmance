@@ -5,7 +5,7 @@ from fastapi import APIRouter, Header
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 from api.deps import ServicesDep, WorldDep
-from api.stream import follow
+from api.stream import watch
 from domain import Event
 
 router = APIRouter()
@@ -26,5 +26,5 @@ async def stream_events(
     last_event_id: Annotated[int | None, Header()] = None,
 ) -> AsyncIterator[ServerSentEvent]:
     start = after_id if last_event_id is None else last_event_id
-    async for event in follow(services.store, world.id, start):
-        yield ServerSentEvent(data=event, id=str(event.id))
+    async for message in watch(services.store, services.presence, world.id, start):
+        yield message

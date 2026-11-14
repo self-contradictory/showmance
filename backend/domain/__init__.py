@@ -1,5 +1,6 @@
 from domain.actions import Action, Confess, Hug, Kiss, Move, Say, Wait, action_kind
 from domain.agents import Agent, NewAgent
+from domain.chat import ChatMessage, NewChatMessage
 from domain.context import AgentContext, DirectorContext, SceneContext
 from domain.events import Event, NewEvent
 from domain.locations import Location, NewLocation
@@ -39,6 +40,7 @@ __all__ = [
     "AgentContext",
     "Announce",
     "Arrive",
+    "ChatMessage",
     "CoinReason",
     "Confess",
     "DirectorContext",
@@ -52,6 +54,7 @@ __all__ = [
     "Memory",
     "Move",
     "NewAgent",
+    "NewChatMessage",
     "NewEvent",
     "NewLocation",
     "NewMemory",

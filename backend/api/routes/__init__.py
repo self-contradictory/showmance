@@ -1,4 +1,4 @@
-from api.routes import control, events, polls, twists, viewers, worlds
+from api.routes import chat, control, events, polls, twists, viewers, worlds
 
 ROUTERS = [
     worlds.router,
@@ -7,4 +7,5 @@ ROUTERS = [
     twists.router,
     polls.router,
     viewers.router,
+    chat.router,
 ]

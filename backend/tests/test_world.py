@@ -1,3 +1,7 @@
+from config import settings
+from domain import World
+
+
 async def test_world_state_updates(store, villa):
     v = villa
 
@@ -11,3 +15,11 @@ async def test_world_state_updates(store, villa):
     assert (await store.worlds.get(v.world.id)).tick == 1
     locations = await store.locations.get_all(v.world.id)
     assert {loc.name for loc in locations} == {"pool", "kitchen"}
+
+
+def test_day_counts_up_with_ticks():
+    def day(tick):
+        return World(id=1, name="Villa", setting="", tick=tick).day
+
+    per_day = settings.ticks_per_day
+    assert [day(0), day(per_day - 1), day(per_day), day(per_day * 3)] == [1, 1, 2, 4]

@@ -37,6 +37,7 @@ class WorldSpec(Model):
 class WorldSummary(Model):
     world: World
     running: bool
+    viewers: int
 
 
 class WorldView(Model):
@@ -45,6 +46,7 @@ class WorldView(Model):
     agents: list[Agent]
     relationships: list[Relationship]
     running: bool
+    viewers: int
 
 
 class TwistRequest(Model):
@@ -67,3 +69,7 @@ class PollView(Model):
 
 class VoteRequest(Model):
     option: int = Field(ge=0)
+
+
+class ChatRequest(Model):
+    text: str = Field(min_length=1, max_length=settings.chat_max_length)

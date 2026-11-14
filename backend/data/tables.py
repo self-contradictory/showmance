@@ -126,3 +126,13 @@ class VoteRow(Base):
     poll_id: Mapped[int] = mapped_column(ForeignKey("polls.id"), primary_key=True)
     viewer_id: Mapped[int] = mapped_column(ForeignKey("viewers.id"), primary_key=True)
     option: Mapped[int]
+
+
+class ChatRow(Base):
+    __tablename__ = "chat_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    world_id: Mapped[int] = mapped_column(ForeignKey("worlds.id"), index=True)
+    viewer_id: Mapped[int] = mapped_column(ForeignKey("viewers.id"))
+    name: Mapped[str]
+    text: Mapped[str]
