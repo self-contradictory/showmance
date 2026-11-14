@@ -1,12 +1,17 @@
+from typing import Literal
+
 from dotenv import load_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
 load_dotenv()
 
+CastKind = Literal["agents", "writer"]
+
 
 class Settings(BaseSettings):
     llm_model: str | None = None
+    cast: CastKind = "agents"
     database_url: str = "sqlite+aiosqlite:///villa.db"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
@@ -18,6 +23,7 @@ class Settings(BaseSettings):
     max_feeling_change: int = 10
 
     recall_limit: int = 20
+    scene_lines: int = 12
 
     tick_interval: float = 5.0
     stream_poll_interval: float = 1.0

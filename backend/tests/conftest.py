@@ -26,13 +26,15 @@ from domain import (
     Reaction,
     Rejected,
     Relationship,
+    Scene,
+    SceneContext,
     Twist,
     TwistPlan,
     Wait,
     World,
 )
 from engine import Engine
-from engine.casts import AgentsCast
+from engine.casts import AgentsCast, WriterCast
 from engine.state import WorldState
 from memory import SqlMemoryStore
 
@@ -90,6 +92,19 @@ class ScriptedDirector:
         return plan
 
 
+class ScriptedWriter:
+    def __init__(self, scenes: list[Scene | Exception]) -> None:
+        self._scenes = list(scenes)
+        self.contexts: list[SceneContext] = []
+
+    async def write(self, context: SceneContext) -> Scene:
+        self.contexts.append(context)
+        scene = self._scenes.pop(0) if self._scenes else Scene(lines=[])
+        if isinstance(scene, Exception):
+            raise scene
+        return scene
+
+
 @pytest.fixture
 async def db(tmp_path):
     db = await connect(f"sqlite+aiosqlite:///{tmp_path / 'test.db'}")
@@ -140,6 +155,19 @@ def sim(store, memory):
             decider=decider,
             appraiser=appraiser,
             director=director,
+        )
+
+    return build
+
+
+@pytest.fixture
+def writer_sim(store, memory):
+    def build(scenes, plans=None):
+        writer = ScriptedWriter(scenes)
+        director = ScriptedDirector(plans or {}, None)
+        return SimpleNamespace(
+            engine=Engine(store, memory, director, WriterCast(store, writer)),
+            writer=writer,
         )
 
     return build

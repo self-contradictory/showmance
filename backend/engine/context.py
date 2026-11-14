@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from config import settings
 from data import Store
-from domain import Agent, AgentContext, DirectorContext
+from domain import Agent, AgentContext, DirectorContext, SceneContext
 from engine.state import WorldState
 from memory import MemoryStore
 
@@ -40,3 +40,10 @@ async def director_context(store: Store, state: WorldState) -> DirectorContext:
         events=await store.events.recent(state.world.id, settings.director_event_limit),
         poll=await store.polls.current(state.world.id),
     )
+
+
+async def scene_context(
+    store: Store, state: WorldState, directions: dict[int, list[str]]
+) -> SceneContext:
+    context = await director_context(store, state)
+    return SceneContext(**dict(context), directions=directions)

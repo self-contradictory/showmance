@@ -3,8 +3,9 @@ from ai.render import (
     render_context,
     render_director,
     render_proposal,
+    render_scene,
 )
-from domain import Event, Poll, PollOption
+from domain import Event, Poll, PollOption, SceneContext
 
 
 def test_context_shows_only_what_the_agent_knows(context):
@@ -88,3 +89,28 @@ def test_proposal_asks_for_the_chosen_format(director_context):
 
     assert "- Mia (id 1), at pool" in prompt
     assert prompt.endswith("Ask a question with exactly three options.")
+
+
+def test_writer_sees_who_saw_what_and_what_the_producers_need(director_context):
+    reveal = Event(
+        id=2,
+        world_id=1,
+        tick=3,
+        kind="reveal",
+        text="Jake kissed Sara",
+        witness_ids=[1],
+    )
+    headline = Event(id=3, world_id=1, tick=3, kind="twist", text="Mia gets a text")
+    context = SceneContext(
+        **dict(director_context.model_copy(update={"events": [reveal, headline]})),
+        directions={2: ["Act like nothing happened"]},
+    )
+
+    prompt = render_scene(context)
+
+    assert "- Sara (id 3), at kitchen, mood neutral." in prompt
+    assert '- [tick 3] reveal "Jake kissed Sara" [seen by: Mia]' in prompt
+    assert '- [tick 3] twist "Mia gets a text" [viewers only]' in prompt
+    assert prompt.endswith(
+        "The producers need this to happen now:\n- Jake: Act like nothing happened"
+    )

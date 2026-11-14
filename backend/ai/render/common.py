@@ -1,6 +1,11 @@
 from collections.abc import Iterable
 
-from domain import Event
+from domain import Agent, Event
+
+
+def render_memory(events: Iterable[Event], agents: Iterable[Agent]) -> str:
+    names = {a.id: a.name for a in agents}
+    return "; ".join(event_line(event, names) for event in events)
 
 
 def bullets(lines: Iterable[str], empty: str) -> str:

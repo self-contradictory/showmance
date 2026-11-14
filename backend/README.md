@@ -13,8 +13,18 @@ uv run uvicorn api.app:app --reload
 | Variable | Default |
 |---|---|
 | `LLM_MODEL` | none: any Pydantic AI model string, plus that provider's API key (e.g. `OPENAI_API_KEY`, `GOOGLE_API_KEY`) in `.env` too |
+| `CAST` | `agents`: who plays the contestants, see below |
 | `DATABASE_URL` | `sqlite+aiosqlite:///villa.db` |
 | `CORS_ORIGINS` | `["http://localhost:3000"]` (a JSON list) |
+
+## Who plays the contestants
+
+The director (polls and twists) is the same either way. `CAST` picks how the contestants act and feel:
+
+- `agents`: each contestant is its own model call. Every tick, everyone decides an action and everyone who saw something reacts, so about 12 calls a tick for six people.
+- `writer`: one model call writes a scene of about `SCENE_LINES` lines for everyone, and each tick plays the next line. Feelings come with the lines, so reactions cost nothing. A staged twist throws away the unplayed lines and the next tick writes a new scene. Use this on free tiers, with `TICK_INTERVAL=4` or so to match the captions.
+
+Both keep the same state (places, moods, feelings, memories, events), so you can switch a running villa by restarting with the other `CAST`.
 
 ## Start the villa
 

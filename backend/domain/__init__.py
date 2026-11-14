@@ -1,6 +1,6 @@
 from domain.actions import Action, Confess, Hug, Kiss, Move, Say, Wait, action_kind
 from domain.agents import Agent, NewAgent
-from domain.context import AgentContext, DirectorContext
+from domain.context import AgentContext, DirectorContext, SceneContext
 from domain.events import Event, NewEvent
 from domain.locations import Location, NewLocation
 from domain.memories import Memory, NewMemory
@@ -26,6 +26,7 @@ from domain.polls import (
 )
 from domain.reactions import FeelingChange, Reaction
 from domain.relationships import Relationship, RelationshipChange
+from domain.scenes import Line, LineKind, Scene, ScriptedFeeling
 from domain.twists import NewTwist, Twist, TwistSource, TwistStatus
 from domain.viewers import CoinReason, Viewer
 from domain.worlds import NewWorld, World
@@ -45,6 +46,8 @@ __all__ = [
     "FeelingChange",
     "Hug",
     "Kiss",
+    "Line",
+    "LineKind",
     "Location",
     "Memory",
     "Move",
@@ -69,6 +72,9 @@ __all__ = [
     "Relocate",
     "Reveal",
     "Say",
+    "Scene",
+    "SceneContext",
+    "ScriptedFeeling",
     "Twist",
     "TwistPlan",
     "TwistSource",

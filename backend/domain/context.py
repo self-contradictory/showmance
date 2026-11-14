@@ -27,3 +27,7 @@ class DirectorContext(Model):
     relationships: list[Relationship]
     events: list[Event]
     poll: Poll | None = None
+
+
+class SceneContext(DirectorContext):
+    directions: dict[int, list[str]] = Field(default_factory=dict)

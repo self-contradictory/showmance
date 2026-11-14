@@ -48,6 +48,27 @@ and the twist that happens in the villa if it wins.
 Every option must make something happen, including "No".
 Make the options dramatic, believable for these people, and different from each other."""
 
+WRITE_INSTRUCTIONS = f"""You write a reality dating show set in a villa.
+Viewers watch it live, one line at a time.
+Write the next scene in about {settings.scene_lines} lines, picking up where the story left off.
+
+Each line is one thing one person does. Refer to people and places by their id:
+- say: a short, natural spoken line with an emotion, to someone here or to the room
+- hug, kiss: someone in the same place
+- move: go to another place
+- confess: a private line to the camera that nobody in the villa hears
+People can only talk to, hug or kiss someone in the same place, so move them first.
+People only know what they saw or were told: recent events say who saw them.
+If the producers need something to happen, make it happen in this scene.
+If viewers are voting, build toward the vote but never decide it.
+
+When a line changes how someone feels about someone else, add that to the line:
+who feels it, toward whom, and a short note.
+Affection and trust go from {settings.min_score} to {settings.max_score}, \
+{settings.neutral_score} is neutral.
+Each change is between -{settings.max_feeling_change} and {settings.max_feeling_change}.
+Make it dramatic but believable."""
+
 POLL_FORMAT_REQUESTS: dict[PollFormat, str] = {
     "yes_no": 'Ask a yes or no question, with two options labeled "Yes" and "No".',
     "two_options": "Ask a question with exactly two options.",
