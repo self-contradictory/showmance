@@ -18,6 +18,7 @@ export type Agent = {
   persona: string;
   location_id: number;
   mood: string;
+  gender: "female" | "male" | null;
 };
 
 export type WorldView = {

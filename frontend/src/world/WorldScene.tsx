@@ -98,6 +98,7 @@ export default function WorldScene({ show, paused, set }: Props) {
                 key={member.id}
                 id={member.id}
                 index={index}
+                gender={member.gender}
                 spot={spot}
                 rest={rests.get(member.id) ?? 0}
                 route={layout.route}

@@ -1,4 +1,4 @@
-import type { Sky } from "@/show/types";
+import type { Gender, Sky } from "@/show/types";
 import type { Vec3 } from "./layout";
 
 export const MATERIAL = {
@@ -91,15 +91,30 @@ function hash(text: string): number {
   return h;
 }
 
-export type Look = { shirt: string; pants: string; skin: string; hair: string; longHair: boolean };
+export type Build = {
+  torso: number;
+  shoulders: number;
+  arm: number;
+  hips: number;
+  hairline: number;
+  hairTilt: number;
+  longHair: boolean;
+};
 
-export function lookFor(id: string, index: number): Look {
+const BUILDS: Record<Gender, Build> = {
+  female: { torso: 0.24, shoulders: 0.31, arm: 0.068, hips: 0.11, hairline: Math.PI / 2.1, hairTilt: 0, longHair: true },
+  male: { torso: 0.28, shoulders: 0.37, arm: 0.085, hips: 0.13, hairline: Math.PI / 2.5, hairTilt: -0.4, longHair: false },
+};
+
+export type Look = { shirt: string; pants: string; skin: string; hair: string; build: Build };
+
+export function lookFor(id: string, index: number, gender?: Gender): Look {
   const h = hash(id);
   return {
     shirt: SHIRTS[index % SHIRTS.length]!,
     pants: PANTS[h % PANTS.length]!,
     skin: SKIN[(h >> 3) % SKIN.length]!,
     hair: HAIR[(h >> 6) % HAIR.length]!,
-    longHair: (h >> 9) % 2 === 0,
+    build: BUILDS[gender ?? ((h >> 9) % 2 === 0 ? "female" : "male")],
   };
 }

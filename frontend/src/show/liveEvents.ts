@@ -124,6 +124,7 @@ export function castFor(agents: Agent[], moved: Record<string, string>): CastMem
     id: String(agent.id),
     name: agent.name,
     role: agent.persona.split(".")[0]?.trim() ?? "",
+    gender: agent.gender ?? undefined,
     locationId: moved[String(agent.id)] ?? String(agent.location_id),
   }));
 }

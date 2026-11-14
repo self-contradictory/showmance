@@ -27,12 +27,12 @@ export const SHOWS: ShowScript[] = [
     sky: "sunset",
     locations: [{ id: "pool", name: "Pool" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
-      { id: "mia", name: "Mia", role: "The planner", locationId: "pool" },
-      { id: "jake", name: "Jake", role: "The charmer", locationId: "pool" },
-      { id: "sara", name: "Sara", role: "The wildcard", locationId: "bedroom" },
-      { id: "chris", name: "Chris", role: "The newcomer", locationId: "bedroom" },
-      { id: "leo", name: "Leo", role: "The strategist", locationId: "kitchen" },
-      { id: "nina", name: "Nina", role: "The queen bee", locationId: "kitchen" },
+      { id: "mia", name: "Mia", role: "The planner", gender: "female", locationId: "pool" },
+      { id: "jake", name: "Jake", role: "The charmer", gender: "male", locationId: "pool" },
+      { id: "sara", name: "Sara", role: "The wildcard", gender: "female", locationId: "bedroom" },
+      { id: "chris", name: "Chris", role: "The newcomer", gender: "male", locationId: "bedroom" },
+      { id: "leo", name: "Leo", role: "The strategist", gender: "male", locationId: "kitchen" },
+      { id: "nina", name: "Nina", role: "The queen bee", gender: "female", locationId: "kitchen" },
     ],
     scenes: [
       {
@@ -101,12 +101,12 @@ export const SHOWS: ShowScript[] = [
     sky: "snow",
     locations: [{ id: "living", name: "Living room" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
-      { id: "ava", name: "Ava", role: "The skeptic", locationId: "living" },
-      { id: "ethan", name: "Ethan", role: "The flirt", locationId: "living" },
-      { id: "zoe", name: "Zoe", role: "The artist", locationId: "bedroom" },
-      { id: "marcus", name: "Marcus", role: "The romantic", locationId: "bedroom" },
-      { id: "lily", name: "Lily", role: "The quiet one", locationId: "kitchen" },
-      { id: "ryan", name: "Ryan", role: "The joker", locationId: "kitchen" },
+      { id: "ava", name: "Ava", role: "The skeptic", gender: "female", locationId: "living" },
+      { id: "ethan", name: "Ethan", role: "The flirt", gender: "male", locationId: "living" },
+      { id: "zoe", name: "Zoe", role: "The artist", gender: "female", locationId: "bedroom" },
+      { id: "marcus", name: "Marcus", role: "The romantic", gender: "male", locationId: "bedroom" },
+      { id: "lily", name: "Lily", role: "The quiet one", gender: "female", locationId: "kitchen" },
+      { id: "ryan", name: "Ryan", role: "The joker", gender: "male", locationId: "kitchen" },
     ],
     scenes: [
       {
@@ -163,12 +163,12 @@ export const SHOWS: ShowScript[] = [
     sky: "day",
     locations: [{ id: "beach", name: "Beach" }, { id: "bar", name: "Bar" }, { id: "pool", name: "Pool" }],
     cast: [
-      { id: "nora", name: "Nora", role: "The planner", locationId: "beach" },
-      { id: "luca", name: "Luca", role: "The charmer", locationId: "beach" },
-      { id: "ivy", name: "Ivy", role: "The dancer", locationId: "bar" },
-      { id: "theo", name: "Theo", role: "The shy one", locationId: "bar" },
-      { id: "rosa", name: "Rosa", role: "The competitor", locationId: "pool" },
-      { id: "kai", name: "Kai", role: "The surfer", locationId: "pool" },
+      { id: "nora", name: "Nora", role: "The planner", gender: "female", locationId: "beach" },
+      { id: "luca", name: "Luca", role: "The charmer", gender: "male", locationId: "beach" },
+      { id: "ivy", name: "Ivy", role: "The dancer", gender: "female", locationId: "bar" },
+      { id: "theo", name: "Theo", role: "The shy one", gender: "male", locationId: "bar" },
+      { id: "rosa", name: "Rosa", role: "The competitor", gender: "female", locationId: "pool" },
+      { id: "kai", name: "Kai", role: "The surfer", gender: "male", locationId: "pool" },
     ],
     scenes: [
       {
@@ -224,12 +224,12 @@ export const SHOWS: ShowScript[] = [
     sky: "night",
     locations: [{ id: "deck", name: "Deck" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
-      { id: "grace", name: "Grace", role: "The one who left", locationId: "kitchen" },
-      { id: "daniel", name: "Daniel", role: "The one who stayed", locationId: "deck" },
-      { id: "maya", name: "Maya", role: "The planner", locationId: "bedroom" },
-      { id: "josh", name: "Josh", role: "The romantic", locationId: "bedroom" },
-      { id: "elena", name: "Elena", role: "The skeptic", locationId: "deck" },
-      { id: "sam", name: "Sam", role: "The surprise", locationId: "kitchen" },
+      { id: "grace", name: "Grace", role: "The one who left", gender: "female", locationId: "kitchen" },
+      { id: "daniel", name: "Daniel", role: "The one who stayed", gender: "male", locationId: "deck" },
+      { id: "maya", name: "Maya", role: "The planner", gender: "female", locationId: "bedroom" },
+      { id: "josh", name: "Josh", role: "The romantic", gender: "male", locationId: "bedroom" },
+      { id: "elena", name: "Elena", role: "The skeptic", gender: "female", locationId: "deck" },
+      { id: "sam", name: "Sam", role: "The surprise", gender: "male", locationId: "kitchen" },
     ],
     scenes: [
       {

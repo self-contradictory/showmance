@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
-import type { Touch } from "@/show/types";
+import type { Gender, Touch } from "@/show/types";
 import type { Route, Vec3 } from "./layout";
 import { lookFor } from "./palette";
 
@@ -10,6 +10,7 @@ const WALK_SPEED = 2.2;
 type Props = {
   id: string;
   index: number;
+  gender?: Gender;
   spot: Vec3;
   rest: number;
   route: Route;
@@ -24,8 +25,9 @@ function turnToward(current: number, target: number, lambda: number, delta: numb
   return current + diff * (1 - Math.exp(-lambda * delta));
 }
 
-export function Person({ id, index, spot, rest, route, face, talking, pose, accent }: Props) {
-  const look = useMemo(() => lookFor(id, index), [id, index]);
+export function Person({ id, index, gender, spot, rest, route, face, talking, pose, accent }: Props) {
+  const look = useMemo(() => lookFor(id, index, gender), [id, index, gender]);
+  const build = look.build;
   const root = useRef<Group>(null);
   const torso = useRef<Group>(null);
   const head = useRef<Group>(null);
@@ -110,31 +112,31 @@ export function Person({ id, index, spot, rest, route, face, talking, pose, acce
         </mesh>
       )}
       <group ref={torso}>
-        <group ref={leftLeg} position={[-0.12, 0.55, 0]}>
+        <group ref={leftLeg} position={[-build.hips, 0.55, 0]}>
           <mesh position={[0, -0.27, 0]} castShadow>
             <capsuleGeometry args={[0.1, 0.36, 4, 10]} />
             <meshStandardMaterial color={look.pants} />
           </mesh>
         </group>
-        <group ref={rightLeg} position={[0.12, 0.55, 0]}>
+        <group ref={rightLeg} position={[build.hips, 0.55, 0]}>
           <mesh position={[0, -0.27, 0]} castShadow>
             <capsuleGeometry args={[0.1, 0.36, 4, 10]} />
             <meshStandardMaterial color={look.pants} />
           </mesh>
         </group>
         <mesh position={[0, 0.98, 0]} castShadow>
-          <capsuleGeometry args={[0.26, 0.4, 6, 14]} />
+          <capsuleGeometry args={[build.torso, 0.4, 6, 14]} />
           <meshStandardMaterial color={look.shirt} />
         </mesh>
-        <group ref={leftArm} position={[-0.34, 1.36, 0]}>
+        <group ref={leftArm} position={[-build.shoulders, 1.36, 0]}>
           <mesh position={[0, -0.28, 0]} castShadow>
-            <capsuleGeometry args={[0.075, 0.42, 4, 10]} />
+            <capsuleGeometry args={[build.arm, 0.42, 4, 10]} />
             <meshStandardMaterial color={look.shirt} />
           </mesh>
         </group>
-        <group ref={rightArm} position={[0.34, 1.36, 0]}>
+        <group ref={rightArm} position={[build.shoulders, 1.36, 0]}>
           <mesh position={[0, -0.28, 0]} castShadow>
-            <capsuleGeometry args={[0.075, 0.42, 4, 10]} />
+            <capsuleGeometry args={[build.arm, 0.42, 4, 10]} />
             <meshStandardMaterial color={look.shirt} />
           </mesh>
         </group>
@@ -149,11 +151,11 @@ export function Person({ id, index, spot, rest, route, face, talking, pose, acce
               <meshStandardMaterial color="#1a1a1a" />
             </mesh>
           ))}
-          <mesh position={[0, 0.23, -0.01]} castShadow>
-            <sphereGeometry args={[0.225, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2.1]} />
+          <mesh position={[0, 0.23, -0.01]} rotation={[build.hairTilt, 0, 0]} castShadow>
+            <sphereGeometry args={[0.225, 20, 16, 0, Math.PI * 2, 0, build.hairline]} />
             <meshStandardMaterial color={look.hair} />
           </mesh>
-          {look.longHair && (
+          {build.longHair && (
             <mesh position={[0, 0.1, -0.1]} castShadow>
               <capsuleGeometry args={[0.17, 0.22, 4, 12]} />
               <meshStandardMaterial color={look.hair} />

@@ -7,7 +7,16 @@ export type Location = { id: string; name: string };
 
 export type Sky = "day" | "sunset" | "night" | "snow";
 
-export type CastMember = { id: string; name: string; role: string; locationId: string; portrait?: string };
+export type Gender = "female" | "male";
+
+export type CastMember = {
+  id: string;
+  name: string;
+  role: string;
+  gender?: Gender;
+  locationId: string;
+  portrait?: string;
+};
 
 export type Touch = "hug" | "kiss";
 
