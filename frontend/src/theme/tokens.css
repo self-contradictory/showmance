@@ -1,26 +1,31 @@
 /*
   Design tokens. The whole app reads its colors and fonts from here.
 
-  Each color is light-dark(<light theme>, <dark theme>). Dark is the
-  default; the theme switch sets data-theme="light" on <html>.
+  Neutrals run from pure white to pure black; each is
+  light-dark(<light theme>, <dark theme>). The accent is the same in both
+  themes and has 4.5:1 contrast on black and on white, so it works as text
+  and as a fill. Dark is the default; the theme switch sets
+  data-theme="light" on <html>.
 */
 
 :root {
   color-scheme: dark;
 
-  /* Page */
-  --page: light-dark(#fbf7f9, #140f14); /* background */
-  --surface: light-dark(#f2eaee, #1e171d); /* inputs, menus, vote bars */
-  --line: light-dark(#e6dbe1, #2b2229); /* borders and dividers */
-  --ink: light-dark(#1f141c, #f5eef2); /* main text */
-  --muted: light-dark(#7a6772, #a08f9a); /* names, secondary text */
-  --accent: light-dark(#d61f4f, #ff5c7a); /* live dot, twists, votes */
-  --on-accent: light-dark(#ffffff, #140f14); /* text on an accent background */
+  /* Neutrals */
+  --page: light-dark(#ffffff, #000000); /* background */
+  --surface: light-dark(#f2f2f2, #141414); /* inputs, chips, vote options */
+  --surface-strong: light-dark(#e2e2e2, #262626); /* hover, vote bars */
+  --ink: light-dark(#000000, #ffffff); /* main text */
+  --muted: light-dark(#6e6e6e, #8f8f8f); /* names, secondary text */
 
-  /* Video frame: stays dark in both themes */
+  /* Accent: twists and your vote */
+  --accent: #e3175f;
+  --on-accent: #ffffff;
+
+  /* Video frame: dark in both themes */
   --stage: #000000;
-  --stage-glow: #3a1f33;
-  --overlay: rgb(0 0 0 / 0.65); /* pills and captions over the video */
+  --stage-glow: #2d0513;
+  --overlay: rgb(0 0 0 / 0.6); /* captions and labels over the video */
   --on-overlay: #ffffff;
 
   /* Type */

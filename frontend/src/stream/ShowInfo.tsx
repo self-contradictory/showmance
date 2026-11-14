@@ -4,18 +4,21 @@ type Props = { title: string; day: number; now: string; cast: CastMember[] };
 
 export function ShowInfo({ title, day, now, cast }: Props) {
   return (
-    <section className="shrink-0 px-4 py-3 lg:px-6 lg:py-4">
-      <div className="flex items-baseline gap-3">
-        <h1 className="text-lg font-semibold">{title}</h1>
-        <span className="text-sm text-muted">Day {day}</span>
+    <section className="px-4 pt-3 pb-4 lg:flex lg:shrink-0 lg:items-start lg:justify-between lg:gap-6 lg:px-0 lg:pt-4 lg:pb-0">
+      <div className="min-w-0">
+        <div className="flex items-baseline gap-2.5">
+          <h1 className="text-lg font-semibold">{title}</h1>
+          <span className="text-sm text-muted">Day {day}</span>
+        </div>
+        <p className="mt-0.5 text-sm">{now}</p>
       </div>
-      <p className="mt-0.5 text-sm">{now}</p>
 
-      <ul className="mt-3 flex gap-4 overflow-x-auto" aria-label="Cast">
+      {/* Hidden on phones to leave room for chat. */}
+      <ul className="flex shrink-0 gap-3 max-lg:hidden" aria-label="Cast">
         {cast.map((member) => (
-          <li key={member.id} title={member.role} className="flex shrink-0 flex-col items-center gap-1">
+          <li key={member.id} title={member.role} className="flex flex-col items-center gap-1">
             <span
-              className="grid size-10 place-items-center rounded-full bg-surface text-sm font-semibold ring-1 ring-line"
+              className="grid size-9 place-items-center rounded-full bg-surface text-sm font-semibold"
               aria-hidden
             >
               {member.name[0]}

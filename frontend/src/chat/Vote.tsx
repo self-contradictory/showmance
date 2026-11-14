@@ -15,8 +15,8 @@ export function Vote({ vote, myVote, onVote }: Props) {
   const total = vote.options.reduce((sum, option) => sum + option.votes, 0);
 
   return (
-    <section aria-label="Vote" className="shrink-0 border-b border-line p-3">
-      <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
+    <section aria-label="Vote" className="shrink-0 pb-3">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
         <p className="text-sm font-medium">{vote.question}</p>
         <p className="shrink-0 text-xs text-muted tabular-nums">
           {closed ? "Closing" : `${formatClock(secondsLeft)} left`}
@@ -34,12 +34,12 @@ export function Vote({ vote, myVote, onVote }: Props) {
                 onClick={() => onVote(option.id)}
                 disabled={myVote !== null || closed}
                 aria-pressed={mine}
-                className="relative flex h-9 w-full items-center justify-between overflow-hidden rounded-md bg-surface px-3 text-sm enabled:hover:ring-1 enabled:hover:ring-muted"
+                className="relative flex h-10 w-full items-center justify-between overflow-hidden rounded-full bg-surface px-4 text-sm enabled:hover:ring-1 enabled:hover:ring-muted/50"
               >
                 <span
                   aria-hidden
                   style={{ width: `${pct}%` }}
-                  className={`absolute inset-y-0 left-0 transition-[width] duration-500 motion-reduce:transition-none ${mine ? "bg-accent/25" : "bg-line"}`}
+                  className={`absolute inset-y-0 left-0 transition-[width] duration-500 motion-reduce:transition-none ${mine ? "bg-accent/30" : "bg-surface-strong"}`}
                 />
                 <span className="relative font-medium">
                   {option.label}

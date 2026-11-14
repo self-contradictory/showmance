@@ -1,12 +1,12 @@
 /*
-  Turns the tokens into Tailwind classes: bg-page, text-muted, border-line,
+  Turns the tokens into Tailwind classes: bg-page, bg-surface, text-muted,
   bg-accent/10 and so on. Edit values in tokens.css, not here.
 */
 
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);
-  --color-line: var(--line);
+  --color-surface-strong: var(--surface-strong);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -40,5 +40,10 @@
 
 @utility scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
+  scrollbar-color: var(--surface-strong) transparent;
+}
+
+/* Fades the top edge of a scrolling list instead of drawing a divider. */
+@utility fade-top {
+  mask-image: linear-gradient(to bottom, transparent, black 1rem);
 }

@@ -40,14 +40,13 @@ export function TwistButton({ twists, balance, onBuy }: Props) {
         aria-expanded={open}
         aria-label="Drop a twist"
         title="Drop a twist"
-        className="grid size-10 place-items-center rounded-md bg-accent text-lg text-on-accent hover:opacity-90"
+        className="grid size-10 place-items-center rounded-full bg-accent text-lg text-on-accent hover:opacity-90"
       >
         ✦
       </button>
 
       {open && (
-        <div className="absolute right-0 bottom-full mb-2 w-72 rounded-lg bg-surface p-1.5 ring-1 ring-line motion-safe:animate-fade-in">
-          <p className="px-2 pt-1 pb-2 text-xs text-muted">Drop a twist. The villa reacts in seconds.</p>
+        <div className="absolute right-0 bottom-full mb-2 w-72 rounded-2xl bg-surface p-1.5 motion-safe:animate-fade-in">
           <ul>
             {twists.map((twist) => (
               <li key={twist.id}>
@@ -58,7 +57,7 @@ export function TwistButton({ twists, balance, onBuy }: Props) {
                     onBuy(twist.id);
                     setOpen(false);
                   }}
-                  className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left text-sm enabled:hover:bg-line disabled:opacity-40"
+                  className="flex w-full items-center justify-between gap-3 rounded-xl px-2 py-2 text-left text-sm enabled:hover:bg-surface-strong disabled:opacity-40"
                 >
                   <span>{twist.label}</span>
                   <span className="shrink-0 text-muted tabular-nums">{twist.price}</span>
@@ -66,7 +65,7 @@ export function TwistButton({ twists, balance, onBuy }: Props) {
               </li>
             ))}
           </ul>
-          <p className="mt-1 border-t border-line px-2 pt-2 pb-1 text-xs text-muted">You have {balance} coins</p>
+          <p className="px-2 pt-2 pb-1 text-xs text-muted">You have {balance} coins</p>
         </div>
       )}
     </div>

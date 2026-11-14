@@ -10,13 +10,13 @@ export function StreamPage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-line px-4 lg:px-6">
+      <header className="flex h-14 shrink-0 items-center justify-between px-4 lg:px-6">
         <span className="font-serif text-2xl leading-none italic">showmance</span>
         <ThemeToggle />
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <main className="flex shrink-0 flex-col lg:min-w-0 lg:flex-1">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-6 lg:px-6 lg:pb-6">
+        <main className="flex shrink-0 flex-col lg:min-h-0 lg:min-w-0 lg:flex-1">
           <Stage viewers={show.viewers} caption={show.caption}>
             <VillaPlaceholder />
           </Stage>

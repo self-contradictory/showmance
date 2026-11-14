@@ -35,7 +35,7 @@ export function Comments({ comments }: { comments: ChatComment[] }) {
 
   return (
     <div className="relative min-h-0 flex-1">
-      <div ref={listRef} onScroll={onScroll} role="log" className="scrollbar-thin h-full overflow-y-auto px-3 py-2">
+      <div ref={listRef} onScroll={onScroll} role="log" className="scrollbar-thin fade-top h-full overflow-y-auto py-2">
         {comments.length === 0 ? (
           <p className="pt-6 text-center text-sm text-muted">No messages yet. Say hi.</p>
         ) : (
@@ -47,7 +47,7 @@ export function Comments({ comments }: { comments: ChatComment[] }) {
         <button
           type="button"
           onClick={jumpToLatest}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-surface px-3 py-1 text-xs font-medium ring-1 ring-line hover:ring-muted"
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-ink px-3 py-1 text-xs font-medium text-page hover:opacity-90"
         >
           New messages
         </button>
