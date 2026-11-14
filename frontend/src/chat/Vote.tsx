@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { useNow } from "@/lib/useNow";
 import type { Vote as VoteData } from "@/show/types";
 
@@ -41,9 +42,9 @@ export function Vote({ vote, myVote, onVote }: Props) {
                   style={{ width: `${pct}%` }}
                   className={`absolute inset-y-0 left-0 transition-[width] duration-500 motion-reduce:transition-none ${mine ? "bg-accent/30" : "bg-surface-strong"}`}
                 />
-                <span className="relative font-medium">
+                <span className="relative flex items-center gap-1.5 font-medium">
                   {option.label}
-                  {mine && <span className="text-accent"> ✓</span>}
+                  {mine && <Check size={14} strokeWidth={2.5} className="text-accent" aria-label="Your vote" />}
                 </span>
                 <span className="relative text-muted tabular-nums">{pct}%</span>
               </button>

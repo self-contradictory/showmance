@@ -1,4 +1,5 @@
-import { MoonIcon, SunIcon } from "@/ui/icons";
+import { Moon, Sun } from "lucide-react";
+import { IconButton } from "@/ui/IconButton";
 import { useTheme } from "./useTheme";
 
 export function ThemeToggle() {
@@ -6,14 +7,8 @@ export function ThemeToggle() {
   const label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
 
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={label}
-      title={label}
-      className="grid size-8 place-items-center rounded-md text-muted hover:bg-surface hover:text-ink"
-    >
-      {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-    </button>
+    <IconButton label={label} onClick={toggle}>
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+    </IconButton>
   );
 }

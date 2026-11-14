@@ -1,11 +1,10 @@
-import { useRef, type ReactNode } from "react";
+import { Maximize, Minimize } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Caption } from "@/show/types";
-import { FullscreenIcon } from "@/ui/icons";
 
 type Props = {
   viewers: number;
   caption: Caption | null;
-  /** What plays in the frame: the villa placeholder now, the 3D scene later. */
   children: ReactNode;
 };
 
@@ -13,6 +12,13 @@ const canFullscreen = typeof document !== "undefined" && document.fullscreenEnab
 
 export function Stage({ viewers, caption, children }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === frameRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
 
   function toggleFullscreen() {
     if (!canFullscreen) return;
@@ -45,10 +51,10 @@ export function Stage({ viewers, caption, children }: Props) {
         <button
           type="button"
           onClick={toggleFullscreen}
-          aria-label="Fullscreen"
+          aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
           className="absolute right-3 bottom-3 grid size-9 place-items-center rounded-lg bg-overlay transition-opacity group-hover:opacity-100 focus-visible:opacity-100 lg:opacity-0"
         >
-          <FullscreenIcon />
+          {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
         </button>
       )}
     </div>

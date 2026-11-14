@@ -1,3 +1,4 @@
+import { ArrowDown } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { CommentRow } from "./comments/CommentRow";
 import type { ChatComment } from "./comments/types";
@@ -47,8 +48,9 @@ export function Comments({ comments }: { comments: ChatComment[] }) {
         <button
           type="button"
           onClick={jumpToLatest}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-ink px-3 py-1 text-xs font-medium text-page hover:opacity-90"
+          className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-ink py-1 pr-3 pl-2 text-xs font-medium text-page hover:opacity-90"
         >
+          <ArrowDown size={14} />
           New messages
         </button>
       )}

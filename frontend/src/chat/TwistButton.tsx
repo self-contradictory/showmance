@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Twist } from "@/show/types";
 
@@ -40,9 +41,9 @@ export function TwistButton({ twists, balance, onBuy }: Props) {
         aria-expanded={open}
         aria-label="Drop a twist"
         title="Drop a twist"
-        className="grid size-10 place-items-center rounded-full bg-accent text-lg text-on-accent hover:opacity-90"
+        className="grid size-10 place-items-center rounded-full bg-accent text-on-accent hover:opacity-90"
       >
-        ✦
+        <Sparkles size={18} />
       </button>
 
       {open && (
