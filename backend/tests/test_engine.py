@@ -1,4 +1,4 @@
-from config import NEUTRAL_SCORE
+from config import settings
 from domain import Confess, FeelingChange, Hug, Kiss, Move, Reaction, Say
 
 
@@ -31,7 +31,7 @@ async def test_hug_is_seen_and_felt_only_in_the_room(store, memory, villa, sim):
     assert (feeling.from_id, feeling.to_id, feeling.affection, feeling.note) == (
         v.mia.id,
         v.jake.id,
-        NEUTRAL_SCORE + 5,
+        settings.neutral_score + 5,
         "sweet",
     )
     moods = {a.name: a.mood for a in await store.agents.get_all(v.world.id)}

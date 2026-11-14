@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from config import STARTER_COINS
+from config import settings
 from data.tables import ViewerRow
 
 
@@ -27,7 +27,7 @@ async def test_joining_gives_a_token_and_starter_coins(sim, client):
     assert me.json() == {
         "id": joined.json()["viewer"]["id"],
         "name": "Ann",
-        "coins": STARTER_COINS,
+        "coins": settings.starter_coins,
     }
 
 

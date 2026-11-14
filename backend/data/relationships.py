@@ -1,13 +1,13 @@
 from sqlalchemy import select
 
-from config import MAX_SCORE, MIN_SCORE, NEUTRAL_SCORE
+from config import settings
 from data.db import Repository
 from data.tables import AgentRow, RelationshipRow
 from domain import Relationship, RelationshipChange
 
 
 def _clamp(score: int) -> int:
-    return max(MIN_SCORE, min(MAX_SCORE, score))
+    return max(settings.min_score, min(settings.max_score, score))
 
 
 class RelationshipRepository(Repository):
@@ -27,8 +27,8 @@ class RelationshipRepository(Repository):
                 row = RelationshipRow(
                     from_id=change.from_id,
                     to_id=change.to_id,
-                    affection=NEUTRAL_SCORE,
-                    trust=NEUTRAL_SCORE,
+                    affection=settings.neutral_score,
+                    trust=settings.neutral_score,
                     note="",
                 )
                 s.add(row)

@@ -1,4 +1,4 @@
-from config import DEFAULT_MOOD
+from config import settings
 from domain.base import Model
 
 
@@ -7,7 +7,7 @@ class NewAgent(Model):
     name: str
     persona: str
     location_id: int
-    mood: str = DEFAULT_MOOD
+    mood: str = settings.default_mood
 
 
 class Agent(NewAgent):

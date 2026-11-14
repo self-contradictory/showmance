@@ -4,12 +4,12 @@ from pydantic_ai.models import Model
 from ai.base import Director
 from ai.prompts import DIRECTOR_INSTRUCTIONS, PROPOSE_INSTRUCTIONS
 from ai.render import render_director, render_proposal
-from config import LLM_MODEL
+from config import settings
 from domain import DirectorContext, PollFormat, Proposal, Rejected, Twist, TwistPlan
 
 
 class LlmDirector(Director):
-    def __init__(self, model: Model | str | None = LLM_MODEL) -> None:
+    def __init__(self, model: Model | str | None = settings.llm_model) -> None:
         self._proposer = Agent(
             model, instructions=PROPOSE_INSTRUCTIONS, output_type=Proposal
         )

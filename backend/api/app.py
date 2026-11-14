@@ -6,13 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import ROUTERS
 from api.services import build_services
-from config import CORS_ORIGINS, DATABASE_URL
+from config import settings
 from data import connect
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
-    db = await connect(DATABASE_URL)
+    db = await connect(settings.database_url)
     app.state.services = build_services(db)
     yield
     await app.state.services.runners.stop_all()
@@ -23,7 +23,7 @@ def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=CORS_ORIGINS,
+        allow_origins=settings.cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
     )

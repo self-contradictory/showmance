@@ -1,11 +1,11 @@
-from config import MAX_FEELING_CHANGE, MAX_SCORE, MIN_SCORE, NEUTRAL_SCORE
+from config import settings
 from domain import PollFormat, TwistSource
 
 ROLE = "You are a contestant on a reality dating show. Stay in character."
 
 SCALE = (
-    f"Affection and trust go from {MIN_SCORE} to {MAX_SCORE}, "
-    f"{NEUTRAL_SCORE} is neutral. Anyone not listed is neutral to you."
+    f"Affection and trust go from {settings.min_score} to {settings.max_score}, "
+    f"{settings.neutral_score} is neutral. Anyone not listed is neutral to you."
 )
 
 DECIDE_INSTRUCTIONS = f"""{ROLE} {SCALE}
@@ -18,7 +18,7 @@ APPRAISE_INSTRUCTIONS = f"""{ROLE} {SCALE}
 You just saw what happened.
 Write one short memory of it in your own words and say your mood now.
 Say how your feelings changed toward the people involved, with a short note on each.
-Each change is between -{MAX_FEELING_CHANGE} and {MAX_FEELING_CHANGE}."""
+Each change is between -{settings.max_feeling_change} and {settings.max_feeling_change}."""
 
 DIRECTOR_INSTRUCTIONS = """You are the showrunner of a reality dating show.
 AI contestants live in a villa, and the audience drops twists into the story,

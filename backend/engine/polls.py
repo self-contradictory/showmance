@@ -3,7 +3,7 @@ import random
 from typing import get_args
 
 from ai import Director
-from config import POLL_TICKS
+from config import settings
 from data import Store
 from domain import (
     OPTION_COUNTS,
@@ -66,7 +66,7 @@ class Polling:
                 question=proposal.question,
                 options=proposal.options,
                 opened_tick=state.world.tick,
-                closes_tick=state.world.tick + POLL_TICKS,
+                closes_tick=state.world.tick + settings.poll_ticks,
             )
         )
         opened = await self._store.events.add(

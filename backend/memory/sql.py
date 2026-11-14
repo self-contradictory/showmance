@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from config import RECALL_LIMIT
+from config import settings
 from data.db import Repository
 from data.tables import MemoryRow
 from domain import Memory, NewMemory
@@ -13,7 +13,7 @@ class SqlMemoryStore(Repository, MemoryStore):
             s.add(MemoryRow(**memory.model_dump()))
 
     async def recall(
-        self, agent_id: int, situation: str, limit: int = RECALL_LIMIT
+        self, agent_id: int, situation: str, limit: int = settings.recall_limit
     ) -> list[Memory]:
         async with self._session() as s:
             rows = await s.scalars(

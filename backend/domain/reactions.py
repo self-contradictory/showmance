@@ -1,13 +1,17 @@
 from pydantic import Field
 
-from config import MAX_FEELING_CHANGE
+from config import settings
 from domain.base import Model
 
 
 class FeelingChange(Model):
     to_id: int
-    affection_change: int = Field(ge=-MAX_FEELING_CHANGE, le=MAX_FEELING_CHANGE)
-    trust_change: int = Field(ge=-MAX_FEELING_CHANGE, le=MAX_FEELING_CHANGE)
+    affection_change: int = Field(
+        ge=-settings.max_feeling_change, le=settings.max_feeling_change
+    )
+    trust_change: int = Field(
+        ge=-settings.max_feeling_change, le=settings.max_feeling_change
+    )
     note: str
 
 

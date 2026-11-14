@@ -2,7 +2,7 @@ import asyncio
 import logging
 from contextlib import suppress
 
-from config import TICK_INTERVAL
+from config import settings
 from engine.engine import Engine
 
 logger = logging.getLogger(__name__)
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Runner:
     def __init__(
-        self, engine: Engine, world_id: int, interval: float = TICK_INTERVAL
+        self, engine: Engine, world_id: int, interval: float = settings.tick_interval
     ) -> None:
         self._engine = engine
         self._world_id = world_id

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from api.deps import ServicesDep, ViewerDep, WorldDep
 from api.schemas import TwistRequest
-from config import TWIST_PRICE
+from config import settings
 from data import NotFound
 from domain import NewTwist, Twist
 
@@ -19,7 +19,7 @@ async def send_twist(
             text=body.text,
             source="donation",
             viewer_id=viewer.id,
-            price=TWIST_PRICE,
+            price=settings.twist_price,
         )
     )
     if twist is None:

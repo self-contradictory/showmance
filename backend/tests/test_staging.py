@@ -1,4 +1,4 @@
-from config import TWIST_FAILED_REASON
+from config import settings
 from domain import (
     Announce,
     Arrive,
@@ -121,7 +121,7 @@ async def test_director_failure_rejects_the_twist(store, villa, sim):
     await s.engine.step(villa.world.id)
 
     failed = await store.twists.get(twist.id)
-    assert (failed.status, failed.outcome) == ("rejected", TWIST_FAILED_REASON)
+    assert (failed.status, failed.outcome) == ("rejected", settings.twist_failed_reason)
 
 
 async def test_invalid_targets_are_skipped(store, villa, sim):

@@ -1,4 +1,4 @@
-from config import STARTER_COINS, TWIST_MAX_LENGTH, TWIST_PRICE
+from config import settings
 from domain import Hug, Reveal, TwistPlan
 
 VILLA = {
@@ -78,7 +78,7 @@ async def test_twist_waits_for_the_next_tick(villa, sim, client):
     assert sent.status_code == 202
     assert before["status"] == "pending"
     assert (after["status"], after["outcome"]) == ("staged", "Mia finds out")
-    assert balance == STARTER_COINS - TWIST_PRICE
+    assert balance == settings.starter_coins - settings.twist_price
 
 
 async def test_twist_needs_a_viewer_with_enough_coins(store, villa, sim, client):
@@ -102,7 +102,7 @@ async def test_twist_text_must_fit(villa, sim, client):
         empty = await http.post(f"{world}/twists", json={"text": ""}, headers=ann)
         long = await http.post(
             f"{world}/twists",
-            json={"text": "x" * (TWIST_MAX_LENGTH + 1)},
+            json={"text": "x" * (settings.twist_max_length + 1)},
             headers=ann,
         )
         missing = await http.get(f"{world}/twists/999")

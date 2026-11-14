@@ -4,16 +4,17 @@
 
 ```bash
 uv sync
-LLM_MODEL=<provider:model> uv run uvicorn api.app:app --reload
+cp .env.example .env
+uv run uvicorn api.app:app --reload
 ```
 
-Settings come from environment variables (or `uv run --env-file .env ...`):
+`.env` is loaded on startup. Every field in `config.py` can be set there or as an environment variable with the same name in capitals, for example `TICK_INTERVAL=1` for a fast demo.
 
 | Variable | Default |
 |---|---|
-| `LLM_MODEL` | none, any Pydantic AI model string, plus that provider's API key |
+| `LLM_MODEL` | none: any Pydantic AI model string, plus that provider's API key (e.g. `OPENAI_API_KEY`, `GOOGLE_API_KEY`) in `.env` too |
 | `DATABASE_URL` | `sqlite+aiosqlite:///villa.db` |
-| `CORS_ORIGINS` | `http://localhost:3000` (comma separated) |
+| `CORS_ORIGINS` | `["http://localhost:3000"]` (a JSON list) |
 
 ## Start the villa
 

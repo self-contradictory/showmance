@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from config import DIRECTOR_EVENT_LIMIT
+from config import settings
 from data import Store
 from domain import Agent, AgentContext, DirectorContext
 from engine.state import WorldState
@@ -37,6 +37,6 @@ async def director_context(store: Store, state: WorldState) -> DirectorContext:
         agents=state.agents,
         locations=state.locations,
         relationships=state.relationships,
-        events=await store.events.recent(state.world.id, DIRECTOR_EVENT_LIMIT),
+        events=await store.events.recent(state.world.id, settings.director_event_limit),
         poll=await store.polls.current(state.world.id),
     )

@@ -1,6 +1,6 @@
 import random
 
-from config import POLL_TICKS
+from config import settings
 from domain import NewPoll, PollOption, Proposal, Reveal, TwistPlan
 
 
@@ -48,7 +48,7 @@ async def test_yes_no_poll_gets_yes_and_no_labels(store, villa, sim, monkeypatch
     poll = await store.polls.current(villa.world.id)
     assert [option.label for option in poll.options] == ["Yes", "No"]
     assert [option.twist for option in poll.options] == ["Sure happens", "Nah happens"]
-    assert (poll.opened_tick, poll.closes_tick) == (1, 1 + POLL_TICKS)
+    assert (poll.opened_tick, poll.closes_tick) == (1, 1 + settings.poll_ticks)
     assert [(e.kind, e.text) for e in events] == [
         ("poll_opened", "Should Jake confess?")
     ]

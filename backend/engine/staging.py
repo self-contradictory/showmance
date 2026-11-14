@@ -1,7 +1,7 @@
 import logging
 
 from ai import Director
-from config import TWIST_FAILED_REASON, TWISTS_PER_TICK
+from config import settings
 from data import Store
 from domain import NewEvent, Rejected, Twist, TwistPlan
 from engine.context import director_context
@@ -19,7 +19,9 @@ class Staging:
 
     async def run(self, state: WorldState) -> Staged:
         staged = Staged()
-        for twist in await self._store.twists.pending(state.world.id, TWISTS_PER_TICK):
+        for twist in await self._store.twists.pending(
+            state.world.id, settings.twists_per_tick
+        ):
             staged.merge(await self._stage(twist, state))
         return staged
 
@@ -49,4 +51,4 @@ class Staging:
             return await self._director.stage(twist, context)
         except Exception:
             logger.exception("director failed on twist %s", twist.id)
-            return Rejected(reason=TWIST_FAILED_REASON)
+            return Rejected(reason=settings.twist_failed_reason)

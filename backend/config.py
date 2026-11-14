@@ -1,28 +1,37 @@
-import os
+from dotenv import load_dotenv
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
-LLM_MODEL = os.getenv("LLM_MODEL")
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///villa.db")
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+load_dotenv()
 
-DEFAULT_MOOD = "neutral"
 
-MIN_SCORE = 0
-MAX_SCORE = 100
-NEUTRAL_SCORE = 50
-MAX_FEELING_CHANGE = 10
+class Settings(BaseSettings):
+    llm_model: str | None = None
+    database_url: str = "sqlite+aiosqlite:///villa.db"
+    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
-RECALL_LIMIT = 20
+    default_mood: str = "neutral"
 
-TICK_INTERVAL = 5.0
-STREAM_POLL_INTERVAL = 1.0
+    min_score: int = 0
+    max_score: int = 100
+    neutral_score: int = 50
+    max_feeling_change: int = 10
 
-TWIST_MAX_LENGTH = 500
-TWISTS_PER_TICK = 3
-DIRECTOR_EVENT_LIMIT = 30
-TWIST_FAILED_REASON = "The producers couldn't stage this twist."
+    recall_limit: int = 20
 
-VIEWER_NAME_MAX_LENGTH = 40
-STARTER_COINS = 200
-TWIST_PRICE = 50
+    tick_interval: float = 5.0
+    stream_poll_interval: float = 1.0
 
-POLL_TICKS = 24
+    twist_max_length: int = 500
+    twists_per_tick: int = 3
+    director_event_limit: int = 30
+    twist_failed_reason: str = "The producers couldn't stage this twist."
+
+    viewer_name_max_length: int = 40
+    starter_coins: int = 200
+    twist_price: int = 50
+
+    poll_ticks: int = 24
+
+
+settings = Settings()

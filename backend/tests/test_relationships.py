@@ -1,4 +1,4 @@
-from config import MAX_SCORE, NEUTRAL_SCORE
+from config import settings
 from domain import NewAgent, NewLocation, RelationshipChange
 
 
@@ -11,15 +11,15 @@ async def test_relationships_are_directional_and_clamped(store, villa):
         )
     )
     assert (rel.affection, rel.trust, rel.note) == (
-        NEUTRAL_SCORE + 10,
-        NEUTRAL_SCORE - 5,
+        settings.neutral_score + 10,
+        settings.neutral_score - 5,
         "cute",
     )
 
     rel = await store.relationships.adjust(
         RelationshipChange(from_id=v.mia.id, to_id=v.jake.id, affection=999)
     )
-    assert (rel.affection, rel.note) == (MAX_SCORE, "cute")
+    assert (rel.affection, rel.note) == (settings.max_score, "cute")
 
     rels = await store.relationships.get_all(v.world.id)
     assert [(r.from_id, r.to_id) for r in rels] == [(v.mia.id, v.jake.id)]
