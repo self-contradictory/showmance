@@ -1,9 +1,14 @@
 from types import SimpleNamespace
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
+from api.app import create_app
+from api.deps import get_services
+from api.runners import Runners
+from api.services import Services
 from data import Store, connect
 from domain import (
     Action,
@@ -136,5 +141,16 @@ def fake_model():
             return ModelResponse(parts=[ToolCallPart(name, args)])
 
         return FunctionModel(respond), seen
+
+    return build
+
+
+@pytest.fixture
+def client(store):
+    def build(engine):
+        app = create_app()
+        services = Services(store=store, engine=engine, runners=Runners(engine))
+        app.dependency_overrides[get_services] = lambda: services
+        return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
     return build

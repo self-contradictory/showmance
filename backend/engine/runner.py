@@ -1,8 +1,11 @@
 import asyncio
+import logging
 from contextlib import suppress
 
 from config import TICK_INTERVAL
 from engine.engine import Engine
+
+logger = logging.getLogger(__name__)
 
 
 class Runner:
@@ -32,6 +35,9 @@ class Runner:
 
     async def _loop(self) -> None:
         while not self._stop.is_set():
-            await self._engine.step(self._world_id)
+            try:
+                await self._engine.step(self._world_id)
+            except Exception:
+                logger.exception("tick failed for world %s", self._world_id)
             with suppress(TimeoutError):
                 await asyncio.wait_for(self._stop.wait(), self._interval)

@@ -1,4 +1,5 @@
 from data.db import Repository
+from data.errors import NotFound
 from data.tables import WorldRow
 from domain import World
 
@@ -12,7 +13,10 @@ class WorldRepository(Repository):
 
     async def get(self, world_id: int) -> World:
         async with self._session() as s:
-            return World.model_validate(await s.get_one(WorldRow, world_id))
+            row = await s.get(WorldRow, world_id)
+        if row is None:
+            raise NotFound(f"world {world_id}")
+        return World.model_validate(row)
 
     async def advance_tick(self, world_id: int) -> int:
         async with self._session.begin() as s:
