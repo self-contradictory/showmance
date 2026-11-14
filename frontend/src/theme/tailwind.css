@@ -1,0 +1,44 @@
+/*
+  Turns the tokens into Tailwind classes: bg-page, text-muted, border-line,
+  bg-accent/10 and so on. Edit values in tokens.css, not here.
+*/
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+
+  --color-stage: var(--stage);
+  --color-stage-glow: var(--stage-glow);
+  --color-overlay: var(--overlay);
+  --color-on-overlay: var(--on-overlay);
+
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+}
+
+@theme {
+  --animate-fade-in: fade-in 180ms ease-out;
+  --animate-flash: flash 1.2s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes flash {
+    from {
+      background-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
