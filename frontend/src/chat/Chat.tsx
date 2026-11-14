@@ -2,36 +2,21 @@ import { PanelRightClose } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Vote as VoteData } from "@/show/types";
 import { IconButton } from "@/ui/IconButton";
+import { ChatInput } from "./ChatInput";
 import { Comments } from "./Comments";
 import type { ChatComment } from "./comments/types";
-import { Composer } from "./Composer";
 import { Vote } from "./Vote";
 
 type Props = {
   comments: ChatComment[];
   vote: VoteData | null;
   myVote: string | null;
-  twistIdeas: string[];
-  twistPrice: number;
-  balance: number;
   onSend: (text: string) => void;
   onVote: (optionId: string) => void;
-  onDropTwist: (text: string) => void;
   onHide: () => void;
 };
 
-export function Chat({
-  comments,
-  vote,
-  myVote,
-  twistIdeas,
-  twistPrice,
-  balance,
-  onSend,
-  onVote,
-  onDropTwist,
-  onHide,
-}: Props) {
+export function Chat({ comments, vote, myVote, onSend, onVote, onHide }: Props) {
   return (
     <aside
       aria-label="Chat"
@@ -58,13 +43,9 @@ export function Chat({
         )}
       </AnimatePresence>
       <Comments comments={comments} />
-      <Composer
-        twistIdeas={twistIdeas}
-        twistPrice={twistPrice}
-        balance={balance}
-        onSend={onSend}
-        onDropTwist={onDropTwist}
-      />
+      <div className="shrink-0 pt-3">
+        <ChatInput onSend={onSend} />
+      </div>
     </aside>
   );
 }

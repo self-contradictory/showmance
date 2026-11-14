@@ -57,49 +57,6 @@ const SCENES: Scene[] = [
   },
 ];
 
-const IDEA_SCENES: Record<string, Scene> = {
-  "Tell Mia about the kiss": {
-    now: "Mia just got a text about the kiss",
-    lines: [
-      ["Mia", "I got a text!"],
-      ["Mia", "It says Jake kissed Sara."],
-      ["Jake", "Mia, I can explain."],
-      ["Mia", "You kissed her?"],
-      ["Sara", "It was one time."],
-      ["Mia", "Unbelievable."],
-    ],
-  },
-  "Send Jake a tempter": {
-    now: "A new arrival is here to test Jake",
-    lines: [
-      ["Nina", "Someone new just walked in."],
-      ["Jake", "Hi. I'm Jake."],
-      ["Mia", "Of course he's smiling."],
-      ["Jake", "I'm just being polite!"],
-    ],
-  },
-  "Date night for Chris and Sara": {
-    now: "Chris and Sara are going on a date",
-    lines: [
-      ["Chris", "I got a text! Sara, it's you and me tonight."],
-      ["Sara", "Wait, really?"],
-      ["Chris", "I've been hoping for this all week."],
-      ["Sara", "Okay. I'm in."],
-    ],
-  },
-  "Leak Leo's plan": {
-    now: "The whole house just found out about Leo's plan",
-    lines: [
-      ["Nina", "Everyone, read this."],
-      ["Chris", "You were going to vote me out?"],
-      ["Leo", "That's out of context."],
-      ["Chris", "Those are your exact words, Leo."],
-      ["Leo", "It's a game, Chris."],
-    ],
-  },
-};
-
-const TWIST_IDEAS = Object.keys(IDEA_SCENES);
 const TWIST_PRICE = 50;
 const STARTING_COINS = 300;
 
@@ -134,11 +91,11 @@ function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)]!;
 }
 
-function customTwistScene(): Scene {
+function twistScene(twist: string): Scene {
   const first = pick(CAST);
   const second = pick(CAST.filter((member) => member !== first));
   return {
-    now: "A viewer's twist just hit the villa",
+    now: `Twist: ${twist}`,
     lines: [
       [first.name, "Wait. Did everyone just see that?"],
       [second.name, "Nobody saw that coming."],
@@ -157,7 +114,6 @@ export function createMockFeed(): Feed {
     caption: null,
     comments: [],
     vote: null,
-    twistIdeas: TWIST_IDEAS,
     twistPrice: TWIST_PRICE,
     balance: STARTING_COINS,
   };
@@ -299,7 +255,7 @@ export function createMockFeed(): Feed {
       if (!twist || state.balance < TWIST_PRICE) return;
       emit({ type: "balance", balance: state.balance - TWIST_PRICE });
       emit({ type: "comment", comment: { kind: "twist", id: nextId("comment"), at: Date.now(), author, twist } });
-      playScene(IDEA_SCENES[twist] ?? customTwistScene());
+      playScene(twistScene(twist));
     },
   };
 }

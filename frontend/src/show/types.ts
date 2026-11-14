@@ -25,7 +25,6 @@ export type Show = {
   caption: Caption | null;
   comments: ChatComment[];
   vote: Vote | null;
-  twistIdeas: string[];
   twistPrice: number;
   balance: number;
 };
