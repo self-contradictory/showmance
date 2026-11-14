@@ -3,7 +3,7 @@ import type { ChatComment } from "@/chat/comments/types";
 export const MAX_MESSAGE_LENGTH = 300;
 export const MAX_TWIST_LENGTH = 140;
 
-export type CastMember = { id: string; name: string; role: string };
+export type CastMember = { id: string; name: string; role: string; portrait?: string };
 
 export type Caption = { id: string; speaker: string; text: string };
 
@@ -17,9 +17,11 @@ export type Vote = {
 };
 
 export type Show = {
+  slug: string;
   title: string;
   day: number;
   now: string;
+  cover?: string;
   cast: CastMember[];
   viewers: number;
   caption: Caption | null;

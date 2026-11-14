@@ -13,8 +13,8 @@ function loadGuestName(): string {
   return fresh;
 }
 
-export function useShow() {
-  const [feed] = useState(createMockFeed);
+export function useShow(slug: string) {
+  const [feed] = useState(() => createMockFeed(slug));
   const [me] = useState(loadGuestName);
   const [show, dispatch] = useReducer(reduceShow, feed, (f) => f.snapshot());
   const [ballot, setBallot] = useState<{ voteId: string; optionId: string } | null>(null);

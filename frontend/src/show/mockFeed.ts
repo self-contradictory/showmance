@@ -1,86 +1,9 @@
+import { FAKE_VIEWERS, findShow, type Scene, type ShowScript } from "./mockShows";
 import { reduceShow } from "./reduce";
-import {
-  MAX_MESSAGE_LENGTH,
-  MAX_TWIST_LENGTH,
-  type CastMember,
-  type Feed,
-  type FeedEvent,
-  type Show,
-} from "./types";
-
-const CAST: CastMember[] = [
-  { id: "mia", name: "Mia", role: "The planner" },
-  { id: "jake", name: "Jake", role: "The charmer" },
-  { id: "sara", name: "Sara", role: "The wildcard" },
-  { id: "chris", name: "Chris", role: "The newcomer" },
-  { id: "leo", name: "Leo", role: "The strategist" },
-  { id: "nina", name: "Nina", role: "The queen bee" },
-];
-
-type Scene = { now: string; lines: [speaker: string, text: string][] };
-
-const SCENES: Scene[] = [
-  {
-    now: "Mia and Jake are talking by the pool",
-    lines: [
-      ["Mia", "Do you ever think about what happens after this?"],
-      ["Jake", "All the time. With you."],
-      ["Mia", "That's a very good answer."],
-      ["Jake", "I've been practicing."],
-    ],
-  },
-  {
-    now: "Leo and Nina are making plans in the kitchen",
-    lines: [
-      ["Leo", "If Chris stays another week, we're in trouble."],
-      ["Nina", "Then we make sure he doesn't."],
-      ["Leo", "Quietly."],
-      ["Nina", "I'm always quiet."],
-    ],
-  },
-  {
-    now: "Chris is working up the nerve to talk to Sara",
-    lines: [
-      ["Chris", "Sara, got a second?"],
-      ["Sara", "For you? Maybe two."],
-      ["Chris", "I wanted to ask you something."],
-      ["Sara", "Then ask."],
-    ],
-  },
-  {
-    now: "Sara can't stop thinking about the kiss",
-    lines: [
-      ["Sara", "I shouldn't have done that."],
-      ["Sara", "Jake is with Mia. Everyone knows that."],
-      ["Sara", "But I'd do it again."],
-    ],
-  },
-];
+import { MAX_MESSAGE_LENGTH, MAX_TWIST_LENGTH, type Feed, type FeedEvent, type Show } from "./types";
 
 const TWIST_PRICE = 50;
 const STARTING_COINS = 300;
-
-const FAKE_VIEWERS = ["jess_k", "mike88", "tina", "sam_r", "dee", "carlos.v", "priya", "ben_t"];
-const FAKE_MESSAGES = [
-  "he's done lol",
-  "NINA PLANNED THIS",
-  "Chris deserves better",
-  "leo is so shady",
-  "mia is too good for him",
-  "sara really is the wildcard",
-  "this villa is chaos",
-  "jake has no idea what's coming",
-  "someone send the tempter",
-  "I need a date like that",
-  "the pool scene was everything",
-  "who else is voting Chris",
-];
-
-const VOTES: { question: string; options: string[] }[] = [
-  { question: "Who should Sara take on a date?", options: ["Chris", "Leo"] },
-  { question: "Should Mia forgive Jake?", options: ["Forgive him", "Walk away"] },
-  { question: "Who goes to the confession room?", options: ["Nina", "Leo", "Jake"] },
-];
 
 const LINE_MS = 3600;
 const GAP_MS = 700;
@@ -91,9 +14,9 @@ function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)]!;
 }
 
-function twistScene(twist: string): Scene {
-  const first = pick(CAST);
-  const second = pick(CAST.filter((member) => member !== first));
+function twistScene(script: ShowScript, twist: string): Scene {
+  const first = pick(script.cast);
+  const second = pick(script.cast.filter((member) => member !== first));
   return {
     now: `Twist: ${twist}`,
     lines: [
@@ -104,13 +27,19 @@ function twistScene(twist: string): Scene {
   };
 }
 
-export function createMockFeed(): Feed {
+export function createMockFeed(slug: string): Feed {
+  const found = findShow(slug);
+  if (!found) throw new Error(`Unknown show: ${slug}`);
+  const script: ShowScript = found;
+
   let state: Show = {
-    title: "The Villa",
-    day: 3,
-    now: SCENES[0]!.now,
-    cast: CAST,
-    viewers: 412,
+    slug: script.slug,
+    title: script.title,
+    day: script.day,
+    now: script.scenes[0]!.now,
+    cover: script.cover,
+    cast: script.cast,
+    viewers: script.viewers,
     caption: null,
     comments: [],
     vote: null,
@@ -145,7 +74,7 @@ export function createMockFeed(): Feed {
   }
 
   function playNextLine() {
-    if (queue.length === 0) playScene(SCENES[sceneIndex++ % SCENES.length]!);
+    if (queue.length === 0) playScene(script.scenes[sceneIndex++ % script.scenes.length]!);
     const [speaker, text] = queue.shift()!;
     emit({ type: "caption", caption: { id: nextId("line"), speaker, text } });
     later(LINE_MS, () => {
@@ -156,7 +85,7 @@ export function createMockFeed(): Feed {
 
   function driftViewers() {
     const change = Math.round((Math.random() - 0.4) * 8);
-    emit({ type: "viewers", count: Math.max(300, state.viewers + change) });
+    emit({ type: "viewers", count: Math.max(20, state.viewers + change) });
     later(5000, driftViewers);
   }
 
@@ -165,14 +94,14 @@ export function createMockFeed(): Feed {
   }
 
   function fakeChatter() {
-    postMessage(pick(FAKE_VIEWERS), pick(FAKE_MESSAGES));
+    postMessage(pick(FAKE_VIEWERS), pick(script.chatter));
     later(1200 + Math.random() * 2800, fakeChatter);
   }
 
   let voteIndex = 0;
 
   function openVote() {
-    const plan = VOTES[voteIndex++ % VOTES.length]!;
+    const plan = script.votes[voteIndex++ % script.votes.length]!;
     emit({
       type: "vote",
       vote: {
@@ -222,7 +151,7 @@ export function createMockFeed(): Feed {
   }
 
   function start() {
-    later(800, playNextLine);
+    later(300, playNextLine);
     later(5000, driftViewers);
     later(600, fakeChatter);
     later(1500, openVote);
@@ -255,7 +184,7 @@ export function createMockFeed(): Feed {
       if (!twist || state.balance < TWIST_PRICE) return;
       emit({ type: "balance", balance: state.balance - TWIST_PRICE });
       emit({ type: "comment", comment: { kind: "twist", id: nextId("comment"), at: Date.now(), author, twist } });
-      playScene(twistScene(twist));
+      playScene(twistScene(script, twist));
     },
   };
 }

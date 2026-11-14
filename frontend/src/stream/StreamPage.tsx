@@ -1,24 +1,28 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chat } from "@/chat/Chat";
 import { useFullscreen } from "@/lib/useFullscreen";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { readStored, writeStored } from "@/lib/storage";
 import { useShow } from "@/show/useShow";
-import { ThemeToggle } from "@/theme/ThemeToggle";
+import { Header } from "@/ui/Header";
 import { ShowInfo } from "./ShowInfo";
 import { Stage } from "./Stage";
-import { VillaPlaceholder } from "./VillaPlaceholder";
+import { ShowArt } from "./ShowArt";
 
 const CHAT_KEY = "showmance:chat";
 
-export function StreamPage() {
-  const { show, myVote, send, vote, dropTwist } = useShow();
+export function StreamPage({ slug }: { slug: string }) {
+  const { show, myVote, send, vote, dropTwist } = useShow(slug);
   const streamRef = useRef<HTMLDivElement>(null);
   const fullscreen = useFullscreen(streamRef);
   const isDesktop = useMediaQuery("(min-width: 64rem)");
   const [chatOpen, setChatOpen] = useState(() => readStored(CHAT_KEY) !== "hidden");
   const chatShown = chatOpen || !isDesktop;
   const fs = fullscreen.isFullscreen;
+
+  useEffect(() => {
+    document.title = `${show.title} | Showmance`;
+  }, [show.title]);
 
   function setChat(open: boolean) {
     setChatOpen(open);
@@ -29,10 +33,7 @@ export function StreamPage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <header className="flex h-14 shrink-0 items-center justify-between px-4 lg:px-6">
-        <span className="font-serif text-2xl leading-none italic">showmance</span>
-        <ThemeToggle />
-      </header>
+      <Header />
 
       <div
         ref={streamRef}
@@ -47,7 +48,7 @@ export function StreamPage() {
             onToggleFullscreen={fullscreen.toggle}
             onShowChat={chatShown ? undefined : () => setChat(true)}
           >
-            <VillaPlaceholder />
+            <ShowArt title={show.title} cover={show.cover} />
           </Stage>
           {!fs && <ShowInfo title={show.title} day={show.day} now={show.now} cast={show.cast} />}
         </main>

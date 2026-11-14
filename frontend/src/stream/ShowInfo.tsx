@@ -16,12 +16,16 @@ export function ShowInfo({ title, day, now, cast }: Props) {
       <ul className="flex shrink-0 gap-3 max-lg:hidden" aria-label="Cast">
         {cast.map((member) => (
           <li key={member.id} className="flex flex-col items-center gap-1">
-            <span
-              className="grid size-9 place-items-center rounded-full bg-surface text-sm font-semibold"
-              aria-hidden
-            >
-              {member.name[0]}
-            </span>
+            {member.portrait ? (
+              <img src={member.portrait} alt="" className="size-9 rounded-full object-cover" />
+            ) : (
+              <span
+                className="grid size-9 place-items-center rounded-full bg-surface text-sm font-semibold"
+                aria-hidden
+              >
+                {member.name[0]}
+              </span>
+            )}
             <span className="text-xs text-muted">{member.name}</span>
           </li>
         ))}
