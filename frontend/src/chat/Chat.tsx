@@ -1,5 +1,7 @@
+import { PanelRightClose } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Vote as VoteData } from "@/show/types";
+import { IconButton } from "@/ui/IconButton";
 import { Comments } from "./Comments";
 import type { ChatComment } from "./comments/types";
 import { Composer } from "./Composer";
@@ -15,6 +17,7 @@ type Props = {
   onSend: (text: string) => void;
   onVote: (optionId: string) => void;
   onDropTwist: (text: string) => void;
+  onHide: () => void;
 };
 
 export function Chat({
@@ -27,13 +30,19 @@ export function Chat({
   onSend,
   onVote,
   onDropTwist,
+  onHide,
 }: Props) {
   return (
     <aside
       aria-label="Chat"
       className="flex min-h-0 flex-col max-lg:flex-1 max-lg:px-4 max-lg:pb-3 lg:w-[340px] lg:shrink-0"
     >
-      <h2 className="pb-3 text-sm font-semibold max-lg:hidden">Chat</h2>
+      <div className="flex items-center justify-between pb-2 max-lg:hidden">
+        <h2 className="text-sm font-semibold">Chat</h2>
+        <IconButton label="Hide chat" onClick={onHide} className="-mr-2">
+          <PanelRightClose size={18} />
+        </IconButton>
+      </div>
       <AnimatePresence initial={false}>
         {vote && (
           <motion.div

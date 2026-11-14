@@ -10,6 +10,7 @@
   --color-stage: var(--stage);
   --color-stage-glow: var(--stage-glow);
   --color-overlay: var(--overlay);
+  --color-overlay-strong: var(--overlay-strong);
   --color-on-overlay: var(--on-overlay);
 
   --font-sans: var(--font-body);

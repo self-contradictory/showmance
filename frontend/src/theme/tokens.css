@@ -13,6 +13,7 @@
   --stage: #000000;
   --stage-glow: #2d0513;
   --overlay: rgb(0 0 0 / 0.6);
+  --overlay-strong: rgb(0 0 0 / 0.8);
   --on-overlay: #ffffff;
 
   --font-body: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;

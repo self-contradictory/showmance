@@ -1,17 +1,19 @@
-import { Maximize, Minimize } from "lucide-react";
+import { Maximize, Minimize, PanelRightOpen } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Caption } from "@/show/types";
+import { StageButton } from "./StageButton";
 
 type Props = {
   viewers: number;
   caption: Caption | null;
+  onShowChat?: () => void;
   children: ReactNode;
 };
 
 const canFullscreen = typeof document !== "undefined" && document.fullscreenEnabled;
 
-export function Stage({ viewers, caption, children }: Props) {
+export function Stage({ viewers, caption, onShowChat, children }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -54,16 +56,23 @@ export function Stage({ viewers, caption, children }: Props) {
         )}
       </AnimatePresence>
 
-      {canFullscreen && (
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          className="absolute right-3 bottom-3 grid size-9 place-items-center rounded-lg bg-overlay transition-opacity group-hover:opacity-100 focus-visible:opacity-100 lg:opacity-0"
-        >
-          {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-        </button>
-      )}
+      <div onDoubleClick={(event) => event.stopPropagation()}>
+        {onShowChat && !isFullscreen && (
+          <div className="absolute top-3 right-3">
+            <StageButton label="Show chat" onClick={onShowChat}>
+              <PanelRightOpen size={18} />
+            </StageButton>
+          </div>
+        )}
+
+        {canFullscreen && (
+          <div className="absolute right-3 bottom-3 transition-opacity group-hover:opacity-100 focus-within:opacity-100 lg:opacity-0">
+            <StageButton label={isFullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={toggleFullscreen}>
+              {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+            </StageButton>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
