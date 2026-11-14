@@ -15,10 +15,11 @@ type Props = {
   onSend: (text: string) => void;
   onVote: (optionId: string) => void;
   onDropTwist: (text: string) => void;
+  onGetCoins?: () => void;
   onHide: () => void;
 };
 
-export function Chat({ comments, vote, myVote, canTwist, onSend, onVote, onDropTwist, onHide }: Props) {
+export function Chat({ comments, vote, myVote, canTwist, onSend, onVote, onDropTwist, onGetCoins, onHide }: Props) {
   return (
     <aside
       aria-label="Chat"
@@ -46,7 +47,7 @@ export function Chat({ comments, vote, myVote, canTwist, onSend, onVote, onDropT
       </AnimatePresence>
       <Comments comments={comments} />
       <div className="shrink-0 pt-3">
-        <ChatInput canTwist={canTwist} onSend={onSend} onDropTwist={onDropTwist} />
+        <ChatInput canTwist={canTwist} onSend={onSend} onDropTwist={onDropTwist} onGetCoins={onGetCoins} />
       </div>
     </aside>
   );

@@ -1,6 +1,8 @@
 import { API_URL } from "./config";
 import type {
   ChatMessage,
+  Checkout,
+  CoinShop,
   PollView,
   Twist,
   Viewer,
@@ -53,4 +55,9 @@ export const api = {
   sendChat: (worldId: number, text: string, token: string) =>
     request<ChatMessage>(`/worlds/${worldId}/chat`, { method: "POST", body: { text }, token }),
   audioUrl: (worldId: number, eventId: number) => `${API_URL}/worlds/${worldId}/events/${eventId}/audio`,
+  packs: () => request<CoinShop>("/packs"),
+  startPurchase: (packId: string, token: string) =>
+    request<Checkout>("/purchases", { method: "POST", body: { pack_id: packId }, token }),
+  confirmPurchase: (purchaseId: string, token: string) =>
+    request<Viewer>(`/purchases/${purchaseId}/confirm`, { method: "POST", token }),
 };

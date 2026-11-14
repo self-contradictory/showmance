@@ -1,4 +1,4 @@
-import { Sparkles, X } from "lucide-react";
+import { Coins, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { MAX_MESSAGE_LENGTH, MAX_TWIST_LENGTH } from "@/show/types";
@@ -9,12 +9,13 @@ type Props = {
   canTwist: boolean;
   onSend: (text: string) => void;
   onDropTwist: (text: string) => void;
+  onGetCoins?: () => void;
 };
 
 const actionButton =
-  "flex h-10 w-[5.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full bg-accent text-sm font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-50";
+  "flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full bg-accent text-sm font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-50";
 
-export function ChatInput({ canTwist, onSend, onDropTwist }: Props) {
+export function ChatInput({ canTwist, onSend, onDropTwist, onGetCoins }: Props) {
   const [mode, setMode] = useState<Mode>("chat");
   const [drafts, setDrafts] = useState<Record<Mode, string>>({ chat: "", twist: "" });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,13 +83,18 @@ export function ChatInput({ canTwist, onSend, onDropTwist }: Props) {
         </AnimatePresence>
       </div>
 
-      {twisting ? (
-        <button key="drop" type="submit" disabled={!message || !canTwist} className={actionButton}>
+      {twisting && !canTwist && onGetCoins ? (
+        <button key="coins" type="button" onClick={onGetCoins} className={`${actionButton} px-4`}>
+          <Coins size={16} />
+          Get coins
+        </button>
+      ) : twisting ? (
+        <button key="drop" type="submit" disabled={!message || !canTwist} className={`${actionButton} w-[5.5rem]`}>
           <Sparkles size={16} />
           Drop
         </button>
       ) : (
-        <button key="twist" type="button" onClick={() => switchTo("twist")} className={actionButton}>
+        <button key="twist" type="button" onClick={() => switchTo("twist")} className={`${actionButton} w-[5.5rem]`}>
           <Sparkles size={16} />
           Twist
         </button>

@@ -8,6 +8,7 @@ import { useShow } from "@/show/useShow";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { Header } from "@/ui/Header";
 import { ShowArt } from "@/ui/ShowArt";
+import { useOpenWallet } from "@/wallet/Wallet";
 import { ShowInfo } from "./ShowInfo";
 import { Stage } from "./Stage";
 
@@ -20,6 +21,7 @@ export function StreamPage({ slug }: { slug: string }) {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(() => readStored(MUTED_KEY) === "muted");
   const { show, notFound, myVote, send, vote, dropTwist } = useShow(slug, { sound: !muted && !paused });
+  const openWallet = useOpenWallet();
   const streamRef = useRef<HTMLDivElement>(null);
   const fullscreen = useFullscreen(streamRef);
   const isDesktop = useMediaQuery("(min-width: 64rem)");
@@ -87,6 +89,7 @@ export function StreamPage({ slug }: { slug: string }) {
             onSend={send}
             onVote={vote}
             onDropTwist={dropTwist}
+            onGetCoins={openWallet ?? undefined}
             onHide={() => setChat(false)}
           />
         </div>

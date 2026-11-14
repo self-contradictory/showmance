@@ -67,3 +67,9 @@ export type Twist = {
   status: "pending" | "staged" | "rejected";
   outcome: string | null;
 };
+
+export type CoinPack = { id: string; coins: number; price_cents: number };
+
+export type CoinShop = { currency: string; packs: CoinPack[] };
+
+export type Checkout = { id: string; client_secret: string };
