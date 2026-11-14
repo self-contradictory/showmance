@@ -5,7 +5,7 @@
 ```bash
 uv sync
 cp .env.example .env
-uv run uvicorn api.app:app --reload
+uv run main.py
 ```
 
 `.env` is loaded on startup. Every field in `config.py` can be set there or as an environment variable with the same name in capitals, for example `TICK_INTERVAL=1` for a fast demo.
@@ -16,6 +16,8 @@ uv run uvicorn api.app:app --reload
 | `CAST` | `agents`: who plays the contestants, see below |
 | `DATABASE_URL` | `sqlite+aiosqlite:///villa.db` |
 | `CORS_ORIGINS` | `["http://localhost:3000"]` (a JSON list) |
+| `HOST` | `127.0.0.1` |
+| `PORT` | `8000` |
 
 ## Who plays the contestants
 

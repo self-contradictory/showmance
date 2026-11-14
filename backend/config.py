@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     cast: CastKind = "agents"
     database_url: str = "sqlite+aiosqlite:///villa.db"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    host: str = "127.0.0.1"
+    port: int = 8000
 
     default_mood: str = "neutral"
 
