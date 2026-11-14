@@ -1,9 +1,12 @@
+import type { Figures } from "@/show/types";
+
 export type World = {
   id: number;
   name: string;
   setting: string;
   thumbnail_url: string | null;
   home: string | null;
+  figures: Figures | null;
   tick: number;
   day: number;
 };

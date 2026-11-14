@@ -1,4 +1,4 @@
-import type { CastMember, Location, Sky } from "./types";
+import type { CastMember, Figures, Location, Sky } from "./types";
 
 export type Scene = { now: string; location: string; lines: [speaker: string, text: string][] };
 
@@ -10,6 +10,7 @@ export type ShowScript = {
   cover?: string;
   sky: Sky;
   home?: string;
+  figures?: Figures;
   locations: Location[];
   cast: CastMember[];
   scenes: Scene[];
@@ -165,6 +166,7 @@ export const SHOWS: ShowScript[] = [
     viewers: 183,
     sky: "day",
     home: "classic",
+    figures: "toy",
     locations: [{ id: "beach", name: "Beach" }, { id: "bar", name: "Bar" }, { id: "pool", name: "Pool" }],
     cast: [
       { id: "nora", name: "Nora", role: "The planner", gender: "female", locationId: "beach" },
@@ -227,6 +229,7 @@ export const SHOWS: ShowScript[] = [
     viewers: 97,
     sky: "night",
     home: "cottage",
+    figures: "toy",
     locations: [{ id: "deck", name: "Deck" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
       { id: "grace", name: "Grace", role: "The one who left", gender: "female", locationId: "kitchen" },

@@ -9,6 +9,7 @@ class NewWorld(Model):
     setting: str
     thumbnail_url: str | None = None
     home: str | None = None
+    figures: str | None = None
 
 
 class World(NewWorld):

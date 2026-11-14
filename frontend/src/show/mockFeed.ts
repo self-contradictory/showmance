@@ -43,6 +43,7 @@ export function createMockFeed(slug: string): Feed {
     cover: script.cover,
     sky: script.sky,
     home: script.home,
+    figures: script.figures,
     locations: script.locations,
     cast: script.cast,
     viewers: script.viewers,

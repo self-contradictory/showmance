@@ -16,6 +16,7 @@ class WorldRow(Base):
     setting: Mapped[str]
     thumbnail_url: Mapped[str | None]
     home: Mapped[str | None]
+    figures: Mapped[str | None]
     tick: Mapped[int]
 
 

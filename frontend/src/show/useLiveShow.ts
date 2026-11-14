@@ -267,6 +267,7 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
     cover: data?.world.thumbnail_url ?? undefined,
     sky: skyFor(data?.world.setting ?? ""),
     home: data?.world.home ?? undefined,
+    figures: data?.world.figures ?? undefined,
     locations: data ? locationsFor(data.locations) : [],
     cast: data ? castFor(data.agents, live.moved) : [],
     viewers: live.viewers ?? data?.viewers,

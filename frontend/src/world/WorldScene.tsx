@@ -9,6 +9,7 @@ import { ModelWorld } from "./ModelWorld";
 import { SKIES } from "./palette";
 import { Person } from "./Person";
 import { Room } from "./Room";
+import { figureFor } from "./figures";
 import { findSet, modelLayout } from "./sets";
 
 type Props = { show: Show; paused: boolean };
@@ -101,6 +102,7 @@ export default function WorldScene({ show, paused }: Props) {
                 id={member.id}
                 index={index}
                 gender={member.gender}
+                figure={show.figures === "toy" ? undefined : figureFor(member.gender, index)}
                 spot={spot}
                 rest={rests.get(member.id) ?? 0}
                 route={layout.route}

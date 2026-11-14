@@ -28,6 +28,7 @@ async def create_world(spec: WorldSpec, services: ServicesDep) -> World:
             setting=spec.setting,
             thumbnail_url=spec.thumbnail_url,
             home=spec.home,
+            figures=spec.figures,
         )
     )
     location_ids = {}

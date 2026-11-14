@@ -7,6 +7,9 @@ export type Location = { id: string; name: string };
 
 export type Sky = "day" | "sunset" | "night" | "snow";
 
+/** How people are drawn: rigged realistic characters (the default) or the toy figures. */
+export type Figures = "toy" | "realistic";
+
 export type Gender = "female" | "male";
 
 export type CastMember = {
@@ -58,6 +61,7 @@ export type Show = {
   cover?: string;
   sky: Sky;
   home?: string;
+  figures?: Figures;
   locations: Location[];
   cast: CastMember[];
   viewers?: number;
