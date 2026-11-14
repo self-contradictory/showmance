@@ -38,5 +38,6 @@ export function useShow() {
       setBallot({ voteId: openVote.id, optionId });
       feed.vote(openVote.id, optionId);
     },
+    buyTwist: (twistId: string) => feed.buyTwist(me, twistId),
   };
 }

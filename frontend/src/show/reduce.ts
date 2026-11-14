@@ -15,5 +15,7 @@ export function reduceShow(show: Show, event: FeedEvent): Show {
       return { ...show, comments: [...show.comments, event.comment].slice(-MAX_COMMENTS) };
     case "vote":
       return { ...show, vote: event.vote };
+    case "balance":
+      return { ...show, balance: event.balance };
   }
 }

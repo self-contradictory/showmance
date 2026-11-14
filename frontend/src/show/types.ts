@@ -18,6 +18,9 @@ export type Vote = {
   endsAt: number;
 };
 
+/** A paid event a viewer can drop into the story. Price is in coins. */
+export type Twist = { id: string; label: string; price: number };
+
 /** Everything the stream page shows. */
 export type Show = {
   title: string;
@@ -29,6 +32,9 @@ export type Show = {
   caption: Caption | null;
   comments: ChatComment[];
   vote: Vote | null;
+  twists: Twist[];
+  /** This viewer's coins. The server sends it to each viewer separately. */
+  balance: number;
 };
 
 /** What the server pushes. Page state is these events folded together. */
@@ -37,7 +43,8 @@ export type FeedEvent =
   | { type: "now"; text: string }
   | { type: "viewers"; count: number }
   | { type: "comment"; comment: ChatComment }
-  | { type: "vote"; vote: Vote | null };
+  | { type: "vote"; vote: Vote | null }
+  | { type: "balance"; balance: number };
 
 /** A live connection to one show. Mocked for now, a WebSocket later. */
 export type Feed = {
@@ -45,4 +52,5 @@ export type Feed = {
   subscribe(listener: (event: FeedEvent) => void): () => void;
   send(author: string, text: string): void;
   vote(voteId: string, optionId: string): void;
+  buyTwist(author: string, twistId: string): void;
 };

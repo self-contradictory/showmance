@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { MessageRow } from "./MessageRow";
+import { TwistRow } from "./TwistRow";
 import type { ChatComment, CommentKind, CommentOf } from "./types";
 import { VoteResultRow } from "./VoteResultRow";
 
@@ -9,6 +10,7 @@ import { VoteResultRow } from "./VoteResultRow";
 //   3. register it below (the build fails until you do)
 const rows: { [K in CommentKind]: FC<{ comment: CommentOf<K> }> } = {
   message: MessageRow,
+  twist: TwistRow,
   vote_result: VoteResultRow,
 };
 

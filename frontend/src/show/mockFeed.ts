@@ -1,5 +1,12 @@
 import { reduceShow } from "./reduce";
-import { MAX_MESSAGE_LENGTH, type CastMember, type Feed, type FeedEvent, type Show } from "./types";
+import {
+  MAX_MESSAGE_LENGTH,
+  type CastMember,
+  type Feed,
+  type FeedEvent,
+  type Show,
+  type Twist,
+} from "./types";
 
 // Stands in for the backend so the page can be built without a server.
 // It plays scripted scenes through the same Feed interface a WebSocket
@@ -54,6 +61,67 @@ const SCENES: Scene[] = [
   },
 ];
 
+const TWISTS: Twist[] = [
+  { id: "tell-mia", label: "Tell Mia about the kiss", price: 50 },
+  { id: "tempter", label: "Send a tempter to test Jake", price: 80 },
+  { id: "date", label: "Set up a date for Chris and Sara", price: 60 },
+  { id: "leak", label: "Leak Leo's plan to the house", price: 70 },
+  { id: "confession", label: "Call Nina to the confession room", price: 40 },
+];
+
+// How the villa reacts to each twist. The backend's writer AI replaces these.
+const TWIST_SCENES: Record<string, Scene> = {
+  "tell-mia": {
+    now: "Mia just got a text about the kiss",
+    lines: [
+      ["Mia", "I got a text!"],
+      ["Mia", "It says Jake kissed Sara."],
+      ["Jake", "Mia, I can explain."],
+      ["Mia", "You kissed her?"],
+      ["Sara", "It was one time."],
+      ["Mia", "Unbelievable."],
+    ],
+  },
+  tempter: {
+    now: "A new arrival is here to test Jake",
+    lines: [
+      ["Nina", "Someone new just walked in."],
+      ["Jake", "Hi. I'm Jake."],
+      ["Mia", "Of course he's smiling."],
+      ["Jake", "I'm just being polite!"],
+    ],
+  },
+  date: {
+    now: "Chris and Sara are going on a date",
+    lines: [
+      ["Chris", "I got a text! Sara, it's you and me tonight."],
+      ["Sara", "Wait, really?"],
+      ["Chris", "I've been hoping for this all week."],
+      ["Sara", "Okay. I'm in."],
+    ],
+  },
+  leak: {
+    now: "The whole house just found out about Leo's plan",
+    lines: [
+      ["Nina", "Everyone, read this."],
+      ["Chris", "You were going to vote me out?"],
+      ["Leo", "That's out of context."],
+      ["Chris", "Those are your exact words, Leo."],
+      ["Leo", "It's a game, Chris."],
+    ],
+  },
+  confession: {
+    now: "Nina is in the confession room",
+    lines: [
+      ["Nina", "Fine. I'll say it."],
+      ["Nina", "I told Leo to go after Chris."],
+      ["Nina", "And I'd do it again."],
+    ],
+  },
+};
+
+const STARTING_COINS = 300;
+
 // Dev only: fake viewers so the chat has traffic while there is no backend.
 // The real feed carries real viewers only.
 const FAKE_VIEWERS = ["jess_k", "mike88", "tina", "sam_r", "dee", "carlos.v", "priya", "ben_t"];
@@ -97,6 +165,8 @@ export function createMockFeed(): Feed {
     caption: null,
     comments: [],
     vote: null,
+    twists: TWISTS,
+    balance: STARTING_COINS,
   };
 
   const listeners = new Set<(event: FeedEvent) => void>();
@@ -234,6 +304,18 @@ export function createMockFeed(): Feed {
     },
     vote(voteId, optionId) {
       addVotes(voteId, optionId, 1);
+    },
+    buyTwist(author, twistId) {
+      const twist = TWISTS.find((t) => t.id === twistId);
+      const scene = TWIST_SCENES[twistId];
+      if (!twist || !scene || state.balance < twist.price) return;
+      emit({ type: "balance", balance: state.balance - twist.price });
+      emit({
+        type: "comment",
+        comment: { kind: "twist", id: nextId("comment"), at: Date.now(), author, twist: twist.label },
+      });
+      // The reaction starts right after the line on screen now.
+      playScene(scene);
     },
   };
 }

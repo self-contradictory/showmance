@@ -6,7 +6,7 @@ import { Stage } from "./Stage";
 import { VillaPlaceholder } from "./VillaPlaceholder";
 
 export function StreamPage() {
-  const { show, myVote, send, vote } = useShow();
+  const { show, myVote, send, vote, buyTwist } = useShow();
 
   return (
     <div className="flex h-dvh flex-col">
@@ -23,7 +23,16 @@ export function StreamPage() {
           <ShowInfo title={show.title} day={show.day} now={show.now} cast={show.cast} />
         </main>
 
-        <Chat comments={show.comments} vote={show.vote} myVote={myVote} onSend={send} onVote={vote} />
+        <Chat
+          comments={show.comments}
+          vote={show.vote}
+          myVote={myVote}
+          twists={show.twists}
+          balance={show.balance}
+          onSend={send}
+          onVote={vote}
+          onBuyTwist={buyTwist}
+        />
       </div>
     </div>
   );
