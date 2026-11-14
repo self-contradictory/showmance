@@ -54,7 +54,12 @@ async def test_new_arrival_is_seen_and_joins_the_tick(store, villa, sim):
     plan = TwistPlan(
         summary="A tempter arrives for Jake",
         arrivals=[
-            Arrive(name="Alex", persona="Here to test Jake.", location_id=v.pool.id)
+            Arrive(
+                name="Alex",
+                persona="Here to test Jake.",
+                gender="male",
+                location_id=v.pool.id,
+            )
         ],
     )
     s = sim(plans={"send a tempter": plan})
@@ -64,7 +69,7 @@ async def test_new_arrival_is_seen_and_joins_the_tick(store, villa, sim):
 
     arrive = next(e for e in events if e.kind == "arrive")
     agents = {a.name: a for a in await store.agents.get_all(v.world.id)}
-    assert agents["Alex"].location_id == v.pool.id
+    assert (agents["Alex"].location_id, agents["Alex"].gender) == (v.pool.id, "male")
     assert set(arrive.witness_ids) == {v.mia.id, v.jake.id, agents["Alex"].id}
     assert "Alex" in s.decider.contexts
 

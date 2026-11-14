@@ -33,7 +33,7 @@ Find a dramatic reason for it, like a secret, a sudden change of heart,
 a misunderstanding or a confession, and use performs so people act it out.
 
 Use only these operations, referring to people and places by their id:
-- arrivals: a new person enters the villa; give them a persona with a goal
+- arrivals: a new person enters the villa; give them a gender and a persona with a goal
 - relocations: send people somewhere
 - reveals: tell specific people something in private, like a text or a rumor
 - announcements: something everyone in the villa hears

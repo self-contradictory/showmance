@@ -2,6 +2,7 @@ from typing import Literal
 
 from pydantic import Field
 
+from domain.agents import Gender
 from domain.base import Model
 
 
@@ -22,6 +23,7 @@ class Relocate(Model):
 class Arrive(Model):
     name: str
     persona: str
+    gender: Gender
     location_id: int
 
 

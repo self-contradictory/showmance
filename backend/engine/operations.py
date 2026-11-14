@@ -68,6 +68,7 @@ class Operations:
                 world_id=state.world.id,
                 name=op.name,
                 persona=op.persona,
+                gender=op.gender,
                 location_id=op.location_id,
             )
         )

@@ -82,7 +82,15 @@ async def test_world_spec_sets_voices(store, sim, client):
         "name": "Villa",
         "setting": "A villa",
         "locations": [{"name": "pool"}],
-        "agents": [{"name": "Mia", "persona": "", "location": "pool", "voice": "v3"}],
+        "agents": [
+            {
+                "name": "Mia",
+                "persona": "",
+                "gender": "female",
+                "location": "pool",
+                "voice": "v3",
+            }
+        ],
     }
     async with client(sim().engine) as http:
         world = (await http.post("/worlds", json=spec)).json()

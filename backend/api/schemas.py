@@ -3,7 +3,7 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from config import settings
-from domain import Agent, Location, Poll, Relationship, Viewer, World
+from domain import Agent, Gender, Location, Poll, Relationship, Viewer, World
 from domain.base import Model
 
 
@@ -15,6 +15,7 @@ class LocationSpec(Model):
 class AgentSpec(Model):
     name: str
     persona: str
+    gender: Gender
     location: str
     voice: str | None = None
 

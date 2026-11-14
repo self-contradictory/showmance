@@ -35,6 +35,7 @@ class AgentRow(Base):
     name: Mapped[str]
     persona: Mapped[str]
     mood: Mapped[str]
+    gender: Mapped[str | None]
     location_id: Mapped[int] = mapped_column(ForeignKey("locations.id"))
 
 

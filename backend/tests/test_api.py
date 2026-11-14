@@ -7,8 +7,13 @@ VILLA = {
     "setting": "A villa in Bali",
     "locations": [{"name": "pool"}, {"name": "kitchen"}],
     "agents": [
-        {"name": "Mia", "persona": "Bold.", "location": "pool"},
-        {"name": "Jake", "persona": "Charming.", "location": "kitchen"},
+        {"name": "Mia", "persona": "Bold.", "gender": "female", "location": "pool"},
+        {
+            "name": "Jake",
+            "persona": "Charming.",
+            "gender": "male",
+            "location": "kitchen",
+        },
     ],
 }
 
@@ -25,8 +30,10 @@ async def test_create_world_and_read_it_back(sim, client):
 
     assert created.status_code == 201
     places = {loc["id"]: loc["name"] for loc in view["locations"]}
-    agents = {a["name"]: places[a["location_id"]] for a in view["agents"]}
-    assert agents == {"Mia": "pool", "Jake": "kitchen"}
+    agents = {
+        a["name"]: (places[a["location_id"]], a["gender"]) for a in view["agents"]
+    }
+    assert agents == {"Mia": ("pool", "female"), "Jake": ("kitchen", "male")}
     assert view["running"] is False
 
 
@@ -48,9 +55,25 @@ async def test_homepage_lists_every_world_with_its_status(villa, sim, client):
 
 
 async def test_agent_in_unknown_location_is_rejected(sim, client):
-    lost = {**VILLA, "agents": [{"name": "Mia", "persona": "", "location": "roof"}]}
+    lost = {
+        **VILLA,
+        "agents": [
+            {"name": "Mia", "persona": "", "gender": "female", "location": "roof"}
+        ],
+    }
     async with client(sim().engine) as http:
         response = await http.post("/worlds", json=lost)
+
+    assert response.status_code == 422
+
+
+async def test_agent_without_a_gender_is_rejected(sim, client):
+    unknown = {
+        **VILLA,
+        "agents": [{"name": "Mia", "persona": "", "location": "pool"}],
+    }
+    async with client(sim().engine) as http:
+        response = await http.post("/worlds", json=unknown)
 
     assert response.status_code == 422
 

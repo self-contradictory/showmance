@@ -41,6 +41,7 @@ async def create_world(spec: WorldSpec, services: ServicesDep) -> World:
                 world_id=world.id,
                 name=agent.name,
                 persona=agent.persona,
+                gender=agent.gender,
                 location_id=location_ids[agent.location],
             )
         )
