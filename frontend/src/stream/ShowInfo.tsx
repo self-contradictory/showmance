@@ -1,6 +1,6 @@
 import type { CastMember } from "@/show/types";
 
-type Props = { title: string; day: number; now: string; cast: CastMember[] };
+type Props = { title: string; day?: number; now: string; cast: CastMember[] };
 
 export function ShowInfo({ title, day, now, cast }: Props) {
   return (
@@ -8,7 +8,7 @@ export function ShowInfo({ title, day, now, cast }: Props) {
       <div className="min-w-0">
         <div className="flex items-baseline gap-2.5">
           <h1 className="text-lg font-semibold">{title}</h1>
-          <span className="text-sm text-muted">Day {day}</span>
+          {day !== undefined && <span className="text-sm text-muted">Day {day}</span>}
         </div>
         <p className="mt-0.5 text-sm">{now}</p>
       </div>

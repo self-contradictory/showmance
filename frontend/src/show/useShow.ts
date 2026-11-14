@@ -1,38 +1,11 @@
-import { useEffect, useReducer, useState } from "react";
-import { readStored, writeStored } from "@/lib/storage";
-import { createMockFeed } from "./mockFeed";
-import { reduceShow } from "./reduce";
+import { USE_BACKEND } from "@/api/config";
+import { worldIdFromSlug } from "@/api/slug";
+import { findShow } from "./mockShows";
+import { useLiveShow } from "./useLiveShow";
+import { useMockShow } from "./useMockShow";
 
-const NAME_KEY = "showmance:name";
+export const useShow = USE_BACKEND ? useLiveShow : useMockShow;
 
-function loadGuestName(): string {
-  const saved = readStored(NAME_KEY);
-  if (saved) return saved;
-  const fresh = `guest_${Math.floor(1000 + Math.random() * 9000)}`;
-  writeStored(NAME_KEY, fresh);
-  return fresh;
-}
-
-export function useShow(slug: string) {
-  const [feed] = useState(() => createMockFeed(slug));
-  const [me] = useState(loadGuestName);
-  const [show, dispatch] = useReducer(reduceShow, feed, (f) => f.snapshot());
-  const [ballot, setBallot] = useState<{ voteId: string; optionId: string } | null>(null);
-
-  useEffect(() => feed.subscribe(dispatch), [feed]);
-
-  const openVote = show.vote;
-  const myVote = ballot && ballot.voteId === openVote?.id ? ballot.optionId : null;
-
-  return {
-    show,
-    myVote,
-    send: (text: string) => feed.send(me, text),
-    vote: (optionId: string) => {
-      if (!openVote || myVote) return;
-      setBallot({ voteId: openVote.id, optionId });
-      feed.vote(openVote.id, optionId);
-    },
-    dropTwist: (text: string) => feed.dropTwist(me, text),
-  };
+export function isKnownShow(slug: string): boolean {
+  return USE_BACKEND ? worldIdFromSlug(slug) !== null : findShow(slug) !== undefined;
 }

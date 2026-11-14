@@ -11,7 +11,7 @@ type Props = {
 
 export function Vote({ vote, myVote, onVote }: Props) {
   const now = useNow(1000);
-  const secondsLeft = Math.max(0, Math.ceil((vote.endsAt - now) / 1000));
+  const secondsLeft = vote.endsAt === undefined ? null : Math.max(0, Math.ceil((vote.endsAt - now) / 1000));
   const closed = secondsLeft === 0;
   const total = vote.options.reduce((sum, option) => sum + option.votes, 0);
 
@@ -20,7 +20,7 @@ export function Vote({ vote, myVote, onVote }: Props) {
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <p className="text-sm font-medium">{vote.question}</p>
         <p className="shrink-0 text-xs text-muted tabular-nums">
-          {closed ? "Closing" : `${formatClock(secondsLeft)} left`}
+          {secondsLeft === null ? "" : closed ? "Closing" : `${formatClock(secondsLeft)} left`}
         </p>
       </div>
 

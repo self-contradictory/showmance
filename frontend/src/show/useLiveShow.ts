@@ -1,0 +1,238 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import type { ChatComment } from "@/chat/comments/types";
+import { api, ApiError } from "@/api/client";
+import { TWIST_PRICE } from "@/api/config";
+import { worldIdFromSlug } from "@/api/slug";
+import type { PollView, WorldEvent } from "@/api/types";
+import type { ShowHandle } from "./handle";
+import { actionsFor, castFor, locationsFor, namesFor, skyFor, type LiveAction, type Names } from "./liveEvents";
+import type { Show, Vote } from "./types";
+import { useCaptionQueue } from "./useCaptionQueue";
+import { useViewer } from "./useViewer";
+
+const HISTORY_SIZE = 40;
+const MAX_COMMENTS = 200;
+const TWIST_CHECK_MS = 2000;
+const TWIST_CHECKS = 30;
+
+type LiveState = { now: string; moved: Record<string, string>; comments: ChatComment[] };
+
+type LiveUpdate =
+  | { type: "now"; text: string }
+  | { type: "move"; castId: string; locationId: string }
+  | { type: "comment"; comment: ChatComment };
+
+function reduceLive(state: LiveState, update: LiveUpdate): LiveState {
+  switch (update.type) {
+    case "now":
+      return { ...state, now: update.text };
+    case "move":
+      return { ...state, moved: { ...state.moved, [update.castId]: update.locationId } };
+    case "comment":
+      return { ...state, comments: [...state.comments, update.comment].slice(-MAX_COMMENTS) };
+  }
+}
+
+function useLatest<T>(value: T) {
+  const ref = useRef(value);
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref;
+}
+
+export function useLiveShow(slug: string): ShowHandle {
+  const worldId = worldIdFromSlug(slug) ?? -1;
+  const queryClient = useQueryClient();
+  const viewer = useViewer();
+
+  const world = useQuery({
+    queryKey: ["world", worldId],
+    queryFn: () => api.world(worldId),
+    retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 3,
+  });
+  const history = useQuery({
+    queryKey: ["history", worldId],
+    queryFn: () => api.events(worldId),
+    enabled: world.isSuccess,
+    staleTime: Infinity,
+    gcTime: 0,
+  });
+  const poll = useQuery({
+    queryKey: ["poll", worldId],
+    queryFn: () => api.poll(worldId),
+    enabled: world.isSuccess,
+    refetchInterval: 3000,
+  });
+
+  const [live, update] = useReducer(reduceLive, { now: "", moved: {}, comments: [] });
+  const { caption, push } = useCaptionQueue();
+  const [ballot, setBallot] = useState<{ pollId: string; optionId: string } | null>(null);
+  const myTwists = useRef(new Set<number>());
+  const mounted = useRef(true);
+
+  const names = useMemo(() => (world.data ? namesFor(world.data.agents, world.data.locations) : null), [world.data]);
+  const namesRef = useLatest<Names | null>(names);
+  const pollRef = useLatest<PollView | null | undefined>(poll.data);
+  const meRef = useLatest(viewer.data?.viewer.name);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  function notice(id: string, title: string, text: string) {
+    update({ type: "comment", comment: { kind: "notice", id, at: Date.now(), title, text } });
+  }
+
+  useEffect(() => {
+    if (!history.data) return;
+
+    function apply(action: LiveAction, eventId: number, replay: boolean) {
+      switch (action.type) {
+        case "caption":
+          if (!replay) push(action.caption);
+          return;
+        case "now":
+          update({ type: "now", text: action.text });
+          return;
+        case "move":
+          if (!replay) update({ type: "move", castId: action.castId, locationId: action.locationId });
+          return;
+        case "twist":
+          update({
+            type: "comment",
+            comment: {
+              kind: "twist",
+              id: `event-${eventId}`,
+              at: Date.now(),
+              author: action.twistId !== null && myTwists.current.has(action.twistId) ? meRef.current : undefined,
+              twist: action.text,
+            },
+          });
+          return;
+        case "pollOpened":
+          if (!replay) void queryClient.invalidateQueries({ queryKey: ["poll", worldId] });
+          return;
+        case "pollClosed": {
+          const view = replay ? null : pollRef.current;
+          const total = view ? view.votes.reduce((sum, count) => sum + count, 0) : 0;
+          const winnerVotes = view && action.winnerIndex !== null ? (view.votes[action.winnerIndex] ?? 0) : 0;
+          update({
+            type: "comment",
+            comment: {
+              kind: "vote_result",
+              id: `event-${eventId}`,
+              at: Date.now(),
+              question: view?.poll.question,
+              winner: action.winner,
+              pct: total ? Math.round((winnerVotes / total) * 100) : undefined,
+            },
+          });
+          if (!replay) void queryClient.invalidateQueries({ queryKey: ["poll", worldId] });
+          return;
+        }
+        case "castChanged":
+          if (!replay) void queryClient.invalidateQueries({ queryKey: ["world", worldId] });
+          return;
+      }
+    }
+
+    function handle(event: WorldEvent, replay: boolean) {
+      const current = namesRef.current;
+      if (!current) return;
+      for (const action of actionsFor(event, current)) apply(action, event.id, replay);
+    }
+
+    for (const event of history.data.slice(-HISTORY_SIZE)) handle(event, true);
+    const source = new EventSource(api.streamUrl(worldId, history.data.at(-1)?.id ?? 0));
+    source.onmessage = (message) => handle(JSON.parse(String(message.data)) as WorldEvent, false);
+    return () => source.close();
+  }, [history.data, worldId, push, queryClient, namesRef, pollRef, meRef]);
+
+  async function watchTwist(twistId: number) {
+    for (let check = 0; check < TWIST_CHECKS && mounted.current; check++) {
+      await new Promise((resolve) => setTimeout(resolve, TWIST_CHECK_MS));
+      const twist = await api.twist(worldId, twistId).catch(() => null);
+      if (!twist || twist.status === "pending") continue;
+      if (twist.status === "rejected" && mounted.current) {
+        notice(`rejected-${twistId}`, "Twist turned down", `${twist.outcome ?? "The producers passed on it."} Your coins are back.`);
+        void queryClient.invalidateQueries({ queryKey: ["viewer"] });
+      }
+      return;
+    }
+  }
+
+  const voteMutation = useMutation({
+    mutationFn: ({ option, token }: { option: number; token: string }) => api.vote(worldId, option, token),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["poll", worldId] }),
+  });
+
+  const twistMutation = useMutation({
+    mutationFn: ({ text, token }: { text: string; token: string }) => api.dropTwist(worldId, text, token),
+    onSuccess: (twist) => {
+      myTwists.current.add(twist.id);
+      void watchTwist(twist.id);
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 402) {
+        notice(`coins-${Date.now()}`, "Not enough coins", "You need more coins to drop a twist.");
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["viewer"] }),
+  });
+
+  const openPoll = poll.data?.poll.status === "open" ? poll.data : null;
+  const vote: Vote | null = openPoll
+    ? {
+        id: String(openPoll.poll.id),
+        question: openPoll.poll.question,
+        options: openPoll.poll.options.map((option, i) => ({
+          id: String(i),
+          label: option.label,
+          votes: openPoll.votes[i] ?? 0,
+        })),
+      }
+    : null;
+  const myVote = ballot && vote && ballot.pollId === vote.id ? ballot.optionId : null;
+
+  const data = world.data;
+  const show: Show = {
+    slug,
+    title: data?.world.name ?? "",
+    now: live.now || data?.world.setting || "",
+    cover: data?.world.thumbnail_url ?? undefined,
+    sky: skyFor(data?.world.setting ?? ""),
+    locations: data ? locationsFor(data.locations) : [],
+    cast: data ? castFor(data.agents, live.moved) : [],
+    caption,
+    comments: live.comments,
+    vote,
+    twistPrice: TWIST_PRICE,
+    balance: viewer.data?.viewer.coins ?? 0,
+  };
+
+  return {
+    show,
+    notFound: world.error instanceof ApiError && world.error.status === 404,
+    myVote,
+    send: (text) => {
+      const author = viewer.data?.viewer.name;
+      if (!author) return;
+      update({ type: "comment", comment: { kind: "message", id: `me-${Date.now()}`, at: Date.now(), author, text } });
+    },
+    vote: (optionId) => {
+      const token = viewer.data?.token;
+      if (!vote || myVote || !token) return;
+      setBallot({ pollId: vote.id, optionId });
+      voteMutation.mutate({ option: Number(optionId), token });
+    },
+    dropTwist: (text) => {
+      const token = viewer.data?.token;
+      if (token) twistMutation.mutate({ text, token });
+    },
+  };
+}

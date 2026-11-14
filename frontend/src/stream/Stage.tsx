@@ -5,7 +5,7 @@ import type { Caption } from "@/show/types";
 import { StageButton } from "./StageButton";
 
 type Props = {
-  viewers: number;
+  viewers?: number;
   caption: Caption | null;
   paused: boolean;
   fullscreen: boolean;
@@ -43,9 +43,11 @@ export function Stage({
     >
       {children}
 
-      <p className="absolute top-3 left-3 rounded-md bg-overlay px-2 py-1 text-xs font-medium tabular-nums">
-        {viewers.toLocaleString("en-US")} watching
-      </p>
+      {viewers !== undefined && (
+        <p className="absolute top-3 left-3 rounded-md bg-overlay px-2 py-1 text-xs font-medium tabular-nums">
+          {viewers.toLocaleString("en-US")} watching
+        </p>
+      )}
 
       <AnimatePresence>
         {shownCaption && (

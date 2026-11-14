@@ -13,6 +13,7 @@ const result = await Bun.build({
   plugins: [tailwind],
   minify: true,
   splitting: true,
+  env: "BUN_PUBLIC_*",
   target: "browser",
   sourcemap: "linked",
   define: {

@@ -119,7 +119,7 @@ export function createMockFeed(slug: string): Feed {
 
   function driftViewers() {
     const change = Math.round((Math.random() - 0.4) * 8);
-    emit({ type: "viewers", count: Math.max(20, state.viewers + change) });
+    emit({ type: "viewers", count: Math.max(20, (state.viewers ?? 0) + change) });
     later(5000, driftViewers);
   }
 
@@ -151,7 +151,7 @@ export function createMockFeed(slug: string): Feed {
 
   function addVotes(voteId: string, optionId: string, count: number) {
     const vote = state.vote;
-    if (!vote || vote.id !== voteId || Date.now() >= vote.endsAt) return;
+    if (!vote || vote.id !== voteId || (vote.endsAt !== undefined && Date.now() >= vote.endsAt)) return;
     const options = vote.options.map((o) => (o.id === optionId ? { ...o, votes: o.votes + count } : o));
     emit({ type: "vote", vote: { ...vote, options } });
   }

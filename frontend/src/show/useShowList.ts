@@ -1,12 +1,5 @@
-import { useEffect, useState } from "react";
-import { createMockDirectory } from "./mockDirectory";
-import type { ShowSummary } from "./types";
+import { USE_BACKEND } from "@/api/config";
+import { useLiveShowList } from "./useLiveShowList";
+import { useMockShowList } from "./useMockShowList";
 
-export function useShowList(): ShowSummary[] {
-  const [directory] = useState(createMockDirectory);
-  const [shows, setShows] = useState(() => directory.snapshot());
-
-  useEffect(() => directory.subscribe(setShows), [directory]);
-
-  return shows;
-}
+export const useShowList = USE_BACKEND ? useLiveShowList : useMockShowList;

@@ -61,7 +61,7 @@ export default function WorldScene({ show, paused }: Props) {
             />
           );
         })}
-        <CameraRig room={rooms.find((room) => room.id === activeRoomId)} />
+        <CameraRig room={rooms.find((room) => room.id === activeRoomId) ?? rooms[0]} />
       </Canvas>
     </div>
   );

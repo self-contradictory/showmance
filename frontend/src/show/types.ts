@@ -24,19 +24,19 @@ export type Vote = {
   id: string;
   question: string;
   options: VoteOption[];
-  endsAt: number;
+  endsAt?: number;
 };
 
 export type Show = {
   slug: string;
   title: string;
-  day: number;
+  day?: number;
   now: string;
   cover?: string;
   sky: Sky;
   locations: Location[];
   cast: CastMember[];
-  viewers: number;
+  viewers?: number;
   caption: Caption | null;
   comments: ChatComment[];
   vote: Vote | null;
@@ -47,9 +47,9 @@ export type Show = {
 export type ShowSummary = {
   slug: string;
   title: string;
-  day: number;
+  day?: number;
   now: string;
-  viewers: number;
+  viewers?: number;
   cover?: string;
 };
 

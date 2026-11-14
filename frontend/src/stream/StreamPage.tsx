@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Redirect } from "wouter";
 import { Chat } from "@/chat/Chat";
 import { useFullscreen } from "@/lib/useFullscreen";
 import { useMediaQuery } from "@/lib/useMediaQuery";
@@ -15,7 +16,7 @@ const WorldScene = lazy(() => import("@/world/WorldScene"));
 const CHAT_KEY = "showmance:chat";
 
 export function StreamPage({ slug }: { slug: string }) {
-  const { show, myVote, send, vote, dropTwist } = useShow(slug);
+  const { show, notFound, myVote, send, vote, dropTwist } = useShow(slug);
   const streamRef = useRef<HTMLDivElement>(null);
   const fullscreen = useFullscreen(streamRef);
   const isDesktop = useMediaQuery("(min-width: 64rem)");
@@ -25,13 +26,15 @@ export function StreamPage({ slug }: { slug: string }) {
   const fs = fullscreen.isFullscreen;
 
   useEffect(() => {
-    document.title = `${show.title} | Showmance`;
+    document.title = show.title ? `${show.title} | Showmance` : "Showmance";
   }, [show.title]);
 
   function setChat(open: boolean) {
     setChatOpen(open);
     writeStored(CHAT_KEY, open ? "shown" : "hidden");
   }
+
+  if (notFound) return <Redirect to="/" replace />;
 
   const chatWidth = !chatShown ? "lg:ml-0 lg:w-0" : fs ? "lg:w-[372px] lg:p-4" : "lg:ml-6 lg:w-[340px]";
 

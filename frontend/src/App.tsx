@@ -1,23 +1,27 @@
 import "./index.css";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "motion/react";
 import { Redirect, Route, Switch } from "wouter";
+import { queryClient } from "./api/queryClient";
 import { HomePage } from "./home/HomePage";
-import { findShow } from "./show/mockShows";
+import { isKnownShow } from "./show/useShow";
 import { StreamPage } from "./stream/StreamPage";
 
 export function App() {
   return (
-    <MotionConfig reducedMotion="user">
-      <Switch>
-        <Route path="/" component={HomePage} />
-        <Route path="/:slug">
-          {({ slug }) => (findShow(slug) ? <StreamPage key={slug} slug={slug} /> : <Redirect to="/" replace />)}
-        </Route>
-        <Route>
-          <Redirect to="/" replace />
-        </Route>
-      </Switch>
-    </MotionConfig>
+    <QueryClientProvider client={queryClient}>
+      <MotionConfig reducedMotion="user">
+        <Switch>
+          <Route path="/" component={HomePage} />
+          <Route path="/:slug">
+            {({ slug }) => (isKnownShow(slug) ? <StreamPage key={slug} slug={slug} /> : <Redirect to="/" replace />)}
+          </Route>
+          <Route>
+            <Redirect to="/" replace />
+          </Route>
+        </Switch>
+      </MotionConfig>
+    </QueryClientProvider>
   );
 }
 
