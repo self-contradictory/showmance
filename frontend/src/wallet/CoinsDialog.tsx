@@ -45,7 +45,7 @@ export function CoinsDialog({ open, onClose }: Props) {
       onClick={(event) => {
         if (event.target === event.currentTarget && step.name !== "checkout") close();
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-2xl bg-page text-ink backdrop:bg-overlay"
+      className={`m-auto max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-page text-ink backdrop:bg-overlay ${step.name === "checkout" ? "w-[min(36rem,calc(100%-2rem))]" : "w-[min(28rem,calc(100%-2rem))]"}`}
     >
       {open && (
         <div className="flex flex-col gap-4 p-5">
