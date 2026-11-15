@@ -20,6 +20,7 @@ class StripePayments(Payments):
                     "ui_mode": "embedded_page",
                     "redirect_on_completion": "never",
                     "allowed_payment_method_types": ["card"],
+                    "adaptive_pricing": {"enabled": False},
                     "client_reference_id": str(viewer.id),
                     "metadata": {"viewer_id": str(viewer.id), "pack_id": pack.id},
                     "line_items": [
