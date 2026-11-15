@@ -19,6 +19,7 @@ uv run main.py
 | `CORS_ORIGINS` | `["http://localhost:3000"]` (a JSON list) |
 | `HOST` | `127.0.0.1` |
 | `PORT` | `8000` |
+| `IDLE_GRACE` | `30`: seconds a world keeps running after its last viewer leaves |
 | `STRIPE_SECRET_KEY` | none: buying coins is off without it, see Coins |
 
 ## Who plays the contestants
@@ -65,15 +66,16 @@ Pay with the test card `4242 4242 4242 4242`, any future date and any CVC. Payme
 
 ```bash
 curl -X POST localhost:8000/worlds -H 'content-type: application/json' -d @villa.json
-curl -X POST localhost:8000/worlds/1/start
 curl -N localhost:8000/worlds/1/stream
 ```
+
+A world writes new scenes only while someone is watching, so nobody around means no model calls. It runs while a stream is open (a show page in the frontend) and for `IDLE_GRACE` seconds after the last one closes. Loading the homepage (`GET /worlds`, which the homepage repeats every 10 seconds) keeps every world running the same way. A check every `PRESENCE_CHECK_INTERVAL` seconds starts and stops worlds to match.
 
 ## API
 
 | Method | Path | |
 |---|---|---|
-| `GET` | `/worlds` | every world (name, thumbnail, setting, tick, day) with `running` and `viewers`, for the homepage |
+| `GET` | `/worlds` | every world (name, thumbnail, setting, tick, day) with `running` and `viewers`, for the homepage; counts as someone on the homepage |
 | `POST` | `/worlds` | create a world from a spec like `villa.json`: `name`, `setting`, `thumbnail_url?`, `home?` (the 3D home it plays in: `villa`, `cottage`, `two-story` or `classic`; the frontend uses the villa when it's missing), `figures?` (`realistic` rigged characters, the default, or `toy` figures), locations, agents (each with `gender`: `female` or `male`) |
 | `GET` | `/worlds/{id}` | world (with `day`), locations, agents, relationships, `running`, `viewers` |
 | `GET` | `/worlds/{id}/events?after_id=` | event history |
@@ -82,8 +84,6 @@ curl -N localhost:8000/worlds/1/stream
 | `POST` | `/worlds/{id}/chat` | send `{text}` to everyone watching 🔑 |
 | `GET` | `/worlds/{id}/events/{event_id}/audio` | the voiced line of a `say` or `confess` event (`audio/wav`), made on the first request and cached for everyone |
 | `POST` | `/worlds/{id}/step` | run one tick |
-| `POST` | `/worlds/{id}/start` | tick every `TICK_INTERVAL` seconds |
-| `POST` | `/worlds/{id}/stop` | stop after the current tick |
 | `POST` | `/viewers` | join with `{name}`: returns the viewer (with `STARTER_COINS`) and a token |
 | `GET` | `/viewers/me` | your viewer and coin balance 🔑 |
 | `GET` | `/worlds/{id}/poll` | the open poll and its vote counts, or `null` |

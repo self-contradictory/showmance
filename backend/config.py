@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     prefetch_beats: int = 3
 
     tick_interval: float = 5.0
+    idle_grace: float = 30.0
+    presence_check_interval: float = 2.0
     stream_poll_interval: float = 1.0
 
     twist_max_length: int = 500

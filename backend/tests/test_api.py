@@ -43,13 +43,11 @@ async def test_create_world_and_read_it_back(sim, client):
 async def test_homepage_lists_every_world_with_its_status(villa, sim, client):
     async with client(sim().engine) as http:
         created = (await http.post("/worlds", json=VILLA)).json()
-        await http.post(f"/worlds/{created['id']}/start")
         listed = (await http.get("/worlds")).json()
-        await http.post(f"/worlds/{created['id']}/stop")
 
     summaries = {s["world"]["id"]: s for s in listed}
     assert summaries[villa.world.id]["running"] is False
-    assert summaries[created["id"]]["running"] is True
+    assert summaries[created["id"]]["viewers"] == 0
     card = summaries[created["id"]]["world"]
     assert (card["name"], card["thumbnail_url"]) == (
         "Bali Villa",
@@ -157,15 +155,3 @@ async def test_twist_text_must_fit(villa, sim, client):
         422,
         404,
     )
-
-
-async def test_start_and_stop_the_show(villa, sim, client):
-    world = f"/worlds/{villa.world.id}"
-    async with client(sim().engine) as http:
-        started = await http.post(f"{world}/start")
-        running = (await http.get(world)).json()["running"]
-        stopped = await http.post(f"{world}/stop")
-        after = (await http.get(world)).json()["running"]
-
-    assert (started.status_code, running) == (204, True)
-    assert (stopped.status_code, after) == (204, False)

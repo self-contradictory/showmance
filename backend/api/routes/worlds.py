@@ -9,6 +9,7 @@ router = APIRouter()
 
 @router.get("/worlds")
 async def list_worlds(services: ServicesDep) -> list[WorldSummary]:
+    services.presence.visit_homepage()
     return [
         WorldSummary(
             world=world,
