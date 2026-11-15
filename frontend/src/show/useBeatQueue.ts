@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { API_HEADERS } from "@/api/config";
 import { addToBeat, emptyBeat, fitsBeat, type Beat, type BeatPart } from "./beats";
 
 const LINE_MS = 3600;
@@ -10,11 +11,35 @@ const GATHER_MS = 250;
 
 type Timer = ReturnType<typeof setTimeout> | undefined;
 
-function loadClip(url: string): HTMLAudioElement {
-  const clip = new Audio();
-  clip.preload = "auto";
-  clip.src = url;
-  return clip;
+type Clip = { audio: HTMLAudioElement; ready: Promise<void>; release: () => void };
+
+function loadClip(url: string): Clip {
+  const audio = new Audio();
+  audio.preload = "auto";
+  let released = false;
+  let objectUrl: string | null = null;
+  const ready = fetch(url, { headers: API_HEADERS })
+    .then((response) => {
+      if (!response.ok) throw new Error(`voice answered ${response.status}`);
+      return response.blob();
+    })
+    .then((blob) => {
+      if (released) return;
+      objectUrl = URL.createObjectURL(blob);
+      audio.src = objectUrl;
+    });
+  ready.catch(() => {});
+  return {
+    audio,
+    ready,
+    release: () => {
+      released = true;
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    },
+  };
 }
 
 export function useBeatQueue(sound: boolean, onBeat: (beat: Beat, shown: boolean) => void) {
@@ -22,7 +47,7 @@ export function useBeatQueue(sound: boolean, onBeat: (beat: Beat, shown: boolean
   const gathering = useRef<Beat | null>(null);
   const gatherTimer = useRef<Timer>(undefined);
   const queue = useRef<Beat[]>([]);
-  const clips = useRef(new Map<string, HTMLAudioElement>());
+  const clips = useRef(new Map<string, Clip>());
   const playing = useRef(false);
   const timer = useRef<Timer>(undefined);
   const finishBeat = useRef<(() => void) | null>(null);
@@ -53,11 +78,7 @@ export function useBeatQueue(sound: boolean, onBeat: (beat: Beat, shown: boolean
       done = true;
       finishBeat.current = null;
       clearTimeout(timer.current);
-      if (clip) {
-        clip.onended = null;
-        clip.onerror = null;
-        clip.pause();
-      }
+      clip?.release();
       setBeat(null);
       timer.current = setTimeout(playNext, GAP_MS);
     };
@@ -68,10 +89,12 @@ export function useBeatQueue(sound: boolean, onBeat: (beat: Beat, shown: boolean
     finishBeat.current = finish;
 
     if (clip && soundOn.current) {
-      clip.onended = finish;
-      clip.onerror = fallBack;
+      clip.audio.onended = finish;
+      clip.audio.onerror = fallBack;
       timer.current = setTimeout(finish, MAX_LINE_MS);
-      clip.play().catch(fallBack);
+      clip.ready
+        .then(() => (done || !soundOn.current ? undefined : clip.audio.play()))
+        .catch(fallBack);
     } else {
       timer.current = setTimeout(finish, hold);
     }
@@ -84,7 +107,10 @@ export function useBeatQueue(sound: boolean, onBeat: (beat: Beat, shown: boolean
       while (queue.current.length > MAX_BACKLOG) {
         const dropped = queue.current.shift();
         if (!dropped) break;
-        if (dropped.speech) clips.current.delete(dropped.speech.id);
+        if (dropped.speech) {
+          clips.current.get(dropped.speech.id)?.release();
+          clips.current.delete(dropped.speech.id);
+        }
         started.current(dropped, false);
       }
       if (!playing.current) playNext();
@@ -126,7 +152,7 @@ export function useBeatQueue(sound: boolean, onBeat: (beat: Beat, shown: boolean
       clearTimeout(timer.current);
       clearTimeout(gatherTimer.current);
       finishBeat.current = null;
-      for (const clip of clips.current.values()) clip.pause();
+      for (const clip of clips.current.values()) clip.release();
     },
     [],
   );

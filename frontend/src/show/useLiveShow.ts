@@ -4,6 +4,7 @@ import type { ChatComment } from "@/chat/comments/types";
 import { api, ApiError } from "@/api/client";
 import { TWIST_PRICE } from "@/api/config";
 import { worldIdFromSlug } from "@/api/slug";
+import { openEventStream } from "@/api/stream";
 import type { ChatMessage, PollView, WorldEvent } from "@/api/types";
 import { addToBeat, beatCaption, describeBeat, emptyBeat, type Beat } from "./beats";
 import type { ShowHandle, ShowOptions } from "./handle";
@@ -187,23 +188,24 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
     }
 
     for (const event of history.data.slice(-HISTORY_SIZE)) handle(event, true);
-    const source = new EventSource(api.streamUrl(worldId, history.data.at(-1)?.id ?? 0));
-    source.onmessage = (message) => handle(JSON.parse(String(message.data)) as WorldEvent, false);
-    source.addEventListener("chat", (message) =>
-      update({ type: "comment", comment: chatComment(JSON.parse(String(message.data)) as ChatMessage) }),
-    );
-    source.addEventListener("viewers", (message) =>
-      update({ type: "viewers", count: Number(JSON.parse(String(message.data))) }),
-    );
-    source.onopen = () => {
-      api
-        .chat(worldId)
-        .then((messages) => {
-          for (const message of messages) update({ type: "comment", comment: chatComment(message) });
-        })
-        .catch(() => {});
-    };
-    return () => source.close();
+    return openEventStream(api.streamUrl(worldId, history.data.at(-1)?.id ?? 0), {
+      onOpen: () => {
+        api
+          .chat(worldId)
+          .then((messages) => {
+            for (const message of messages) update({ type: "comment", comment: chatComment(message) });
+          })
+          .catch(() => {});
+      },
+      onEvent: ({ type, data }) => {
+        try {
+          const payload: unknown = JSON.parse(data);
+          if (type === "chat") update({ type: "comment", comment: chatComment(payload as ChatMessage) });
+          else if (type === "viewers") update({ type: "viewers", count: Number(payload) });
+          else handle(payload as WorldEvent, false);
+        } catch {}
+      },
+    });
   }, [history.data, worldId, add, queryClient, namesRef, pollRef, meRef]);
 
   async function watchTwist(twistId: number) {

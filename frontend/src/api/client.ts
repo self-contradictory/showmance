@@ -1,4 +1,4 @@
-import { API_URL } from "./config";
+import { API_HEADERS, API_URL } from "./config";
 import type {
   ChatMessage,
   Checkout,
@@ -24,7 +24,7 @@ export class ApiError extends Error {
 type Options = { method?: "GET" | "POST"; body?: unknown; token?: string };
 
 async function request<T>(path: string, { method = "GET", body, token }: Options = {}): Promise<T> {
-  const headers = new Headers();
+  const headers = new Headers(API_HEADERS);
   if (token) headers.set("Authorization", `Bearer ${token}`);
   if (body !== undefined) headers.set("Content-Type", "application/json");
 
