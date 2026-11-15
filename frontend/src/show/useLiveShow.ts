@@ -71,7 +71,7 @@ export function useLiveShow(slug: string, { sound = false }: ShowOptions = {}): 
   });
   const history = useQuery({
     queryKey: ["history", worldId],
-    queryFn: () => api.events(worldId),
+    queryFn: () => api.events(worldId, HISTORY_SIZE),
     enabled: world.isSuccess,
     staleTime: Infinity,
     gcTime: 0,

@@ -41,7 +41,7 @@ async function request<T>(path: string, { method = "GET", body, token }: Options
 export const api = {
   worlds: () => request<WorldSummary[]>("/worlds"),
   world: (worldId: number) => request<WorldView>(`/worlds/${worldId}`),
-  events: (worldId: number) => request<WorldEvent[]>(`/worlds/${worldId}/events`),
+  events: (worldId: number, last: number) => request<WorldEvent[]>(`/worlds/${worldId}/events?last=${last}`),
   streamUrl: (worldId: number, afterId: number) => `${API_URL}/worlds/${worldId}/stream?after_id=${afterId}`,
   poll: (worldId: number) => request<PollView | null>(`/worlds/${worldId}/poll`),
   vote: (worldId: number, option: number, token: string) =>

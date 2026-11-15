@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 from api.deps import ServicesDep, WorldDep
@@ -13,8 +13,13 @@ router = APIRouter()
 
 @router.get("/worlds/{world_id}/events")
 async def list_events(
-    world: WorldDep, services: ServicesDep, after_id: int = 0
+    world: WorldDep,
+    services: ServicesDep,
+    after_id: int = 0,
+    last: Annotated[int | None, Query(ge=1, le=500)] = None,
 ) -> list[Event]:
+    if last is not None:
+        return await services.store.events.recent(world.id, last)
     return await services.store.events.get_all(world.id, after_id)
 
 
