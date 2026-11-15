@@ -8,7 +8,6 @@ from ai.prompts import (
     VOTE_CHECK_INSTRUCTIONS,
 )
 from ai.render import render_director, render_proposal, render_vote_check
-from config import settings
 from domain import (
     DirectorContext,
     Poll,
@@ -25,7 +24,7 @@ REJECT = ToolOutput(Rejected, name="reject")
 
 
 class LlmDirector(Director):
-    def __init__(self, model: Model | str | None = settings.llm_model) -> None:
+    def __init__(self, model: Model | str | None) -> None:
         self._proposer = Agent(
             model, instructions=PROPOSE_INSTRUCTIONS, output_type=Proposal
         )

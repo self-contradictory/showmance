@@ -27,7 +27,9 @@ class Services:
 def build_services(db: AsyncEngine) -> Services:
     store = Store(db)
     memory = SqlMemoryStore(db)
-    roles = llm_roles(build_model(settings.llm_model, settings.llm_api_keys))
+    roles = llm_roles(
+        build_model(settings.llm_models, settings.llm_api_keys, settings.llm_cooldown)
+    )
     cast = build_cast(settings.cast, roles, store, memory)
     engine = Engine(store, memory, roles.director, cast)
     narrator = Narrator(

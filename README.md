@@ -35,7 +35,7 @@
 cd backend && cp .env.example .env
 ```
 
-Add your Gemini keys to `backend/.env` as `LLM_API_KEYS=["key1","key2"]`, and a Stripe test secret key as `STRIPE_SECRET_KEY` to sell coins.
+Add your Gemini keys to `backend/.env` as `LLM_API_KEYS=["key1","key2"]`, and a Stripe test secret key as `STRIPE_SECRET_KEY` to sell coins. When a key runs out of quota, the backend tries the next key, then the next model in `LLM_MODELS`.
 
 ```bash
 cd backend && uv run --locked main.py
