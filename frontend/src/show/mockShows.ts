@@ -28,6 +28,7 @@ export const SHOWS: ShowScript[] = [
     viewers: 412,
     sky: "sunset",
     home: "villa",
+    figures: "toy",
     locations: [{ id: "pool", name: "Pool" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
       { id: "mia", name: "Mia", role: "The planner", gender: "female", locationId: "pool" },
@@ -229,7 +230,6 @@ export const SHOWS: ShowScript[] = [
     viewers: 97,
     sky: "night",
     home: "cottage",
-    figures: "toy",
     locations: [{ id: "deck", name: "Deck" }, { id: "kitchen", name: "Kitchen" }, { id: "bedroom", name: "Bedroom" }],
     cast: [
       { id: "grace", name: "Grace", role: "The one who left", gender: "female", locationId: "kitchen" },
