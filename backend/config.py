@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     tick_interval: float = 5.0
     idle_grace: float = 30.0
     presence_check_interval: float = 2.0
+    crowd: bool = True
+    crowd_interval: float = 2.5
+    crowd_chat_chance: float = 0.5
+    crowd_vote_chance: float = 0.4
     stream_poll_interval: float = 1.0
 
     twist_max_length: int = 500

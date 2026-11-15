@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.autopilot import Autopilot
+from api.crowd import Crowd
 from api.routes import ROUTERS
 from api.services import build_services
 from config import settings
@@ -17,13 +18,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     db = await connect(settings.database_url)
     services = build_services(db)
     app.state.services = services
-    autopilot = asyncio.create_task(
-        Autopilot(services.store, services.runners, services.presence).run()
-    )
+    loops = [Autopilot(services.store, services.runners, services.presence).run()]
+    if settings.crowd:
+        loops.append(Crowd(services.store, services.runners).run())
+    tasks = [asyncio.create_task(loop) for loop in loops]
     yield
-    autopilot.cancel()
-    with suppress(asyncio.CancelledError):
-        await autopilot
+    for task in tasks:
+        task.cancel()
+    for task in tasks:
+        with suppress(asyncio.CancelledError):
+            await task
     await services.runners.stop_all()
     await db.dispose()
 
