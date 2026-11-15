@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from ai import llm_roles
+from ai import build_model, llm_roles
 from api.presence import Presence
 from api.runners import Runners
 from config import settings
@@ -27,7 +27,7 @@ class Services:
 def build_services(db: AsyncEngine) -> Services:
     store = Store(db)
     memory = SqlMemoryStore(db)
-    roles = llm_roles()
+    roles = llm_roles(build_model(settings.llm_model, settings.llm_api_keys))
     cast = build_cast(settings.cast, roles, store, memory)
     engine = Engine(store, memory, roles.director, cast)
     narrator = Narrator(

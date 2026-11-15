@@ -19,6 +19,7 @@ class CoinPack(BaseModel):
 
 class Settings(BaseSettings):
     llm_model: str | None = None
+    llm_api_keys: list[str] = Field(default_factory=list)
     cast: CastKind = "agents"
     pacing: PacingKind = "parallel"
     database_url: str = "sqlite+aiosqlite:///villa.db"

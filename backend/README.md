@@ -13,6 +13,7 @@ uv run main.py
 | Variable | Default |
 |---|---|
 | `LLM_MODEL` | none: any Pydantic AI model string, plus that provider's API key (e.g. `OPENAI_API_KEY`, `GOOGLE_API_KEY`) in `.env` too |
+| `LLM_API_KEYS` | none: several keys for the `LLM_MODEL` provider as a JSON list, like `["key1","key2"]`. Each request tries them in order and moves on when one fails, for example when its quota runs out. A spent key costs one quick failed try until its quota resets |
 | `CAST` | `agents`: who plays the contestants, see below |
 | `PACING` | `parallel`: how much happens at once with `CAST=writer`, see below |
 | `DATABASE_URL` | `sqlite+aiosqlite:///villa.db` |
