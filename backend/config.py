@@ -2,7 +2,7 @@ from typing import Literal
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
 
@@ -18,6 +18,8 @@ class CoinPack(BaseModel):
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_ignore_empty=True)
+
     llm_model: str | None = None
     llm_api_keys: list[str] = Field(default_factory=list)
     cast: CastKind = "agents"
