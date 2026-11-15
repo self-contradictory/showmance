@@ -1,7 +1,9 @@
 import { Coins, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
+import { useHint } from "@/lib/useHint";
 import { MAX_MESSAGE_LENGTH, MAX_TWIST_LENGTH } from "@/show/types";
+import { TwistHint } from "./TwistHint";
 
 type Mode = "chat" | "twist";
 
@@ -19,6 +21,7 @@ export function ChatInput({ canTwist, onSend, onDropTwist, onGetCoins }: Props) 
   const [mode, setMode] = useState<Mode>("chat");
   const [drafts, setDrafts] = useState<Record<Mode, string>>({ chat: "", twist: "" });
   const inputRef = useRef<HTMLInputElement>(null);
+  const [hinting, dismissHint] = useHint("showmance:hint:twist", 2500);
   const twisting = mode === "twist";
   const text = drafts[mode];
   const message = text.trim();
@@ -42,7 +45,7 @@ export function ChatInput({ canTwist, onSend, onDropTwist, onGetCoins }: Props) 
 
   return (
     <form
-      className="flex items-center gap-2"
+      className="relative flex items-center gap-2"
       onSubmit={(event) => {
         event.preventDefault();
         submit();
@@ -94,11 +97,24 @@ export function ChatInput({ canTwist, onSend, onDropTwist, onGetCoins }: Props) 
           Drop
         </button>
       ) : (
-        <button key="twist" type="button" onClick={() => switchTo("twist")} className={`${actionButton} w-[5.5rem]`}>
-          <Sparkles size={16} />
-          Twist
-        </button>
+        <span key="twist" className="relative shrink-0">
+          {hinting && (
+            <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-accent/50 motion-reduce:animate-none" />
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              dismissHint();
+              switchTo("twist");
+            }}
+            className={`${actionButton} relative w-[5.5rem]`}
+          >
+            <Sparkles size={16} />
+            Twist
+          </button>
+        </span>
       )}
+      <AnimatePresence>{hinting && !twisting && <TwistHint onDismiss={dismissHint} />}</AnimatePresence>
     </form>
   );
 }
