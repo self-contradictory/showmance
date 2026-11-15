@@ -41,11 +41,13 @@ Add your Gemini keys to `backend/.env` as `LLM_API_KEYS=["key1","key2"]`, and a 
 cd backend && uv run --locked main.py
 ```
 
-Add the villa once, while the backend runs:
+Add the four shows once, while the backend runs:
 
 ```bash
-cd backend && curl -X POST localhost:8000/worlds -H 'content-type: application/json' -d @villa.json
+cd backend && for show in shows/*.json; do curl -X POST localhost:8000/worlds -H 'content-type: application/json' -d @$show; done
 ```
+
+While someone watches, a small simulated audience chats and votes so the room feels alive. Set `CROWD=false` in `backend/.env` to turn it off.
 
 ### Frontend → http://localhost:3000
 

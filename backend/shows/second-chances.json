@@ -1,0 +1,69 @@
+{
+  "name": "Second Chances",
+  "thumbnail_url": null,
+  "home": "cottage",
+  "figures": "realistic",
+  "setting": "A quiet lakeside cottage where six exes spend a week deciding who deserves a second chance.",
+  "locations": [
+    {
+      "name": "lakeside garden",
+      "description": "A dock, two chairs and too many memories."
+    },
+    {
+      "name": "kitchen",
+      "description": "Where old couples fall back into old habits."
+    },
+    {
+      "name": "living room",
+      "description": "One sofa, six exes, nobody wants to sit first."
+    },
+    {
+      "name": "loft bedroom",
+      "description": "The only room with a lock."
+    }
+  ],
+  "agents": [
+    {
+      "name": "Grace",
+      "gender": "female",
+      "persona": "The one who left. 29, ambitious and guarded. Walked out on Daniel two years ago and never explained why.",
+      "location": "living room",
+      "voice": "af_sarah"
+    },
+    {
+      "name": "Daniel",
+      "gender": "male",
+      "persona": "The one who stayed. 31, steady and hurt. Says he's over Grace, but he kept every letter.",
+      "location": "living room",
+      "voice": "am_liam"
+    },
+    {
+      "name": "Maya",
+      "gender": "female",
+      "persona": "The planner. 28, organised and hopeful. Found a ring in Josh's bag and can't stop thinking about it.",
+      "location": "kitchen",
+      "voice": "af_jessica"
+    },
+    {
+      "name": "Josh",
+      "gender": "male",
+      "persona": "The romantic. 30, big gestures and bad timing. Brought a ring and hasn't decided who it's for.",
+      "location": "kitchen",
+      "voice": "am_echo"
+    },
+    {
+      "name": "Elena",
+      "gender": "female",
+      "persona": "The skeptic. 27, sharp and funny. Doesn't believe in second chances, and her ex Sam just arrived.",
+      "location": "lakeside garden",
+      "voice": "bf_isabella"
+    },
+    {
+      "name": "Sam",
+      "gender": "male",
+      "persona": "The surprise. 30, easygoing and impossible to read. Elena's ex, here to win her back, or so he says.",
+      "location": "lakeside garden",
+      "voice": "bm_george"
+    }
+  ]
+}
