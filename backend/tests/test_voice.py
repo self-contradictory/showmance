@@ -1,6 +1,10 @@
 import asyncio
 
+import numpy as np
+import pytest
+
 from domain import NewEvent
+from voice.kokoro import FFMPEG, mp3
 
 
 async def say(store, villa, agent, text, **data):
@@ -109,3 +113,15 @@ async def test_same_line_in_the_same_voice_is_voiced_once(
     await narrator.audio(await say(store, villa, villa.mia, "Bye"))
 
     assert [speech.text for speech in fake_voice.spoken] == ["Hi", "Bye"]
+
+
+@pytest.mark.skipif(FFMPEG is None, reason="needs ffmpeg")
+async def test_lines_are_sent_as_small_mp3s():
+    rate = 24000
+    tone = np.sin(2 * np.pi * 440 * np.arange(rate) / rate) * 0.3
+    pcm = (tone * 32767).astype("<i2").tobytes()
+
+    encoded = await mp3(FFMPEG, pcm, rate)
+
+    assert encoded[:3] == b"ID3" or encoded[0] == 0xFF
+    assert len(encoded) < len(pcm) / 5
